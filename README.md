@@ -26,7 +26,9 @@ This project is intended to produce a system which can scan, store, and classify
 
 ## Design Details
 
-Explain the high-level design decisions and architecture of your project. Include diagrams or code snippets if necessary.
+This project has two main components: The user-facing android frontend, and the backend server running on AWS.
+
+The android app is built in kotlin using jetpack compose.
 
 ### Example Code:
 

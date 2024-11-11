@@ -34,6 +34,7 @@ The android app is built in kotlin using jetpack compose.
 
 ```python
 # Code snippet or example to showcase design principles
+```
 
 Installation
 Provide instructions on how to install your project. Include any dependencies or prerequisites.

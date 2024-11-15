@@ -30,6 +30,8 @@ This project has two main components: The user-facing android frontend, and the 
 
 The android app is built in kotlin using jetpack compose.
 
+![Architecture diagram](URL "SDD.jpeg")
+
 ### Example Code:
 
 ```python

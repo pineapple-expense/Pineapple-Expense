@@ -1,23 +1,30 @@
-package com.example.pineappleexpense.components
+package com.example.pineappleexpense
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,39 +32,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.pineappleexpense.components.BottomBar
+import com.example.pineappleexpense.components.TopBar
 
-
+@Preview
 @Composable
-fun TopBar(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .background(Color(0xFFF3DDFF)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        IconButton(onClick = {}) {
-            Icon(
-                Icons.Filled.Menu,
-                contentDescription = "" // Add a valid content description
-            )
-        }
-        Text(
-            text = "Example Co LLC",
-            style = MaterialTheme.typography.titleLarge
-        )
-        IconButton(onClick = {}) {
-            Icon(
-                Icons.Default.AccountCircle,
-                contentDescription = "" // Add a valid content description
-            )
+fun ArchiveScreen() {
+    Scaffold (
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color(0xFFF9EEFF),
+        bottomBar = {
+            ArchiveBottomBar()
+        },
+    ) { innerPadding ->
+        TopBar(Modifier.padding(innerPadding))
+        Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
+        ) {
+            Spacer(modifier = Modifier.height(64.dp))
         }
     }
 }
 
 @Composable
-fun BottomBar(modifier: Modifier = Modifier) {
+fun ArchiveBottomBar(modifier: Modifier = Modifier) {
     NavigationBar (
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
@@ -65,14 +64,14 @@ fun BottomBar(modifier: Modifier = Modifier) {
         NavigationBarItem(
             icon = {
                 Icon(
-                    Icons.Filled.Home,
+                    Icons.Outlined.Home,
                     contentDescription = "" // Add a valid content description
                 )
             },
             label = {
                 Text("Review")
             },
-            selected = true,
+            selected = false,
             onClick = {},
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color(0xFFD6BBEA),
@@ -99,14 +98,14 @@ fun BottomBar(modifier: Modifier = Modifier) {
         NavigationBarItem(
             icon = {
                 Icon(
-                    Icons.Outlined.DateRange,
+                    Icons.Filled.DateRange,
                     contentDescription = "" // Add a valid content description
                 )
             },
             label = {
                 Text("Archive")
             },
-            selected = false,
+            selected = true,
             onClick = {},
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color(0xFFD6BBEA),

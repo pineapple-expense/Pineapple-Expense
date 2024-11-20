@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 
 @Composable
@@ -57,60 +58,49 @@ fun TopBar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BottomBar(modifier: Modifier = Modifier) {
-    NavigationBar (
+fun BottomBar(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavigationBar(
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
     ) {
         NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Filled.Home,
-                    contentDescription = "" // Add a valid content description
-                )
+            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
+            label = { Text("Review") },
+            selected = navController.currentDestination?.route == "home",
+            onClick = {
+                if (navController.currentDestination?.route != "home") {
+                    navController.navigate("home") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             },
-            label = {
-                Text("Review")
-            },
-            selected = true,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
         NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Outlined.Add,
-                    contentDescription = "" // Add a valid content description
-                )
-            },
-            label = {
-                Text("Camera")
-            },
-            selected = false,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
+            icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
+            label = { Text("Camera") },
+            selected = false, // No specific route for this action
+            onClick = { /* Handle camera action */ },
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
         NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Outlined.DateRange,
-                    contentDescription = "" // Add a valid content description
-                )
+            icon = { Icon(Icons.Outlined.DateRange, contentDescription = "Archive") },
+            label = { Text("Archive") },
+            selected = navController.currentDestination?.route == "archive",
+            onClick = {
+                if (navController.currentDestination?.route != "archive") {
+                    navController.navigate("archive") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             },
-            label = {
-                Text("Archive")
-            },
-            selected = false,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
     }

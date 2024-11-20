@@ -1,6 +1,8 @@
 package com.example.pineappleexpense
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,20 +32,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.pineappleexpense.components.BottomBar
 import com.example.pineappleexpense.components.TopBar
 
-@Preview
+
 @Composable
-fun ArchiveScreen() {
+fun ArchiveScreen(navController: NavHostController) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
-            ArchiveBottomBar()
+            BottomBar(navController)
         },
     ) { innerPadding ->
         TopBar(Modifier.padding(innerPadding))
@@ -51,6 +56,16 @@ fun ArchiveScreen() {
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
             Spacer(modifier = Modifier.height(64.dp))
+        }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "This is the Archive Screen",
+                modifier = Modifier.padding(16.dp),
+                fontSize = 24.sp
+            )
         }
     }
 }

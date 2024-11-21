@@ -24,12 +24,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
 import com.example.pineappleexpense.components.BottomBar
 import com.example.pineappleexpense.components.TopBar
-
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,69 +40,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PineappleExpenseTheme {
-                HomeScreen()
+                MainScreen()
             }
         }
+    }
+}
+@Composable
+fun MainScreen() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") { HomeScreen(navController) }
+        composable("archive") { ArchiveScreen(navController) }
     }
 }
 
 //currently hardcoded to always be the review page, will be changed
-@Composable
-fun HomeScreen() {
-    Scaffold (
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF9EEFF),
-        bottomBar = {
-            BottomBar()
-        },
-    ) { innerPadding ->
-        TopBar(Modifier.padding(innerPadding))
-        Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
-        ) {
-            Spacer(modifier = Modifier.height(64.dp))
-            NoPendingExpensesCard()
-        }
-    }
-}
-
-@Composable
-fun NoPendingExpensesCard() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "You currently have no pending expenses",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Button(
-                    onClick = { /* Handle add new item action */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, Color(0xFF6200EA)),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                ) {
-                    Text(
-                        text = "add a new item",
-                        color = Color(0xFF6200EA),
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        }
-    }
-}

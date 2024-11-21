@@ -34,6 +34,7 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraCamera2" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.4" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

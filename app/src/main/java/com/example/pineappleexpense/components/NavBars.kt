@@ -1,15 +1,19 @@
 package com.example.pineappleexpense.components
 
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Icon
@@ -25,12 +29,62 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 
 @Composable
-fun TopBar(modifier: Modifier = Modifier) {
-    Row(
+fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavigationBar(
+
+        modifier = modifier.height(64.dp),
+        containerColor = Color(0xFFF3DDFF),
+
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(1000.dp)
+                )
+                   },
+            selected = navController.currentDestination?.route == "settings",
+            onClick = {
+                if (navController.currentDestination?.route != "setting") {
+                    navController.navigate("settings") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        Text(
+            text = "Example Co LLC",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        NavigationBarItem(
+            icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "UserProfile") },
+            selected = navController.currentDestination?.route == "userProfile",
+            onClick = {
+                if (navController.currentDestination?.route != "userProfile") {
+                    navController.navigate("userProfile") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+    }
+    /*Row(
         modifier = modifier
             .fillMaxWidth()
             .height(64.dp)
@@ -54,7 +108,7 @@ fun TopBar(modifier: Modifier = Modifier) {
                 contentDescription = "" // Add a valid content description
             )
         }
-    }
+    }*/
 }
 
 @Composable
@@ -64,7 +118,7 @@ fun BottomBar(navController: NavHostController, modifier: Modifier = Modifier) {
         containerColor = Color(0xFFF3DDFF)
     ) {
         NavigationBarItem(
-            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
+            icon = { Icon(Icons.Filled.Home, contentDescription = "Home", modifier.size(24.dp)) },
             label = { Text("Review") },
             selected = navController.currentDestination?.route == "home",
             onClick = {
@@ -104,4 +158,12 @@ fun BottomBar(navController: NavHostController, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(top = 16.dp)
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewTopBotBar() {
+    val navController = rememberNavController()
+    TopBar(navController)
+
 }

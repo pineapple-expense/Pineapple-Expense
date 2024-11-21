@@ -55,6 +55,8 @@ fun MainScreen() {
     ) {
         composable("home") { HomeScreen(navController) }
         composable("archive") { ArchiveScreen(navController) }
+        composable("userProfile") {UserProfile(navController)}
+        composable("settings") {Settings(navController)}
     }
 }
 

@@ -51,7 +51,7 @@ fun ArchiveScreen(navController: NavHostController) {
             BottomBar(navController)
         },
     ) { innerPadding ->
-        TopBar(Modifier.padding(innerPadding))
+        TopBar(navController, Modifier.padding(innerPadding))
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
@@ -67,65 +67,5 @@ fun ArchiveScreen(navController: NavHostController) {
                 fontSize = 24.sp
             )
         }
-    }
-}
-
-@Composable
-fun ArchiveBottomBar(modifier: Modifier = Modifier) {
-    NavigationBar (
-        modifier = modifier.height(80.dp),
-        containerColor = Color(0xFFF3DDFF)
-    ) {
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Outlined.Home,
-                    contentDescription = "" // Add a valid content description
-                )
-            },
-            label = {
-                Text("Review")
-            },
-            selected = false,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Outlined.Add,
-                    contentDescription = "" // Add a valid content description
-                )
-            },
-            label = {
-                Text("Camera")
-            },
-            selected = false,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Filled.DateRange,
-                    contentDescription = "" // Add a valid content description
-                )
-            },
-            label = {
-                Text("Archive")
-            },
-            selected = true,
-            onClick = {},
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFD6BBEA),
-            ),
-            modifier = Modifier.padding(top = 16.dp)
-        )
     }
 }

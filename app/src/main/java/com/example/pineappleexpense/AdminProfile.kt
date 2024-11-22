@@ -41,7 +41,7 @@ import com.example.pineappleexpense.components.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfile(navController: NavHostController, modifier: Modifier = Modifier) {
+fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF)
@@ -59,81 +59,28 @@ fun UserProfile(navController: NavHostController, modifier: Modifier = Modifier)
                 verticalAlignment = Alignment.CenterVertically){
                 Icon(
                     Icons.Default.AccountCircle,
-                    modifier = Modifier.size(144.dp),
-                    tint = Color(0xFF384B68),
+                    modifier = Modifier.size(148.dp),
+                    tint = Color(0xFF548235),
                     contentDescription = "" // Add a valid content description
                 )
-
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = modifier
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text (
-                    text = "Example User Profile",
-                    fontSize = 24.sp
-                )
-
-                Text (
-                    text = "Example User Profile",
-                    fontSize = 24.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = modifier
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        navController.navigate("adminProfile")
-                    }
-                ) {
-
+            Spacer(modifier = Modifier.height(96.dp))
+            Button(
+                onClick = {
+                navController.navigate("destination_route") 
                 }
+            ) {
+
             }
-
-
-
         }
     }
 }
 
-@Composable
-fun UserTopBar(navController: NavHostController, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .background(Color(0xFFF3DDFF)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        IconButton(onClick = {
 
-        }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
-            )
-        }
-        Text(
-            text = "Account",
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 24.sp,
-            modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
-
-        )
-
-    }
-}
 
 @Preview
 @Composable
-fun PreviewUserProfile() {
+fun PreviewAdminProfile() {
     val navController = rememberNavController()
-    UserProfile(navController)
+    AdminProfile(navController)
 }

@@ -46,8 +46,7 @@ fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
             icon = {
                 Icon(
                     imageVector = Icons.Filled.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(1000.dp)
+                    contentDescription = "Settings"
                 )
                    },
             selected = navController.currentDestination?.route == "settings",
@@ -98,8 +97,7 @@ fun AdminTopBar(navController: NavHostController, modifier: Modifier = Modifier)
             icon = {
                 Icon(
                     imageVector = Icons.Filled.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(1000.dp)
+                    contentDescription = "Settings"
                 )
             },
             selected = navController.currentDestination?.route == "adminSettings",

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,28 +50,63 @@ fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier
     ) { innerPadding ->
         AdminTopBar(navController,Modifier.padding(innerPadding))
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(96.dp))
-            Row(modifier = modifier
-                .fillMaxWidth()
-                .height(148.dp)
-                .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically){
-                Icon(
-                    Icons.Default.AccountCircle,
-                    modifier = Modifier.size(148.dp),
-                    tint = Color(0xFF548235),
-                    contentDescription = "" // Add a valid content description
-                )
-            }
+            Icon(
+                Icons.Default.AccountCircle,
+                modifier = Modifier.size(144.dp),
+                tint = Color(0xFFC56666),
+                contentDescription = "" // Add a valid content description
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text (
+                text = "User FName",
+                fontSize = 24.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text (
+                text = "User LName",
+                fontSize = 24.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text (
+                text = "useremail@email.com",
+                fontSize = 16.sp
+            )
             Spacer(modifier = Modifier.height(96.dp))
             Button(
                 onClick = {
-                navController.navigate("destination_route") 
-                }
+                    navController.navigate("userProfile")
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF384B68), // Background color
+                    contentColor = Color.White // Text or icon color
+                )
             ) {
+                Text(
+                    text = "Switch to User View",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = {
+                    navController.navigate("home") // placeholder
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF548235), // Background color
+                    contentColor = Color.White // Text or icon color
+                )
+            ) {
+                Text(
+                    text = "Logout",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
             }
         }

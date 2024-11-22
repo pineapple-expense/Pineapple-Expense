@@ -48,56 +48,39 @@ fun UserProfile(navController: NavHostController, modifier: Modifier = Modifier)
     ) { innerPadding ->
         TopBar(navController,Modifier.padding(innerPadding))
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(96.dp))
-            Row(modifier = modifier
-                .fillMaxWidth()
-                .height(148.dp)
-                .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically){
-                Icon(
-                    Icons.Default.AccountCircle,
-                    modifier = Modifier.size(144.dp),
-                    tint = Color(0xFF384B68),
-                    contentDescription = "" // Add a valid content description
-                )
-
-            }
+            Icon(
+                Icons.Default.AccountCircle,
+                modifier = Modifier.size(144.dp),
+                tint = Color(0xFF384B68),
+                contentDescription = "" // Add a valid content description
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = modifier
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text (
-                    text = "Example User Profile",
-                    fontSize = 24.sp
-                )
-
-                Text (
-                    text = "Example User Profile",
-                    fontSize = 24.sp
-                )
-            }
+            Text (
+                text = "User FName",
+                fontSize = 24.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text (
+                text = "User LName",
+                fontSize = 24.sp
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = modifier
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center, // Centers horizontally
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        navController.navigate("adminProfile")
-                    }
-                ) {
-
+            Text (
+                text = "useremail@email.com",
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(96.dp))
+            Button(
+                onClick = {
+                    navController.navigate("adminProfile")
                 }
+            ) {
+
             }
-
-
-
         }
     }
 }

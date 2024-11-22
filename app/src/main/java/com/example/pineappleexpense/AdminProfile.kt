@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.components.AdminTopBar
 import com.example.pineappleexpense.components.BottomBar
 import com.example.pineappleexpense.components.TopBar
 
@@ -46,7 +47,7 @@ fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF)
     ) { innerPadding ->
-        TopBar(navController,Modifier.padding(innerPadding))
+        AdminTopBar(navController,Modifier.padding(innerPadding))
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {

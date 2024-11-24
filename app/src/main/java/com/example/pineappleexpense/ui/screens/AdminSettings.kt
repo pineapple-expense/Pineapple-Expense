@@ -1,4 +1,4 @@
-package com.example.pineappleexpense
+package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,38 +9,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.pineappleexpense.components.BottomBar
-import com.example.pineappleexpense.components.TopBar
+import com.example.pineappleexpense.ui.components.AdminTopBar
+import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 // Place Holder
 @Composable
-fun Settings(navController: NavHostController) {
+fun AdminSettings(navController: NavHostController, viewModel: AccessViewModel) {
+
     Scaffold (
-        modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
-            BottomBar(navController)
+            BottomBar(navController, viewModel)
         },
     ) { innerPadding ->
-        TopBar(navController, androidx.compose.ui.Modifier.padding(innerPadding))
+        AdminTopBar(navController, Modifier.padding(innerPadding))
         Column(
-            modifier = androidx.compose.ui.Modifier.fillMaxSize().padding(innerPadding)
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
-            Spacer(modifier = androidx.compose.ui.Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(64.dp))
         }
         Box(
-            modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "This is the Settings Screen",
+                text = "This is the Admin Settings Screen",
                 modifier = Modifier.padding(16.dp),
                 fontSize = 24.sp
             )

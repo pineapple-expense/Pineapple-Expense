@@ -1,23 +1,16 @@
-package com.example.pineappleexpense.components
+package com.example.pineappleexpense.ui.components
 
-import android.provider.Settings
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,16 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
 @Composable
-fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
+fun TopBar(navController: NavHostController,viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     NavigationBar(
 
-        modifier = modifier.height(64.dp),
+        modifier = Modifier.height(76.dp),
         containerColor = Color(0xFFF3DDFF),
 
     ) {
@@ -46,7 +40,8 @@ fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
             icon = {
                 Icon(
                     imageVector = Icons.Filled.Settings,
-                    contentDescription = "Settings"
+                    contentDescription = "Settings",
+                    modifier = Modifier.padding(top = 32.dp)
                 )
                    },
             selected = navController.currentDestination?.route == "settings",
@@ -60,15 +55,25 @@ fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
                 }
             },
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
-            modifier = Modifier.padding(top = 16.dp)
+
         )
+
         Text(
             text = "Example Co LLC",
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .align(alignment = Alignment.CenterVertically)
         )
+
         NavigationBarItem(
-            icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "UserProfile") },
+            icon = {
+                Icon(
+                    imageVector =  Icons.Filled.AccountCircle,
+                    contentDescription = "UserProfile",
+                    modifier = Modifier.padding(top = 32.dp)
+                )
+                   },
             selected = navController.currentDestination?.route == "userProfile",
             onClick = {
                 if (navController.currentDestination?.route != "userProfile") {
@@ -80,7 +85,7 @@ fun TopBar(navController: NavHostController, modifier: Modifier = Modifier) {
                 }
             },
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
-            modifier = Modifier.padding(top = 16.dp)
+
         )
     }
 }
@@ -98,6 +103,7 @@ fun AdminTopBar(navController: NavHostController, modifier: Modifier = Modifier)
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = "Settings"
+
                 )
             },
             selected = navController.currentDestination?.route == "adminSettings",
@@ -138,7 +144,7 @@ fun AdminTopBar(navController: NavHostController, modifier: Modifier = Modifier)
 
 
 @Composable
-fun BottomBar(navController: NavHostController, modifier: Modifier = Modifier) {
+fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     NavigationBar(
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
@@ -190,6 +196,7 @@ fun BottomBar(navController: NavHostController, modifier: Modifier = Modifier) {
 @Composable
 fun PreviewTopBotBar() {
     val navController = rememberNavController()
-    TopBar(navController)
+    val viewModel = AccessViewModel()
+    TopBar(navController, viewModel)
 
 }

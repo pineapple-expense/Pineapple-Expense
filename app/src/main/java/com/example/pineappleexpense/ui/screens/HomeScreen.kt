@@ -1,4 +1,4 @@
-package com.example.pineappleexpense
+package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -17,33 +17,36 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.pineappleexpense.components.BottomBar
-import com.example.pineappleexpense.components.TopBar
+import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.components.TopBar
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
-            BottomBar(navController)
+            BottomBar(navController, viewModel)
         },
+        topBar = {
+            TopBar(navController,viewModel)
+        }
     ) { innerPadding ->
-        TopBar(navController, Modifier.padding(innerPadding))
+
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(0.dp))
             NoPendingExpensesCard()
         }
     }
@@ -94,5 +97,6 @@ fun NoPendingExpensesCard() {
 @Composable
 fun PreviewHome() {
     val navController = rememberNavController()
-    HomeScreen(navController)
+    val viewModel = AccessViewModel()
+    HomeScreen(navController, viewModel)
 }

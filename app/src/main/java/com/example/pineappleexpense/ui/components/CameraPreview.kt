@@ -1,5 +1,6 @@
-package com.example.pineappleexpense.components
+package com.example.pineappleexpense.ui.components
 
+import android.Manifest
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -25,7 +26,7 @@ import androidx.compose.material3.Button
 fun CameraPreview() {
 
     //check if the app has camera permissions, if not then request camera permissions
-    val cameraPermissionState: PermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+    val cameraPermissionState: PermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     if(!cameraPermissionState.status.isGranted) {
         Column(modifier = Modifier.fillMaxSize()) {
             Text(text = "Please grant permission for the application to use the camera")

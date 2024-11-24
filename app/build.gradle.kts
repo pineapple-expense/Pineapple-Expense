@@ -58,4 +58,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 }

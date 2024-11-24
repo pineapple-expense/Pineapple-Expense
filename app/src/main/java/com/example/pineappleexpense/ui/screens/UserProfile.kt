@@ -1,6 +1,5 @@
-package com.example.pineappleexpense
+package com.example.pineappleexpense.ui.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +14,8 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,19 +32,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.pineappleexpense.components.AdminTopBar
-import com.example.pineappleexpense.components.BottomBar
-import com.example.pineappleexpense.components.TopBar
+import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.components.TopBar
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier) {
+fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF9EEFF)
+        containerColor = Color(0xFFF9EEFF),
+        bottomBar = {
+            BottomBar(navController, viewModel)
+        },
+        topBar = {
+            TopBar(navController,viewModel)
+        }
     ) { innerPadding ->
-        AdminTopBar(navController,Modifier.padding(innerPadding))
+
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -57,7 +59,7 @@ fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier
             Icon(
                 Icons.Default.AccountCircle,
                 modifier = Modifier.size(144.dp),
-                tint = Color(0xFFC56666),
+                tint = Color(0xFF384B68),
                 contentDescription = "" // Add a valid content description
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -78,15 +80,16 @@ fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier
             Spacer(modifier = Modifier.height(96.dp))
             Button(
                 onClick = {
-                    navController.navigate("userProfile")
+                    navController.navigate("adminProfile")
+                    viewModel.toggleAccess("Admin")
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF384B68), // Background color
+                    containerColor = Color(0xFFC56666), // Background color
                     contentColor = Color.White // Text or icon color
                 )
             ) {
                 Text(
-                    text = "Switch to User View",
+                    text = "Switch to Admin View",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -110,14 +113,43 @@ fun AdminProfile(navController: NavHostController, modifier: Modifier = Modifier
 
             }
         }
+
     }
 }
 
+@Composable
+fun UserTopBar(navController: NavHostController, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .background(Color(0xFFF3DDFF)),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        IconButton(onClick = {
 
+        }) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back"
+            )
+        }
+        Text(
+            text = "Account",
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 24.sp,
+            modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+
+        )
+
+    }
+}
 
 @Preview
 @Composable
-fun PreviewAdminProfile() {
+fun PreviewUserProfile() {
     val navController = rememberNavController()
-    AdminProfile(navController)
+    val viewModel = AccessViewModel()
+    UserProfile(navController, viewModel)
 }

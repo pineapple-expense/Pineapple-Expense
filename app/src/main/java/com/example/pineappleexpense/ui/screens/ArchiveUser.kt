@@ -21,7 +21,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
 @Composable
-fun ArchiveScreen(navController: NavHostController, viewModel: AccessViewModel) {
+fun ArchiveScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),

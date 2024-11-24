@@ -55,7 +55,7 @@ fun MainScreen() {
             AdminProfile(navController,viewModel)
         }
         composable("adminSettings") {
-            AdminSettings(navController, viewModel)
+            AdminSettings(navController, viewModel)  // Will probably delete this
         }
     }
 }

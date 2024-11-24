@@ -91,59 +91,6 @@ fun TopBar(navController: NavHostController,viewModel: AccessViewModel, modifier
 }
 
 @Composable
-fun AdminTopBar(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavigationBar(
-
-        modifier = modifier.height(64.dp),
-        containerColor = Color(0xFFF3DDFF),
-
-        ) {
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = "Settings"
-
-                )
-            },
-            selected = navController.currentDestination?.route == "adminSettings",
-            onClick = {
-                if (navController.currentDestination?.route != "adminSetting") {
-                    navController.navigate("adminSettings") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        Text(
-            text = "Example Co LLC",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "AdminProfile") },
-            selected = navController.currentDestination?.route == "adminProfile",
-            onClick = {
-                if (navController.currentDestination?.route != "adminProfile") {
-                    navController.navigate("adminProfile") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-    }
-}
-
-
-@Composable
 fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     NavigationBar(
         modifier = modifier.height(80.dp),

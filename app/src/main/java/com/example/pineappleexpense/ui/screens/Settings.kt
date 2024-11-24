@@ -22,7 +22,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 // Place Holder
 @Composable
-fun Settings(navController: NavHostController, viewModel: AccessViewModel) {
+fun Settings(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val userRole = viewModel.userState.collectAsState().value
     Scaffold (
         modifier = Modifier.fillMaxSize(),

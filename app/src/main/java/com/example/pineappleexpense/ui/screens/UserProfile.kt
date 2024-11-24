@@ -1,25 +1,15 @@
 package com.example.pineappleexpense.ui.screens
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +27,7 @@ import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     Scaffold (
@@ -117,34 +107,6 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
     }
 }
 
-@Composable
-fun UserTopBar(navController: NavHostController, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .background(Color(0xFFF3DDFF)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        IconButton(onClick = {
-
-        }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
-            )
-        }
-        Text(
-            text = "Account",
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 24.sp,
-            modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
-
-        )
-
-    }
-}
 
 @Preview
 @Composable

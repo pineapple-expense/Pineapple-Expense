@@ -9,29 +9,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.pineappleexpense.ui.components.AdminTopBar
 import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
-// Place Holder
+
+// This can probably be deleted
 @Composable
 fun AdminSettings(navController: NavHostController, viewModel: AccessViewModel) {
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
+        topBar = {
+            TopBar(navController, viewModel)
+        },
         bottomBar = {
             BottomBar(navController, viewModel)
         },
     ) { innerPadding ->
-        AdminTopBar(navController, Modifier.padding(innerPadding))
+
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {

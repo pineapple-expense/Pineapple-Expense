@@ -1,4 +1,4 @@
-package com.example.pineappleexpense
+package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,23 +14,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.pineappleexpense.components.AdminTopBar
-import com.example.pineappleexpense.components.BottomBar
-import com.example.pineappleexpense.components.TopBar
+import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.components.TopBar
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
-// Place Holder
+
 @Composable
-fun AdminSettings(navController: NavHostController) {
+fun ArchiveScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
-            BottomBar(navController)
+            BottomBar(navController, viewModel)
         },
     ) { innerPadding ->
-        AdminTopBar(navController, Modifier.padding(innerPadding))
+        TopBar(navController, viewModel, Modifier.padding(innerPadding))
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
@@ -41,7 +41,7 @@ fun AdminSettings(navController: NavHostController) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "This is the Admin Settings Screen",
+                text = "This is the Archive Screen",
                 modifier = Modifier.padding(16.dp),
                 fontSize = 24.sp
             )

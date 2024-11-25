@@ -34,7 +34,7 @@ fun AdminSettings(navController: NavHostController, viewModel: AccessViewModel) 
             BottomBar(navController, viewModel)
         },
     ) { innerPadding ->
-
+        TopBar(navController, viewModel, Modifier.padding(innerPadding))
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {

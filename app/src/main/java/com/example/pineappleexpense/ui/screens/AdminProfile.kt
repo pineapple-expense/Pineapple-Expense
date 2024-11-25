@@ -72,7 +72,7 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
             Spacer(modifier = Modifier.height(96.dp))
             Button(
                 onClick = {
-                    navController.navigate("userProfile")
+                    navController.navigate("Profile")
                     viewModel.toggleAccess("User")
                 },
                 colors = ButtonDefaults.buttonColors(

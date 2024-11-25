@@ -70,7 +70,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
             Spacer(modifier = Modifier.height(96.dp))
             Button(
                 onClick = {
-                    navController.navigate("adminProfile")
+                    navController.navigate("Admin Profile")
                     viewModel.toggleAccess("Admin")
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -88,7 +88,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = {
-                    navController.navigate("home") // placeholder
+                    navController.navigate("Home") // placeholder
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF548235), // Background color

@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
 fun MainScreen() {
     val viewModel = AccessViewModel()
@@ -37,26 +38,27 @@ fun MainScreen() {
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "Home"
     ) {
-        composable("home") {
+        composable("Home") {
             HomeScreen(navController, viewModel)
         }
-        composable("archive") {
+        composable("Archive") {
             ArchiveScreen(navController, viewModel)
         }
-        composable("userProfile") {
+        composable("Profile") {
             UserProfile(navController, viewModel)
         }
-        composable("settings") {
+        composable("Settings") {
             Settings(navController, viewModel)
         }
-        composable("adminProfile") {
+        composable("Admin Profile") {
             AdminProfile(navController,viewModel)
         }
         composable("adminSettings") {
             AdminSettings(navController, viewModel)  // Will probably delete this
         }
+
     }
 }
 

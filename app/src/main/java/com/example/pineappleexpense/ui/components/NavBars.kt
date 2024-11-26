@@ -115,8 +115,16 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
             label = { Text("Camera") },
-            selected = false, // No specific route for this action
-            onClick = { /* Handle camera action */ },
+            selected = navController.currentDestination?.route == "camera",
+            onClick = {
+                if (navController.currentDestination?.route != "camera") {
+                    navController.navigate("camera") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            },
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )

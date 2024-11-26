@@ -13,7 +13,9 @@ import com.example.pineappleexpense.ui.screens.AdminProfile
 import com.example.pineappleexpense.ui.screens.AdminSettings
 import com.example.pineappleexpense.ui.screens.ArchiveScreen
 import com.example.pineappleexpense.ui.screens.HomeScreen
+import com.example.pineappleexpense.ui.screens.Registration
 import com.example.pineappleexpense.ui.screens.Settings
+import com.example.pineappleexpense.ui.screens.SignIn
 import com.example.pineappleexpense.ui.screens.UserProfile
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
@@ -38,8 +40,14 @@ fun MainScreen() {
 
     NavHost(
         navController = navController,
-        startDestination = "Home"
+        startDestination = "SignIn"
     ) {
+        composable("SignIn") {
+            SignIn(navController, viewModel)
+        }
+        composable("Registration") {
+            Registration(navController, viewModel)
+        }
         composable("Home") {
             HomeScreen(navController, viewModel)
         }

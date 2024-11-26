@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.camera.core.Preview
@@ -23,7 +24,7 @@ import androidx.compose.material3.Button
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraPreview() {
+fun CameraPreview(onImageCapture: (ImageCapture) -> Unit) {
 
     //check if the app has camera permissions, if not then request camera permissions
     val cameraPermissionState: PermissionState = rememberPermissionState(Manifest.permission.CAMERA)
@@ -43,6 +44,9 @@ fun CameraPreview() {
     // State to manage the PreviewView
     val previewView = remember { PreviewView(context) }
 
+    // initialize an ImageCapture use case for capturing a picture
+    val imageCapture = remember { ImageCapture.Builder().build() }
+
     // Set up the CameraX UseCase
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     LaunchedEffect(cameraProviderFuture) {
@@ -60,8 +64,11 @@ fun CameraPreview() {
             cameraProvider.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
-                preview
+                preview,
+                imageCapture
             )
+            // pass the ImageCapture instance to the caller after setting up the camera
+            onImageCapture(imageCapture)
         } catch (e: Exception) {
             e.printStackTrace()
         }

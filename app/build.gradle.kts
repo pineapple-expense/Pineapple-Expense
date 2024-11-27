@@ -53,7 +53,8 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.camera.camera2)
-    implementation(libs.navigation.compose) // Navigation Compose
+    implementation(libs.navigation.compose)
+    implementation(libs.coil.compose) // Navigation Compose
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

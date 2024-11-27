@@ -28,6 +28,10 @@ import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.rememberImagePainter
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -42,11 +46,30 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
         }
     ) { innerPadding ->
 
+        val imageUri = viewModel.latestImageUri
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
             Spacer(modifier = Modifier.height(0.dp))
-            NoPendingExpensesCard()
+            //display the no expenses card if no image has been taken, otherwise display the image
+            //TODO: make the home screen able to display multiple images
+            if(imageUri == null) {
+                NoPendingExpensesCard()
+            }
+            else {
+                Row(modifier = Modifier.fillMaxWidth().padding(innerPadding)) {
+                    Image(
+                        painter = rememberImagePainter(imageUri),
+                        contentDescription = "Captured Image",
+                        modifier = Modifier
+                            .size(200.dp)
+                            .padding(16.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                    Text("$imageUri\n\n this is an image")
+                }
+
+            }
         }
     }
 }

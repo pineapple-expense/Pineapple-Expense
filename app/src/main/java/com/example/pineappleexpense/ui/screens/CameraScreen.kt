@@ -1,0 +1,118 @@
+package com.example.pineappleexpense.ui.screens
+
+import android.content.Context
+import android.net.Uri
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
+import com.example.pineappleexpense.R
+import com.example.pineappleexpense.ui.components.BottomBar
+import com.example.pineappleexpense.ui.components.CameraPreview
+import com.example.pineappleexpense.ui.components.TopBar
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+@Composable
+fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
+
+    Scaffold (
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color(0xFFF9EEFF),
+        bottomBar = {
+            BottomBar(navController, viewModel)
+        },
+        topBar = {
+            TopBar(navController,viewModel)
+        }
+    ) { innerPadding ->
+
+        //display the camera preview and get the ImageCapture instance
+        CameraPreview(onImageCapture = {imageCapture = it})
+        Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(656.dp))
+            IconButton(
+                //logic for capturing and saving a picture when the shutter button is pressed
+                onClick = {
+                    //do nothing if imageCapture is null
+                    val imageCapture = imageCapture ?: return@IconButton
+
+                    //create the file to store the image
+                    val photoFile = createImageFile(context)
+
+                    //specify the file to save the image to
+                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+                    //initiate the image capture process and handle the result with a callback
+                    imageCapture.takePicture(
+                        outputOptions,
+                        ContextCompat.getMainExecutor(context),
+                        //create an anonymous class implementing ImageCapture.OnImageSavedCallback
+                        //this allows us to define custom behavior for when the image is saved or if an error occurs
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                // Handle the saved image
+                                val savedUri = outputFileResults.savedUri ?: Uri.fromFile(photoFile)
+                                // Update ViewModel with the image URI
+                                viewModel.latestImageUri = savedUri
+                                // Navigate back to the home screen
+                                navController.navigate("home")
+                            }
+
+                            override fun onError(exception: ImageCaptureException) {
+                                // Handle the error
+                                exception.printStackTrace()
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.size(80.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.camera_shutter),
+                    contentDescription = "take picture",
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+        }
+    }
+}
+
+// helper function to create the file object to store an image
+fun createImageFile(context: Context): File {
+    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+    val filename = "IMG_$timestamp.jpg"
+    val storageDir = File(context.filesDir, "images")
+    if (!storageDir.exists()) {
+        storageDir.mkdir()
+    }
+    return File(storageDir, filename)
+}

@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.example.pineappleexpense.ui.screens.AdminProfile
 import com.example.pineappleexpense.ui.screens.AdminSettings
 import com.example.pineappleexpense.ui.screens.ArchiveScreen
+import com.example.pineappleexpense.ui.screens.CameraScreen
 import com.example.pineappleexpense.ui.screens.HomeScreen
 import com.example.pineappleexpense.ui.screens.Settings
 import com.example.pineappleexpense.ui.screens.UserProfile
@@ -58,8 +59,8 @@ fun MainScreen() {
         composable("adminSettings") {
             AdminSettings(navController, viewModel)  // Will probably delete this
         }
-
+        composable("camera") {
+            CameraScreen(navController, viewModel)
+        }
     }
 }
-
-//currently hardcoded to always be the review page, will be changed

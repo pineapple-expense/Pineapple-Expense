@@ -107,6 +107,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel, m
 }
 
 // helper function to create the file object to store an image
+
 fun createImageFile(context: Context): File {
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     val filename = "IMG_$timestamp.jpg"

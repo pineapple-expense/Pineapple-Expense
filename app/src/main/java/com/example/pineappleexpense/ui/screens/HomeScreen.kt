@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.BorderStroke

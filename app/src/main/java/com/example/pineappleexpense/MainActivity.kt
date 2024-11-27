@@ -68,7 +68,7 @@ fun MainScreen() {
             AdminSettings(navController, viewModel)  // Will probably delete this
         }
         composable("camera") {
-            CameraScreen(navController, viewModel)
+            //CameraScreen(navController, viewModel)
         }
     }
 }

@@ -114,10 +114,10 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
             label = { Text("Camera") },
-            selected = navController.currentDestination?.route == "camera",
+            selected = navController.currentDestination?.route == "Camera",
             onClick = {
-                if (navController.currentDestination?.route != "camera") {
-                    navController.navigate("camera") {
+                if (navController.currentDestination?.route != "Camera") {
+                    navController.navigate("Camera") {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
                         restoreState = true

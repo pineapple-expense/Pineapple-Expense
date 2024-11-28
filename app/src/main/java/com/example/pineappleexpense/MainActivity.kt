@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.pineappleexpense.ui.screens.AdminProfile
 import com.example.pineappleexpense.ui.screens.AdminSettings
+import com.example.pineappleexpense.ui.screens.CameraScreen
 import com.example.pineappleexpense.ui.screens.UserArchiveScreen
 import com.example.pineappleexpense.ui.screens.HomeScreen
 import com.example.pineappleexpense.ui.screens.Registration
@@ -66,8 +67,8 @@ fun MainScreen() {
         composable("adminSettings") {
             AdminSettings(navController, viewModel)  // Will probably delete this
         }
-        composable("camera") {
-            //CameraScreen(navController, viewModel)
+        composable("Camera") {
+            CameraScreen(navController, viewModel)
         }
     }
 }

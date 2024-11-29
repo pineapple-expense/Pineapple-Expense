@@ -50,8 +50,12 @@ fun Settings(navController: NavHostController, viewModel: AccessViewModel, modif
         ) {
             Button(
                 onClick = {
-                    navController.navigate("Home")
-                },
+                        navController.navigate("Account Mapping") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFEAC1FD),
                     contentColor = Color.White

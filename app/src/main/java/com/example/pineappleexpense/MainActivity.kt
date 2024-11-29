@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.pineappleexpense.ui.screens.AccountMapping
 import com.example.pineappleexpense.ui.screens.AdminProfile
 import com.example.pineappleexpense.ui.screens.AdminSettings
 import com.example.pineappleexpense.ui.screens.CameraScreen
@@ -41,7 +42,7 @@ fun MainScreen() {
 
     NavHost(
         navController = navController,
-        startDestination = "SignIn"
+        startDestination = "SignIn",
     ) {
         composable("SignIn") {
             SignIn(navController, viewModel)
@@ -69,6 +70,9 @@ fun MainScreen() {
         }
         composable("Camera") {
             CameraScreen(navController, viewModel)
+        }
+        composable("Account Mapping") {
+            AccountMapping(navController, viewModel)
         }
     }
 }

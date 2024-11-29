@@ -43,7 +43,6 @@ fun MainScreen() {
     NavHost(
         navController = navController,
         startDestination = "SignIn",
-        //startDestination = "Account Mapping" // Testing Account Mapping
     ) {
         composable("SignIn") {
             SignIn(navController, viewModel)

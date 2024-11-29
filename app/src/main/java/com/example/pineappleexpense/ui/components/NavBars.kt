@@ -44,10 +44,10 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
                     modifier = Modifier.padding(top = 32.dp)
                 )
             },
-            selected = navController.currentDestination?.route == "settings",
+            selected = navController.currentDestination?.route == "Settings",
             onClick = {
-                if (navController.currentDestination?.route != "settings") {
-                    navController.navigate("settings") {
+                if (navController.currentDestination?.route != "Settings") {
+                    navController.navigate("Settings") {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
@@ -72,7 +72,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
                     modifier = Modifier.padding(top = 32.dp)
                 )
             },
-            selected = navController.currentDestination?.route == "Profile",
+            selected = navController.currentDestination?.route == "Settings",
             onClick = {
                 if (navController.currentDestination?.route != "Profile") {
                     navController.navigate("Profile") {

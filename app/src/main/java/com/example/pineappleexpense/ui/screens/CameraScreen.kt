@@ -37,7 +37,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
     val context = LocalContext.current
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
 
@@ -51,9 +51,11 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel, m
             TopBar(navController,viewModel)
         }
     ) { innerPadding ->
-
         //display the camera preview and get the ImageCapture instance
-        CameraPreview(onImageCapture = {imageCapture = it})
+        Column {
+            Spacer(modifier = Modifier.height(80.dp))
+            CameraPreview(onImageCapture = {imageCapture = it})
+        }
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -83,8 +85,12 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel, m
                                 val savedUri = outputFileResults.savedUri ?: Uri.fromFile(photoFile)
                                 // Update ViewModel with the image URI
                                 viewModel.latestImageUri = savedUri
-                                // Navigate back to the home screen
-                                navController.navigate("home")
+
+                                // Navigate to the receipt preview
+                                navController.navigate("Receipt Preview") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
 
                             override fun onError(exception: ImageCaptureException) {

@@ -33,8 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 
@@ -171,4 +173,10 @@ fun CommentBox() {
         },
         modifier = Modifier.width(400.dp).height(130.dp)
     )
+}
+
+@Preview
+@Composable
+fun PreviewReceiptPreview() {
+    ReceiptPreview(rememberNavController(), AccessViewModel())
 }

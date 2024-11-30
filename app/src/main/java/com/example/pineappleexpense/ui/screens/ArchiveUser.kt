@@ -21,8 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
@@ -78,13 +80,24 @@ fun UserArchiveScreen(navController: NavHostController, viewModel: AccessViewMod
         bottomBar = {
             BottomBar(navController, viewModel)
         },
+        topBar = {
+            TopBar(navController, viewModel)
+        }
     ) { innerPadding ->
-        TopBar(navController, viewModel, Modifier.padding(innerPadding))
+
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
-            Spacer(modifier = Modifier.height(64.dp))
             UserArchiveList(archiveRows)
         }
     }
+}
+
+// This will probably also require it's own NavHost implementation
+// to dynamically add and navigate to the detailed previous expenses
+
+@Preview
+@Composable
+fun PreviewArchive() {
+    UserArchiveScreen(rememberNavController(), AccessViewModel())
 }

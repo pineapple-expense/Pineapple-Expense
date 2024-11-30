@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
@@ -30,6 +31,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 @Composable
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
+    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping")
     NavigationBar(
 
         modifier = Modifier.height(76.dp),
@@ -38,19 +40,34 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
         ) {
         NavigationBarItem(
             icon = {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.padding(top = 32.dp)
-                )
+                if(currentRoute in pagesWithBackButton) {
+                    //back button
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                } else {
+                    //setting icon
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                }
             },
-            selected = navController.currentDestination?.route == "Settings",
+            selected = false, //navController.currentDestination?.route == "Settings",
             onClick = {
-                if (navController.currentDestination?.route != "Settings") {
-                    navController.navigate("Settings") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                if(currentRoute in pagesWithBackButton) {
+                    //navigate back
+                    navController.popBackStack()
+                } else {
+                    if (navController.currentDestination?.route != "Settings") {
+                        navController.navigate("Settings") {
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             },
@@ -63,10 +80,10 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
                 .padding(top = 24.dp)
                 .align(alignment = Alignment.CenterVertically)
         )
-
+        //render account button on pages with no back button
         NavigationBarItem(
             icon = {
-                Icon(
+                if(currentRoute !in pagesWithBackButton) Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Profile",
                     modifier = Modifier.padding(top = 32.dp)
@@ -74,17 +91,16 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             },
             selected = navController.currentDestination?.route == "Settings",
             onClick = {
-                if (navController.currentDestination?.route != "Profile") {
+                if (navController.currentDestination?.route != "Profile" && currentRoute !in pagesWithBackButton) {
                     navController.navigate("Profile") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                         launchSingleTop = true
                         restoreState = true
                     }
                 }
             },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
-
-            )
+            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF))
+        )
     } // End nav bar
 }
 
@@ -101,7 +117,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             onClick = {
                 if (navController.currentDestination?.route != "Home") {
                     navController.navigate("Home") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -118,7 +134,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             onClick = {
                 if (navController.currentDestination?.route != "Camera") {
                     navController.navigate("Camera") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -135,7 +151,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             onClick = {
                 if (navController.currentDestination?.route != "Archive") {
                     navController.navigate("Archive") {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                         launchSingleTop = true
                         restoreState = true
                     }

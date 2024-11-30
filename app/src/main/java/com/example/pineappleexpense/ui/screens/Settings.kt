@@ -51,7 +51,7 @@ fun Settings(navController: NavHostController, viewModel: AccessViewModel, modif
             Button(
                 onClick = {
                         navController.navigate("Account Mapping") {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }

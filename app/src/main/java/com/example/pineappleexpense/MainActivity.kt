@@ -19,6 +19,7 @@ import com.example.pineappleexpense.ui.screens.Registration
 import com.example.pineappleexpense.ui.screens.Settings
 import com.example.pineappleexpense.ui.screens.SignIn
 import com.example.pineappleexpense.ui.screens.UserProfile
+import com.example.pineappleexpense.ui.screens.ViewPreviousExpense
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 class MainActivity : ComponentActivity() {

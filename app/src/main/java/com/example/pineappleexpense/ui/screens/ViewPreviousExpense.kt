@@ -93,7 +93,7 @@ fun ExpenseCard(storeName:String, category:String, amount: Double, modifier: Mod
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
+                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
                         .border(1.dp, MaterialTheme.colorScheme.onPrimaryContainer, CircleShape),
                     contentAlignment = Alignment.Center,
 
@@ -102,7 +102,8 @@ fun ExpenseCard(storeName:String, category:String, amount: Double, modifier: Mod
                     Text(
                         text = category.first().toString(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))

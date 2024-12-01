@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Shapes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Settings
@@ -42,9 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -92,41 +96,55 @@ fun AccountCard(modifier: Modifier = Modifier) {
 //            .padding(top = 8.dp)
 //            .padding(horizontal = 4.dp)
     ) {
-        Row(
+        /*Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column() {
+        ) {*/
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
                 //TextBoxCategory()
                 CategoryTextBoxDropdown()
                 TextBoxAccount()
             }
-        }
+        //}
     }
 }
 
 @Composable
 fun TextBoxAccount(modifier: Modifier = Modifier) {
     var text by remember { mutableStateOf("")}
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
-        .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
-        .padding(horizontal = 8.dp)
-        .padding(top = 8.dp)
-
+Row(modifier = Modifier
+    .fillMaxWidth()
+    .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
+    .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
+    .padding(horizontal = 8.dp)
+    .padding(top = 8.dp),
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text(
+        text = "Account",
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
+    )
+    Box(
+        modifier = Modifier.weight(1f)
     ) {
+
+
         TextField(
             value = text,
             onValueChange = { newText ->
                 text = newText
             },
-            label = { Text(text = "Account") },
+            label = { Text(text = "") },
             placeholder = { Text(text = "") },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .align(Alignment.CenterStart),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent
@@ -134,9 +152,12 @@ fun TextBoxAccount(modifier: Modifier = Modifier) {
 
         )
 
-        //Button(onClick = {}, modifier = Modifier.align(Alignment.CenterEnd)) { }
-
     }
+    Spacer(modifier = Modifier.width(16.dp))
+    Button(onClick = {}) {}
+
+}
+
 }
 
 @Composable
@@ -175,18 +196,30 @@ fun CategoryTextBoxDropdown() {
     var itemPosition by remember {mutableStateOf(0)}
     var expanded by remember {mutableStateOf(false)}
 
-        Box(modifier = Modifier
+    var text = "Categories"
+        Row(modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
             .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
             .padding(horizontal = 8.dp)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
 
         ) {
+
+            Text(
+                text = "Category",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { expanded = true }
+                modifier = Modifier
+                    .padding(12.dp)
+                    .clickable { expanded = true }
             ) {
                 Text(text = categories[itemPosition])
                 Icon(
@@ -202,7 +235,11 @@ fun CategoryTextBoxDropdown() {
                 ) {
                     categories.forEachIndexed { index, category ->
                         androidx.compose.material3.DropdownMenuItem(
-                            text = { Text(text = category) },
+                            text = {
+                                Text(
+                                    text = category,
+                                    fontSize = 14.sp
+                                    ) },
                             onClick = {
                                 expanded = false
                                 itemPosition = index
@@ -212,6 +249,8 @@ fun CategoryTextBoxDropdown() {
                     }
                 }
             }
+            Spacer(modifier = Modifier.weight(1f))
+            Button(onClick = {}) {}
         }
 }
 

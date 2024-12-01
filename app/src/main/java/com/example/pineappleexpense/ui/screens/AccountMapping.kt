@@ -3,6 +3,7 @@ package com.example.pineappleexpense.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,7 +67,8 @@ fun AccountMapping(navHost: NavHostController, viewModel: AccessViewModel, modif
         }
     ) { innerPadding ->
         Box(modifier = Modifier
-            .padding(innerPadding).padding(bottom = 8.dp)
+            .padding(innerPadding)
+            .padding(bottom = 8.dp)
             .background(Color(0xFFF9EEFF))
             //.height(100.dp)
             .fillMaxWidth()
@@ -81,33 +89,34 @@ fun AccountCard(modifier: Modifier = Modifier) {
         ),
         border = BorderStroke(1.dp, Color.Black),
         modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .padding(horizontal = 4.dp)
-            .height(140.dp)
-
-
+//            .padding(top = 8.dp)
+//            .padding(horizontal = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(horizontal = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextBoxAM("Category")
-            Spacer(modifier = Modifier.height(8.dp))
-            TextBoxAM("Account")
+            Column() {
+                //TextBoxCategory()
+                CategoryTextBoxDropdown()
+                TextBoxAccount()
+            }
         }
     }
 }
 
 @Composable
-fun TextBoxAM(s:String, modifier: Modifier=Modifier) {
+fun TextBoxAccount(modifier: Modifier = Modifier) {
     var text by remember { mutableStateOf("")}
     Box(modifier = Modifier
         .fillMaxWidth()
         .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
         .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
         .padding(horizontal = 8.dp)
+        .padding(top = 8.dp)
 
     ) {
         TextField(
@@ -115,7 +124,7 @@ fun TextBoxAM(s:String, modifier: Modifier=Modifier) {
             onValueChange = { newText ->
                 text = newText
             },
-            label = { Text(text = s) },
+            label = { Text(text = "Account") },
             placeholder = { Text(text = "") },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
@@ -129,6 +138,83 @@ fun TextBoxAM(s:String, modifier: Modifier=Modifier) {
 
     }
 }
+
+@Composable
+fun TextBoxCategory(modifier: Modifier=Modifier) {
+    var text by remember { mutableStateOf("")}
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
+        .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
+        .padding(horizontal = 8.dp)
+
+    ) {
+        TextField(
+            value = text,
+            onValueChange = { newText ->
+                text = newText
+            },
+            label = { Text(text = "Category") },
+            placeholder = { Text(text = "") },
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
+
+        )
+
+        //Button(onClick = {}, modifier = Modifier.align(Alignment.CenterEnd)) { }
+
+    }
+}
+
+@Composable
+fun CategoryTextBoxDropdown() {
+    val categories = listOf("Meals", "Travel", "Supplies", "Safety", "Other")
+    var itemPosition by remember {mutableStateOf(0)}
+    var expanded by remember {mutableStateOf(false)}
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
+            .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
+            .padding(horizontal = 8.dp)
+            .padding(vertical = 8.dp)
+
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { expanded = true }
+            ) {
+                Text(text = categories[itemPosition])
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = "DropDown Icon"
+                )
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {
+                        expanded = false
+                    }
+                ) {
+                    categories.forEachIndexed { index, category ->
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { Text(text = category) },
+                            onClick = {
+                                expanded = false
+                                itemPosition = index
+                            }
+                        )
+
+                    }
+                }
+            }
+        }
+}
+
 
 @Composable
 fun EditButton(onClick: () -> Unit) {

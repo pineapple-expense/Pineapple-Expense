@@ -31,12 +31,19 @@ import com.example.pineappleexpense.ui.components.TopBar
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.rememberImagePainter
+import com.example.pineappleexpense.model.Expense
+import java.nio.file.WatchEvent
+import kotlin.math.exp
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+    val expenses = viewModel.expenseList.value
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
@@ -59,18 +66,8 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 NoPendingExpensesCard()
             }
             else {
-                Row(modifier = Modifier.fillMaxWidth().padding(innerPadding)) {
-                    Image(
-                        painter = rememberImagePainter(imageUri),
-                        contentDescription = "Captured Image",
-                        modifier = Modifier
-                            .size(200.dp)
-                            .padding(16.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text("$imageUri\n\n this is an image")
-                }
-
+                //display expenses
+                ExpenseList(expenses)
             }
         }
     }
@@ -114,6 +111,46 @@ fun NoPendingExpensesCard() {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ExpenseList(expenses: List<Expense>) {
+    LazyColumn {
+        items(expenses) { expense ->
+            ExpenseItem(expense) // Render each item
+        }
+    }
+}
+
+@Composable
+fun ExpenseItem(expense: Expense) {
+    Row (
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+    ) {
+        Column (
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Text(expense.title)
+            val total = expense.total
+            Text("total:\t$$total")
+            Text(expense.category)
+
+            //vvv doesn't show the correct date for some reason
+            //val date: String = expense.date.year.toString() + "-" + expense.date.month.toString() + "-" + expense.date.day.toString()
+
+            //vvv currently shows the date really weirdly + the time, will fix later
+            Text(expense.date.toString())
+            Text(expense.comment)
+        }
+        Image(
+            painter = rememberImagePainter(expense.imageUri),
+            contentDescription = "Receipt",
+            modifier = Modifier
+                .size(100.dp)
+                .padding(16.dp),
+            contentScale = ContentScale.Crop
+        )
     }
 }
 

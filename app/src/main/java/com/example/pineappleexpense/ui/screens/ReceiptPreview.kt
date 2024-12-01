@@ -37,13 +37,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel) {
     val imageUri = viewModel.latestImageUri
+    var category: String
+    var date: Date? = null
+    var total: Float? = null
+    var comment: String
+    var title: String
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -62,26 +71,33 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
             Image(
                 painter = rememberImagePainter(imageUri),
                 contentDescription = "Captured Image",
-                modifier = Modifier.fillMaxWidth().height(500.dp),
+                modifier = Modifier.fillMaxWidth().height(450.dp),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(10.dp))
-            CategoryBox()
+            title = titleBox()
+            Spacer(modifier = Modifier.height(10.dp))
+            category = categoryBox()
             Spacer(modifier = Modifier.height(10.dp))
             Row (
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.width(5.dp))
-                DateBox()
+                date = dateBox()
                 Spacer(modifier = Modifier.width(10.dp))
-                TotalBox()
+                total = totalBox()
             }
             Spacer(modifier = Modifier.height(10.dp))
-            CommentBox()
+            comment = commentBox()
             Spacer(modifier = Modifier.height(10.dp))
             Button(
-                //TODO: save the text put into the various text fields and display it on the home page
                 onClick = {
+                    //put the receipt information into an Expense object
+                    //currently just gives default values if there is a parsing error, this will be changed to prompt the user in the future
+                    val receipt = Expense(title, total?:0f, date?:SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("0000-00-00"), comment, category, imageUri)
+                    //add the receipt to the viewmodel
+                    viewModel.addExpense(receipt)
+                    //navigate back to home
                     navController.navigate("Home") {
                         launchSingleTop = true
                         restoreState = true
@@ -104,7 +120,26 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
 }
 
 @Composable
-fun CategoryBox() {
+fun titleBox(): String {
+    var title by remember { mutableStateOf("") }
+    TextField(
+        value = title,
+        onValueChange = {title = it},
+        label = {Text("Title")},
+        trailingIcon = {
+            if (title.isNotEmpty()) {
+                IconButton(onClick = { title = "" }) {
+                    Icon(Icons.Default.Clear, contentDescription = "Clear Text")
+                }
+            }
+        },
+        modifier = Modifier.width(400.dp)
+    )
+    return title
+}
+
+@Composable
+fun categoryBox(): String {
     var category by remember { mutableStateOf("") }
     TextField(
         value = category,
@@ -119,15 +154,17 @@ fun CategoryBox() {
         },
         modifier = Modifier.width(400.dp)
     )
+    return category
 }
 
 @Composable
-fun DateBox() {
+fun dateBox(): Date? {
     var date by remember { mutableStateOf("") }
     TextField(
         value = date,
         onValueChange = {date = it},
         label = {Text("Date")},
+        placeholder = {Text("yyyy-mm-dd")},
         trailingIcon = {
             if (date.isNotEmpty()) {
                 IconButton(onClick = { date = "" }) {
@@ -137,10 +174,16 @@ fun DateBox() {
         },
         modifier = Modifier.width(190.dp)
     )
+    return try {
+        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date)
+    } catch(_: Exception) {
+        null
+    }
+
 }
 
 @Composable
-fun TotalBox() {
+fun totalBox(): Float? {
     var total by remember { mutableStateOf("") }
     TextField(
         value = total,
@@ -155,10 +198,15 @@ fun TotalBox() {
         },
         modifier = Modifier.width(200.dp)
     )
+    return try {
+        total.toFloat()
+    } catch(_: Exception) {
+        null
+    }
 }
 
 @Composable
-fun CommentBox() {
+fun commentBox(): String {
     var comment by remember { mutableStateOf("") }
     TextField(
         value = comment,
@@ -173,6 +221,7 @@ fun CommentBox() {
         },
         modifier = Modifier.width(400.dp).height(130.dp)
     )
+    return comment
 }
 
 @Preview

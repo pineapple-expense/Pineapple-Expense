@@ -2,11 +2,6 @@ package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -15,7 +10,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,8 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.pineappleexpense.ui.components.BottomBar
-import com.example.pineappleexpense.ui.components.TopBar
+import com.example.pineappleexpense.ui.components.UserScreenTemplate
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 data class ArchiveRow(val startDate: String, val endDate: String, val total: String, val isApproved: Boolean)
@@ -74,22 +67,8 @@ fun UserArchiveScreen(navController: NavHostController, viewModel: AccessViewMod
         ArchiveRow("2023-01-01", "2023-01-31", "100.00", true),
         ArchiveRow("2023-02-01", "2023-02-28", "150.00", false)
     )
-    Scaffold (
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF9EEFF),
-        bottomBar = {
-            BottomBar(navController, viewModel)
-        },
-        topBar = {
-            TopBar(navController, viewModel)
-        }
-    ) { innerPadding ->
-
-        Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
-        ) {
-            UserArchiveList(archiveRows)
-        }
+    UserScreenTemplate(navController, viewModel) {
+        UserArchiveList(archiveRows)
     }
 }
 

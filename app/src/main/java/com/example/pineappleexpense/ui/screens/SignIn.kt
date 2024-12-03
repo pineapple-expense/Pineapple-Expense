@@ -2,7 +2,9 @@ package com.example.pineappleexpense.ui.screens
 
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,11 +55,20 @@ fun SignIn(navController: NavHostController, viewModel: AccessViewModel, modifie
             PasswordTextField()
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Don't have an account? Sign up here",
-                fontSize = 12.sp
-            )
-
+            Row() {
+                Text(
+                    text = "Don't have an account?",
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Sign up here",
+                    color = Color.Blue,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        navController.navigate("Registration")
+                    }
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             SignInButton(
                 onClick = {

@@ -3,6 +3,9 @@ package com.example.pineappleexpense.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,7 +13,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -18,7 +23,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -33,14 +40,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -160,27 +171,108 @@ fun categoryBox(): String {
 @Composable
 fun dateBox(): Date? {
     var date by remember { mutableStateOf("") }
-    TextField(
-        value = date,
-        onValueChange = {date = it},
-        label = {Text("Date")},
-        placeholder = {Text("yyyy-mm-dd")},
-        trailingIcon = {
-            if (date.isNotEmpty()) {
-                IconButton(onClick = { date = "" }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear Text")
-                }
-            }
-        },
-        modifier = Modifier.width(190.dp)
-    )
-    return try {
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date)
-    } catch(_: Exception) {
-        null
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    // Date format parser
+    val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+
+    Box(
+        modifier = Modifier
+            .width(190.dp)
+            .height(56.dp)
+            .background(Color(117, 118, 127), RectangleShape),
+    ) {
+        Box(
+            modifier = Modifier
+                .width(190.dp)
+                .height(55.dp)
+                .background(Color(225, 226, 236), RectangleShape)
+                .clickable { showDatePicker = true }
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = if (date.isEmpty()) "Date" else date,
+                color = if (date.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 
+    // Overlay Date Picker
+    if (showDatePicker) {
+        Dialog(onDismissRequest = { showDatePicker = false }) {
+            DatePickerContent(
+                onDateSelected = { year, month, day ->
+                    date = dateFormat.format(
+                        Calendar.getInstance().apply {
+                            set(year, month, day)
+                        }.time
+                    )
+                    showDatePicker = false
+                },
+                try {
+                    dateFormat.parse(date)
+                } catch (_: Exception) {
+                    null
+                }
+            )
+        }
+    }
+
+    // Return the parsed date or null if invalid
+    return try {
+        dateFormat.parse(date)
+    } catch (_: Exception) {
+        null
+    }
 }
+
+@Composable
+fun DatePickerContent(
+    onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
+    currentDate: Date?
+) {
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        shadowElevation = 8.dp,
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val initialYear: Int
+            val initialMonth: Int
+            val initialDay: Int
+            if(currentDate != null) {
+                initialYear = SimpleDateFormat("yyyy", Locale.getDefault()).format(currentDate).toInt()
+                initialMonth = SimpleDateFormat("MM", Locale.getDefault()).format(currentDate).toInt() - 1
+                initialDay = SimpleDateFormat("dd", Locale.getDefault()).format(currentDate).toInt()
+            }
+            else {
+                val calendar = Calendar.getInstance()
+                initialYear = calendar.get(Calendar.YEAR)
+                initialMonth = calendar.get(Calendar.MONTH)
+                initialDay = calendar.get(Calendar.DAY_OF_MONTH)
+            }
+
+            AndroidView(
+                factory = { context ->
+                    android.widget.DatePicker(context).apply {
+                        init(initialYear, initialMonth, initialDay) { _, year, month, day ->
+                            onDateSelected(year, month, day)
+                        }
+                    }
+                },
+                modifier = Modifier.wrapContentSize()
+            )
+        }
+    }
+}
+
 
 @Composable
 fun totalBox(): Float? {

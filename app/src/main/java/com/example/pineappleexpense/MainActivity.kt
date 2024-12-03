@@ -1,6 +1,8 @@
 package com.example.pineappleexpense
 
+
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,21 +23,58 @@ import com.example.pineappleexpense.ui.screens.SignIn
 import com.example.pineappleexpense.ui.screens.UserProfile
 import com.example.pineappleexpense.ui.screens.ViewPreviousExpense
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import com.auth0.android.Auth0
+import com.auth0.android.authentication.AuthenticationException
+import com.auth0.android.provider.WebAuthProvider
+import com.auth0.android.callback.Callback
+import com.auth0.android.result.Credentials
+import com.example.pineappleexpense.ui.screens.SignInTest
 
 class MainActivity : ComponentActivity() {
+    private lateinit var auth0: Auth0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Auth0
+        auth0 = Auth0(
+            getString(R.string.com_auth0_client_id), // Your Client ID from strings.xml
+            getString(R.string.com_auth0_domain) // Your Domain from strings.xml
+        )
+
         enableEdgeToEdge()
         setContent {
             PineappleExpenseTheme {
-                MainScreen()
+                MainScreen(login = {loginWithBrowser()})
             }
         }
     }
+    private fun loginWithBrowser() {
+        // Setup the WebAuthProvider, using the custom scheme and scope.
+
+        WebAuthProvider.login(auth0)
+            .withScheme(getString(R.string.com_auth0_scheme))
+            .withScope("openid profile email")
+            // Launch the authentication passing the callback where the results will be received
+            .start(this, object : Callback<Credentials, AuthenticationException> {
+                // Called when there is an authentication failure
+                override fun onFailure(exception: AuthenticationException) {
+                    // Something went wrong!
+                }
+
+                // Called when authentication completed successfully
+                override fun onSuccess(credentials: Credentials) {
+                    // Get the access token from the credentials object.
+                    // This can be used to call APIs
+                    val accessToken = credentials.accessToken
+                }
+            })
+    }
 }
 
+
 @Composable
-fun MainScreen() {
+fun MainScreen(login: ()-> Unit) {
     val viewModel = AccessViewModel()
 
     // This maps out the layout of the pages
@@ -46,13 +85,14 @@ fun MainScreen() {
         startDestination = "SignIn",
     ) {
         composable("SignIn") {
-            SignIn(navController, viewModel)
+            SignInTest(navController, viewModel, onLogin = login)
         }
         composable("Registration") {
             Registration(navController, viewModel)
         }
         composable("Home") {
             HomeScreen(navController, viewModel)
+
         }
         composable("Archive") {
             UserArchiveScreen(navController, viewModel)
@@ -77,3 +117,4 @@ fun MainScreen() {
         }
     }
 }
+

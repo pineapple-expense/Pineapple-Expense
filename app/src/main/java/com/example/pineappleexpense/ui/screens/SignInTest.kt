@@ -52,26 +52,6 @@ fun SignInTest(navController: NavHostController,
             )
 
             Spacer(modifier = Modifier.height(64.dp))
-
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row() {
-                Text(
-                    text = "Don't have an account?",
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = "Sign up here",
-                    color = Color.Blue,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable {
-                        navController.navigate("Registration")
-                    }
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
             SignInButtonTest(
                 onClick = {
                     onLogin()

@@ -7,6 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.navigation.NavController
+import androidx.navigation.NavHost
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
 import androidx.navigation.compose.NavHost
@@ -44,12 +48,13 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
             PineappleExpenseTheme {
-                MainScreen(login = {loginWithBrowser()})
+                MainScreen( navController, login = {loginWithBrowser(navController)}, logout = {logout(navController)})
             }
         }
     }
-    private fun loginWithBrowser() {
+    private fun loginWithBrowser(navController: NavHostController) {
         // Setup the WebAuthProvider, using the custom scheme and scope.
 
         WebAuthProvider.login(auth0)
@@ -60,6 +65,9 @@ class MainActivity : ComponentActivity() {
                 // Called when there is an authentication failure
                 override fun onFailure(exception: AuthenticationException) {
                     // Something went wrong!
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Login failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
 
                 // Called when authentication completed successfully
@@ -67,6 +75,46 @@ class MainActivity : ComponentActivity() {
                     // Get the access token from the credentials object.
                     // This can be used to call APIs
                     val accessToken = credentials.accessToken
+                    runOnUiThread {
+                        // Navigate to the Home screen
+                        navController.navigate("Home") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Logged in successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+
+                }
+            })
+    }
+
+    private fun logout(navController: NavController) {
+        WebAuthProvider.logout(auth0)
+            .withScheme(getString(R.string.com_auth0_scheme)) // Match your app's scheme
+            .start(this, object : Callback<Void?, AuthenticationException> {
+                override fun onSuccess(payload: Void?) {
+                    runOnUiThread {
+                        // Navigate to the sign-in page after logging out
+                        navController.navigate("SignIn") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        Toast.makeText(this@MainActivity, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(exception: AuthenticationException) {
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Logout failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             })
     }
@@ -74,11 +122,9 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MainScreen(login: ()-> Unit) {
+fun MainScreen(navController: NavHostController, login: ()-> Unit, logout: () -> Unit) {
     val viewModel = AccessViewModel()
 
-    // This maps out the layout of the pages
-    val navController = rememberNavController()
 
     NavHost(
         navController = navController,
@@ -98,13 +144,13 @@ fun MainScreen(login: ()-> Unit) {
             UserArchiveScreen(navController, viewModel)
         }
         composable("Profile") {
-            UserProfile(navController, viewModel)
+            UserProfile(navController, viewModel, logout = logout)
         }
         composable("Settings") {
             Settings(navController, viewModel)
         }
         composable("Admin Profile") {
-            AdminProfile(navController,viewModel)
+            AdminProfile(navController,viewModel, logout = logout)
         }
         composable("Camera") {
             CameraScreen(navController, viewModel)

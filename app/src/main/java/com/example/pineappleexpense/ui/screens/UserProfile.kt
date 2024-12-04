@@ -29,7 +29,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
 @Composable
-fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier, logout : ()->Unit) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
@@ -87,9 +87,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
             }
             Spacer(modifier = Modifier.height(20.dp))
             Button(
-                onClick = {
-                    navController.navigate("Home") // placeholder
-                },
+                onClick = logout,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF548235), // Background color
                     contentColor = Color.White // Text or icon color
@@ -108,10 +106,11 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
 }
 
 
+/*
 @Preview
 @Composable
 fun PreviewUserProfile() {
     val navController = rememberNavController()
     val viewModel = AccessViewModel()
     UserProfile(navController, viewModel)
-}
+}*/

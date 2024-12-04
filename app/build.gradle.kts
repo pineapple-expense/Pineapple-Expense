@@ -15,6 +15,11 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        manifestPlaceholders += mapOf(
+            "auth0Domain" to "@string/com_auth0_domain",
+            "auth0Scheme" to "@string/com_auth0_scheme"
+        )
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,6 +66,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.material:material:1.8.0-alpha06")
-    
+    implementation("com.auth0.android:auth0:2.9.2")
+
 
 }

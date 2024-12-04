@@ -93,16 +93,7 @@ fun AccountCard(modifier: Modifier = Modifier) {
         ),
         border = BorderStroke(1.dp, Color.Black),
         modifier = Modifier.fillMaxWidth()
-//            .padding(top = 8.dp)
-//            .padding(horizontal = 4.dp)
     ) {
-        /*Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {*/
             Column(
                 modifier = Modifier.padding(12.dp)
             ) {
@@ -110,7 +101,6 @@ fun AccountCard(modifier: Modifier = Modifier) {
                 CategoryTextBoxDropdown()
                 TextBoxAccount()
             }
-        //}
     }
 }
 
@@ -197,7 +187,7 @@ fun CategoryTextBoxDropdown() {
     var expanded by remember {mutableStateOf(false)}
 
     var text = "Categories"
-        Row(modifier = Modifier
+    Row(modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
             .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))

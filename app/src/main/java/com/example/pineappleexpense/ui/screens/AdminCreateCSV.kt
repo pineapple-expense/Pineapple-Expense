@@ -96,7 +96,7 @@ fun AdminCreateCSV(navController: NavHostController, viewModel: AccessViewModel,
 
 @Preview
 @Composable
-fun PreviewCreateCSVBar() {
+fun PreviewCreateCSVScreen() {
     val navController = rememberNavController()
     val viewModel = AccessViewModel()
     AdminCreateCSV(navController, viewModel)

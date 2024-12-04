@@ -20,8 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.UserScreenTemplate
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
@@ -57,21 +60,44 @@ fun ExpenseReportCard(expenseReport: ExpenseReport) {
 fun AdminCreateCSV(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val expenseReports = listOf(
         ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
+        ExpenseReport("2023-01-01", "2023-01-31", "100.00"),
         ExpenseReport("2023-02-01", "2023-02-28", "150.00")
     )
-    UserScreenTemplate(navController, viewModel) { innerpadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            LazyColumn {
+    UserScreenTemplate(navController, viewModel) { innerPadding ->
+        Box() {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
                 items(expenseReports.size) { index ->
                     ExpenseReportCard(expenseReport = expenseReports[index])
                 }
             }
             Button(
                 onClick = { /*TODO*/ },
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
             ) {
                 Text(text = "Create CSV")
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewCreateCSVBar() {
+    val navController = rememberNavController()
+    val viewModel = AccessViewModel()
+    AdminCreateCSV(navController, viewModel)
 }

@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.pineappleexpense.ui.screens.AccountMapping
 import com.example.pineappleexpense.ui.screens.AdminProfile
+import com.example.pineappleexpense.ui.screens.AdminReview
 import com.example.pineappleexpense.ui.screens.CameraScreen
 import com.example.pineappleexpense.ui.screens.UserArchiveScreen
 import com.example.pineappleexpense.ui.screens.HomeScreen
@@ -148,6 +149,9 @@ fun MainScreen(navController: NavHostController, login: ()-> Unit, logout: () ->
         }
         composable("Settings") {
             Settings(navController, viewModel)
+        }
+        composable("Admin Review") {
+            AdminReview(navController, viewModel)
         }
         composable("Admin Profile") {
             AdminProfile(navController,viewModel, logout = logout)

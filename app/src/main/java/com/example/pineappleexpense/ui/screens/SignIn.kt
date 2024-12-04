@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,9 +53,16 @@ fun SignIn(navController: NavHostController, viewModel: AccessViewModel, modifie
             PasswordTextField()
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Don't have an account? Sign up here",
-                fontSize = 12.sp
+            RegistrationRedirect(
+                onClick = {
+                    if (navController.currentDestination?.route != "Registration") {
+                        navController.navigate("Registration") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -110,6 +118,16 @@ fun PasswordTextField() {
 fun SignInButton(onClick: () -> Unit) {
     Button(onClick = { onClick() }) {
         Text("Sign In")
+    }
+}
+
+@Composable
+fun RegistrationRedirect(onClick: () -> Unit) {
+    TextButton(onClick = {onClick() }) {
+        Text(
+            text = "Don't have an account? Sign up here",
+            fontSize = 12.sp
+        )
     }
 }
 

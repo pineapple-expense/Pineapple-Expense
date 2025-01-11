@@ -123,14 +123,15 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MainScreen(navController: NavHostController, login: ()-> Unit, logout: () -> Unit) {
+fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout: (() -> Unit) = {}) {
     val viewModel = AccessViewModel()
 
 
     NavHost(
         navController = navController,
-        startDestination = "SignIn",
+        startDestination = "Home",
     ) {
+
         composable("SignIn") {
             SignInTest(navController, viewModel, onLogin = login)
         }

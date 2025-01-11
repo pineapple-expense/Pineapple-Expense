@@ -5,10 +5,7 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="MainActivity">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="HomeScreen">
+      <SelectionState runConfigName="goToCamera()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

@@ -57,6 +57,7 @@ import com.example.pineappleexpense.model.Expense
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import java.nio.file.WatchEvent
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -66,7 +67,7 @@ import kotlin.math.exp
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val expenses = viewModel.expenseList.value
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("HomeScreen"),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

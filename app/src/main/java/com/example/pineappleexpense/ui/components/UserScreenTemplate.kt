@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
@@ -18,7 +19,7 @@ fun UserScreenTemplate(
     modifier: Modifier = Modifier,
     content: @Composable (PaddingValues) -> Unit) {
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("ArchiveScreen"),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

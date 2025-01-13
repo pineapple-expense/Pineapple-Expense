@@ -68,5 +68,6 @@ dependencies {
     implementation("androidx.compose.material:material:1.8.0-alpha06")
     implementation("com.auth0.android:auth0:2.9.2")
 
-
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4-android:1.7.6")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")
 }

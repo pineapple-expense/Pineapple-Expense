@@ -2,14 +2,19 @@ package com.example.pineappleexpense.ui.screens
 
 import android.content.Context
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -57,6 +62,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
             Spacer(modifier = Modifier.height(80.dp))
             CameraPreview(onImageCapture = {imageCapture = it})
         }
+        //contains camera shutter button
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -103,6 +109,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                 },
                 modifier = Modifier.size(80.dp)
             ) {
+                //shutter icon
                 Icon(
                     painter = painterResource(id = R.drawable.camera_shutter),
                     contentDescription = "take picture",
@@ -110,12 +117,43 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                 )
             }
         }
+        //gallery photo picker
+        val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            viewModel.latestImageUri = uri
+
+            navController.navigate("Receipt Preview") {
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+        //gallery icon
+        Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Spacer(modifier = Modifier.height(666.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Spacer(modifier = Modifier.width(40.dp))
+                IconButton(
+                    modifier = Modifier.size(50.dp),
+                    onClick = { launcher.launch("image/*") }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.gallery_icon),
+                        contentDescription = "choose from gallery",
+                        modifier = Modifier.size(50.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
 // helper function to create the file object to store an image
 
-fun createImageFile(context: Context): File {
+private fun createImageFile(context: Context): File {
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     val filename = "IMG_$timestamp.jpg"
     val storageDir = File(context.filesDir, "images")

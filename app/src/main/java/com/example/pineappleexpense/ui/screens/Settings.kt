@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.modifier.modifierLocalOf
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +36,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 fun Settings(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val userRole = viewModel.userState.collectAsState().value
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("Settings"),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

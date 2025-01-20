@@ -129,7 +129,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
 
     NavHost(
         navController = navController,
-        startDestination = "Home",
+        startDestination = "SignIn",
     ) {
 
         composable("SignIn") {

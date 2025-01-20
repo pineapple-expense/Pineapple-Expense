@@ -1,10 +1,12 @@
 package com.example.pineappleexpense
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.junit.Rule
 import org.junit.Test
@@ -16,7 +18,10 @@ class UINavigationTests {
     //test that clicking the camera icon navigates to the camera page
     @Test
     fun goToCamera() {
-        rule.setContent { MainScreen(navController = rememberNavController()) }
+        var navController: NavController
+        rule.setContent {
+            navController = setContentHome()
+        }
 
         //click the camera button
         rule.onNode(hasText("Camera") and hasClickAction()).performClick()
@@ -27,7 +32,10 @@ class UINavigationTests {
 
     @Test
     fun goToArchive() {
-        rule.setContent { MainScreen(navController = rememberNavController()) }
+        var navController: NavController
+        rule.setContent {
+            navController = setContentHome()
+        }
 
         rule.onNode(hasText("Archive") and hasClickAction()).performClick()
 
@@ -36,11 +44,54 @@ class UINavigationTests {
 
     @Test
     fun goBackHome() {
-        rule.setContent { MainScreen(navController = rememberNavController()) }
+        var navController: NavController
+        rule.setContent {
+            navController = setContentHome()
+        }
 
         rule.onNode(hasText("Archive") and hasClickAction()).performClick()
         rule.onNode(hasText("Review") and hasClickAction()).performClick()
 
         rule.onNodeWithTag("HomeScreen").assertExists()
     }
+
+    @Test
+    fun goToProfile() {
+        var navController: NavController
+        rule.setContent {
+            navController = setContentHome()
+        }
+
+        rule.onNodeWithTag("ProfileIcon", useUnmergedTree = true).performClick()
+
+        rule.onNodeWithTag("UserProfile").assertExists()
+    }
+
+    @Test
+    fun goToSettingAndClickBackButton() {
+        var navController: NavController
+        rule.setContent {
+            navController = setContentHome()
+        }
+
+        rule.onNodeWithTag("SettingsIcon", useUnmergedTree = true).performClick()
+
+        rule.onNodeWithTag("Settings").assertExists()
+
+        rule.onNodeWithTag("BackButton", useUnmergedTree = true).performClick()
+
+        rule.onNodeWithTag("HomeScreen").assertExists()
+    }
+}
+
+@Composable
+fun setContentHome(): NavController {
+    var navController = rememberNavController()
+    MainScreen(navController = navController)
+    navController.navigate("Home") {
+        popUpTo(navController.graph.startDestinationId) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+    return navController
 }

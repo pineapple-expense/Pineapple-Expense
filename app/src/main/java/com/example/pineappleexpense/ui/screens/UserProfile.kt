@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,7 +32,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 @Composable
 fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier, logout : ()->Unit) {
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("UserProfile"),
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

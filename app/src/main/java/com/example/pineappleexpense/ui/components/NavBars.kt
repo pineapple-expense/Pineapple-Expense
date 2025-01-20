@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -45,14 +46,14 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        modifier = Modifier.padding(top = 32.dp)
+                        modifier = Modifier.padding(top = 32.dp).testTag("BackButton")
                     )
                 } else {
                     //setting icon
                     Icon(
                         imageVector = Icons.Filled.Settings,
                         contentDescription = "Settings",
-                        modifier = Modifier.padding(top = 32.dp)
+                        modifier = Modifier.padding(top = 32.dp).testTag("SettingsIcon")
                     )
                 }
             },
@@ -86,7 +87,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
                 if(currentRoute !in pagesWithBackButton) Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Profile",
-                    modifier = Modifier.padding(top = 32.dp)
+                    modifier = Modifier.padding(top = 32.dp).testTag("ProfileIcon")
                 )
             },
             selected = navController.currentDestination?.route == "Settings",

@@ -104,9 +104,9 @@ class MainActivity : ComponentActivity() {
                     runOnUiThread {
                         // Navigate to the sign-in page after logging out
                         navController.navigate("SignIn") {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                            popUpTo(navController.graph.startDestinationId) { saveState = false }
+                            launchSingleTop = false
+                            restoreState = false
                         }
                         Toast.makeText(this@MainActivity, "Logged out successfully", Toast.LENGTH_SHORT).show()
                     }

@@ -9,16 +9,15 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        manifestPlaceholders += mapOf(
+            "auth0Domain" to "@string/com_auth0_domain",
+            "auth0Scheme" to "@string/com_auth0_scheme"
+        )
         applicationId = "com.example.pineappleexpense"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
-        manifestPlaceholders += mapOf(
-            "auth0Domain" to "@string/com_auth0_domain",
-            "auth0Scheme" to "@string/com_auth0_scheme"
-        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

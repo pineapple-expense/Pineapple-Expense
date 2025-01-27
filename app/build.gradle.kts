@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -9,16 +10,15 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        manifestPlaceholders += mapOf(
+            "auth0Domain" to "@string/com_auth0_domain",
+            "auth0Scheme" to "@string/com_auth0_scheme"
+        )
         applicationId = "com.example.pineappleexpense"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
-        manifestPlaceholders += mapOf(
-            "auth0Domain" to "@string/com_auth0_domain",
-            "auth0Scheme" to "@string/com_auth0_scheme"
-        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,12 +61,16 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.coil.compose) // Navigation Compose
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.material:material:1.8.0-alpha06")
     implementation("com.auth0.android:auth0:2.9.2")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     androidTestImplementation("androidx.compose.ui:ui-test-junit4-android:1.7.6")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")

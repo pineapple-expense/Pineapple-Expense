@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.pineappleexpense.ui.components.TopBar
 import androidx.navigation.compose.rememberNavController
@@ -64,7 +65,7 @@ fun SignInTest(navController: NavHostController,
 @Preview
 @Composable
 fun PreviewSignInTest() {
-    SignInTest(rememberNavController(), AccessViewModel(), onLogin = {})
+    SignInTest(rememberNavController(), viewModel(), onLogin = {})
 }
 
 

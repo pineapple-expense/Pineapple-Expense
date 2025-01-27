@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.BottomBar
@@ -86,6 +87,6 @@ fun Settings(navController: NavHostController, viewModel: AccessViewModel, modif
 @Composable
 fun PreviewSettings() {
     val navController = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     Settings(navController, viewModel)
 }

@@ -2,6 +2,8 @@
 
 package com.example.pineappleexpense.ui.screens
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -57,7 +59,10 @@ import com.example.pineappleexpense.model.Expense
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.viewmodel.compose.viewModel
+import java.io.File
 import java.nio.file.WatchEvent
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -77,7 +82,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
         }
     ) { innerPadding ->
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -90,6 +95,17 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             else {
                 //display expenses
                 ExpenseList(expenses, viewModel)
+            }
+            Button(
+                onClick = {  },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 15.dp, bottom = 15.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if(expenses.isEmpty()) Color.Gray else Color(0xFF4E0AA6)
+                )
+            ) {
+                Text("View Report")
             }
         }
     }
@@ -145,6 +161,7 @@ fun NoPendingExpensesCard(navController: NavHostController) {
 fun ExpenseList(expenses: List<Expense>, viewModel: AccessViewModel) {
     //only one card can be expanded at a time, so it is tracked through the expense the card displays
     var expandedExpense by remember { mutableStateOf<Expense?>(null) }
+    val context: Context = LocalContext.current
 
     LazyColumn {
         items(expenses) { expense ->
@@ -156,11 +173,19 @@ fun ExpenseList(expenses: List<Expense>, viewModel: AccessViewModel) {
                     expandedExpense = if (expandedExpense == clickedExpense) null else clickedExpense
                 },
                 onDeleteClicked = {
+                    if(expense.imageUri != null) {
+                        deleteImageFromInternalStorage(expense.imageUri.path ?: "")
+                    }
                     viewModel.removeExpense(it)
                 }
             )
         }
     }
+}
+
+fun deleteImageFromInternalStorage(filePath: String): Boolean {
+    val file = File(filePath)
+    return file.exists() && file.delete()
 }
 
 @Composable
@@ -393,6 +418,6 @@ fun ExpandedExpenseCard(
 @Composable
 fun PreviewHome() {
     val navController = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     HomeScreen(navController, viewModel)
 }

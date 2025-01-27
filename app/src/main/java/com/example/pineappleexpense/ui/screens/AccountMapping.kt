@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -256,7 +257,7 @@ fun EditButton(onClick: () -> Unit) {
 @Composable
 fun PreviewComposable() {
     val navHost = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     //AccountCard()
     AccountMapping(navHost, viewModel)
 }

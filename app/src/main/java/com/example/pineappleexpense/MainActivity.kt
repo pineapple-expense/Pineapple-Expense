@@ -7,6 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -30,7 +32,11 @@ import com.example.pineappleexpense.ui.screens.UserProfile
 import com.example.pineappleexpense.ui.screens.ViewPreviousExpense
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.auth0.android.Auth0
+import com.auth0.android.authentication.AuthenticationAPIClient
 import com.auth0.android.authentication.AuthenticationException
+import com.auth0.android.authentication.storage.CredentialsManagerException
+import com.auth0.android.authentication.storage.SecureCredentialsManager
+import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.callback.Callback
 import com.auth0.android.result.Credentials
@@ -38,6 +44,7 @@ import com.example.pineappleexpense.ui.screens.SignInTest
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
+    private lateinit var credentialsManager: SecureCredentialsManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +55,18 @@ class MainActivity : ComponentActivity() {
             getString(R.string.com_auth0_domain) // Your Domain from strings.xml
         )
 
+        // Initialize SecureCredentialsManager
+        credentialsManager = SecureCredentialsManager(
+            this,
+            AuthenticationAPIClient(auth0),
+            SharedPreferencesStorage(this)
+        )
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
             PineappleExpenseTheme {
-                MainScreen( navController, login = {loginWithBrowser(navController)}, logout = {logout(navController)})
+                MainScreen( navController, login = {loginWithBrowser(navController)}, logout = {logout(navController)}, credentialsManager)
             }
         }
     }
@@ -77,6 +91,10 @@ class MainActivity : ComponentActivity() {
                     // Get the access token from the credentials object.
                     // This can be used to call APIs
                     val accessToken = credentials.accessToken
+
+                    //save credentials for automatic future login
+                    credentialsManager.saveCredentials(credentials)
+
                     runOnUiThread {
                         // Navigate to the Home screen
                         navController.navigate("Home") {
@@ -102,6 +120,9 @@ class MainActivity : ComponentActivity() {
             .withScheme(getString(R.string.com_auth0_scheme)) // Match your app's scheme
             .start(this, object : Callback<Void?, AuthenticationException> {
                 override fun onSuccess(payload: Void?) {
+                    // Clear the stored credentials
+                    credentialsManager.clearCredentials()
+
                     runOnUiThread {
                         // Navigate to the sign-in page after logging out
                         navController.navigate("SignIn") {
@@ -120,53 +141,77 @@ class MainActivity : ComponentActivity() {
                 }
             })
     }
+
 }
 
 
 @Composable
-fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout: (() -> Unit) = {}) {
+fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout: (() -> Unit) = {}, credentialsManager: SecureCredentialsManager?, onGraphSet:() -> Unit = {}) {
     val viewModel: AccessViewModel = viewModel()
+    val startDestinationState = remember { mutableStateOf<String?>(null) }
 
+    // Check credentials asynchronously
+    LaunchedEffect(Unit) {
+        if (credentialsManager != null && credentialsManager.hasValidCredentials()) {
+            credentialsManager.getCredentials(object : Callback<Credentials, CredentialsManagerException> {
+                override fun onSuccess(credentials: Credentials) {
+                    startDestinationState.value = "Home" // Update state
+                }
 
-    NavHost(
-        navController = navController,
-        startDestination = "SignIn",
-    ) {
+                override fun onFailure(error: CredentialsManagerException) {
+                    startDestinationState.value = "SignIn" // Update state
+                }
+            })
+        } else {
+            startDestinationState.value = "SignIn" //default
+        }
+    }
 
-        composable("SignIn") {
-            SignInTest(navController, viewModel, onLogin = login)
-        }
-        composable("Registration") {
-            Registration(navController, viewModel)
-        }
-        composable("Home") {
-            HomeScreen(navController, viewModel)
+    //render the NavHost only when startDestinationState is resolved
+    startDestinationState.value?.let { startDestination ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+        ) {
 
+            composable("SignIn") {
+                SignInTest(navController, viewModel, onLogin = login)
+            }
+            composable("Registration") {
+                Registration(navController, viewModel)
+            }
+            composable("Home") {
+                HomeScreen(navController, viewModel)
+
+            }
+            composable("Archive") {
+                UserArchiveScreen(navController, viewModel)
+            }
+            composable("Profile") {
+                UserProfile(navController, viewModel, logout = logout)
+            }
+            composable("Settings") {
+                Settings(navController, viewModel)
+            }
+            composable("Admin Review") {
+                AdminReview(navController, viewModel)
+            }
+            composable("Admin Profile") {
+                AdminProfile(navController,viewModel, logout = logout)
+            }
+            composable("Camera") {
+                CameraScreen(navController, viewModel)
+            }
+            composable("Account Mapping") {
+                AccountMapping(navController, viewModel)
+            }
+            composable("Receipt Preview") {
+                ReceiptPreview(navController, viewModel)
+            }
         }
-        composable("Archive") {
-            UserArchiveScreen(navController, viewModel)
-        }
-        composable("Profile") {
-            UserProfile(navController, viewModel, logout = logout)
-        }
-        composable("Settings") {
-            Settings(navController, viewModel)
-        }
-        composable("Admin Review") {
-            AdminReview(navController, viewModel)
-        }
-        composable("Admin Profile") {
-            AdminProfile(navController,viewModel, logout = logout)
-        }
-        composable("Camera") {
-            CameraScreen(navController, viewModel)
-        }
-        composable("Account Mapping") {
-            AccountMapping(navController, viewModel)
-        }
-        composable("Receipt Preview") {
-            ReceiptPreview(navController, viewModel)
-        }
+        //notify callers that the navigation graph has been created
+        //needed for UI navigation tests to function properly
+        onGraphSet()
     }
 }
 

@@ -1,6 +1,9 @@
 package com.example.pineappleexpense
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -8,6 +11,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.auth0.android.authentication.AuthenticationAPIClient
+import com.auth0.android.authentication.storage.SecureCredentialsManager
+import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import org.junit.Rule
 import org.junit.Test
 
@@ -86,12 +92,24 @@ class UINavigationTests {
 
 @Composable
 fun setContentHome(): NavController {
-    var navController = rememberNavController()
-    MainScreen(navController = navController)
-    navController.navigate("Home") {
-        popUpTo(navController.graph.startDestinationId) { saveState = true }
-        launchSingleTop = true
-        restoreState = true
+    val navController = rememberNavController()
+    val isGraphSet = remember { mutableStateOf(false) }
+
+    MainScreen(
+        navController = navController,
+        credentialsManager = null,
+        onGraphSet = { isGraphSet.value = true }
+    )
+
+    LaunchedEffect(isGraphSet.value) {
+        if (isGraphSet.value) {
+            navController.navigate("Home") {
+                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
     }
+
     return navController
 }

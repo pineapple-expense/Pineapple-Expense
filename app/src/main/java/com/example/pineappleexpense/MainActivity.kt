@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
         WebAuthProvider.login(auth0)
             .withScheme(getString(R.string.com_auth0_scheme))
             .withScope("openid profile email")
+            .withAudience(getString(R.string.com_auth0_audience))
             // Launch the authentication passing the callback where the results will be received
             .start(this, object : Callback<Credentials, AuthenticationException> {
                 // Called when there is an authentication failure

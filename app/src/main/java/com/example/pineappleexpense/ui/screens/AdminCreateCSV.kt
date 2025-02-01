@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.TopBar
@@ -98,6 +99,6 @@ fun AdminCreateCSV(navController: NavHostController, viewModel: AccessViewModel,
 @Composable
 fun PreviewCreateCSVScreen() {
     val navController = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     AdminCreateCSV(navController, viewModel)
 }

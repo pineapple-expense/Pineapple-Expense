@@ -1,4 +1,5 @@
 package com.example.pineappleexpense.ui.components
+import android.app.Application
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,9 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
@@ -168,7 +171,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
 @Composable
 fun PreviewTopBotBar() {
     val navController = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     TopBar(navController, viewModel)
 
 }

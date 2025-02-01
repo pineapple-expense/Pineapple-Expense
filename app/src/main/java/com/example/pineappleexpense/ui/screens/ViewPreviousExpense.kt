@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun ViewPreviousExpense(navHost: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -178,6 +179,6 @@ fun TotalCard(total: Double) {
 @Composable
 fun PreviewPrevious() {
     val navController = rememberNavController()
-    val viewModel = AccessViewModel()
+    val viewModel: AccessViewModel = viewModel()
     ViewPreviousExpense(navController, viewModel)
 }

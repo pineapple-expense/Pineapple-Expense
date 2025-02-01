@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.model.Expense
@@ -319,5 +320,5 @@ fun commentBox(): String {
 @Preview
 @Composable
 fun PreviewReceiptPreview() {
-    ReceiptPreview(rememberNavController(), AccessViewModel())
+    ReceiptPreview(rememberNavController(), viewModel())
 }

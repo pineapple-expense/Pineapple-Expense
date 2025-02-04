@@ -46,6 +46,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pineappleexpense.model.Report
 import java.io.File
 import java.nio.file.WatchEvent
 import java.text.SimpleDateFormat
@@ -102,7 +104,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                     .align(Alignment.BottomStart)
                     .padding(start = 15.dp, bottom = 15.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if(expenses.isEmpty()) Color.Gray else Color(0xFF4E0AA6)
+                    containerColor = if(viewModel.currentReportList.value.isEmpty()) Color.Gray else Color(0xFF4E0AA6)
                 )
             ) {
                 Text("View Report")
@@ -177,7 +179,15 @@ fun ExpenseList(expenses: List<Expense>, viewModel: AccessViewModel) {
                         deleteImageFromInternalStorage(expense.imageUri.path ?: "")
                     }
                     viewModel.removeExpense(it)
-                }
+                    viewModel.removeFromCurrentReport(it.id)
+                },
+                onAddToReportClicked = {
+                    viewModel.addToCurrentReport(expense.id)
+                },
+                onRemoveFromReportClicked = {
+                    viewModel.removeFromCurrentReport(expense.id)
+                },
+                inReport = viewModel.currentReportList.value.contains(expense)
             )
         }
     }
@@ -193,7 +203,10 @@ fun ExpenseCard(
     expense: Expense,
     isExpanded: Boolean,
     onCardClicked: (Expense) -> Unit,
-    onDeleteClicked: (Expense) -> Unit
+    onDeleteClicked: (Expense) -> Unit,
+    onAddToReportClicked: () -> Unit = {},
+    onRemoveFromReportClicked: () -> Unit = {},
+    inReport: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -202,12 +215,15 @@ fun ExpenseCard(
             .clickable { onCardClicked(expense) },
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = if(inReport) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inversePrimary) else CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         if (isExpanded) {
             ExpandedExpenseCard(
                 expense = expense,
-                onDeleteClicked = onDeleteClicked
+                onDeleteClicked = onDeleteClicked,
+                onAddToReportClicked = onAddToReportClicked,
+                onRemoveFromReportClicked = onRemoveFromReportClicked,
+                inReport
             )
         } else {
             CollapsedExpenseCard(expense)
@@ -278,7 +294,9 @@ fun CollapsedExpenseCard(expense: Expense) {
 fun ExpandedExpenseCard(
     expense: Expense,
     onDeleteClicked: (Expense) -> Unit,
-    onAddToReportClicked: () -> Unit = {},
+    onAddToReportClicked: () -> Unit,
+    onRemoveFromReportClicked: () -> Unit,
+    inReport: Boolean,
     onEditClicked: () -> Unit = {}
 ) {
     //format the date
@@ -363,17 +381,32 @@ fun ExpandedExpenseCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             //display the add to report button
-            Button(
-                onClick = { onAddToReportClicked() },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "Add to Report",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+            if(inReport) {
+                Button(
+                    onClick = { onRemoveFromReportClicked() },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Remove from Report",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            } else {
+                Button(
+                    onClick = { onAddToReportClicked() },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Add to Report",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
         Row(

@@ -4,5 +4,4 @@
     <string name="com_auth0_client_id">NOYs1STlitUk7Ve049kR93wbOoXAafsq</string>
     <string name="com_auth0_scheme">com.example.pineappleexpense</string>
     <string name="com_auth0_audience">https://pineapple-expense-auth0-api.com</string>
-    <sting name ="com_auth0_audience">https://pineapple-expense-auth0-api.com</sting>
 </resources>

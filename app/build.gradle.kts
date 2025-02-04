@@ -72,6 +72,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    implementation(platform("aws.sdk.kotlin:bom:1.4.3"))
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.24.3"))
+    implementation("aws.sdk.kotlin:s3")
+
     androidTestImplementation("androidx.compose.ui:ui-test-junit4-android:1.7.6")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")
 }

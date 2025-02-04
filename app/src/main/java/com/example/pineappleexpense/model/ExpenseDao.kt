@@ -8,6 +8,9 @@ interface ExpenseDao {
     @Query("SELECT * FROM expense_table")
     suspend fun getAllExpenses(): List<Expense>
 
+    @Query("SELECT * FROM expense_table WHERE id IN (:expenseIds)")
+    suspend fun getExpensesByIds(expenseIds: List<Int>): List<Expense>
+
     @Insert
     suspend fun insertExpense(expense: Expense)
 

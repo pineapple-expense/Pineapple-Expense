@@ -59,7 +59,8 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.navigation.compose)
-    implementation(libs.coil.compose) // Navigation Compose
+    implementation(libs.coil.compose)
+    implementation(libs.gson) // Navigation Compose
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core)
     androidTestImplementation(libs.androidx.junit)

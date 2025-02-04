@@ -38,6 +38,7 @@ import com.example.pineappleexpense.ui.components.CameraPreview
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -118,8 +119,25 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
             }
         }
         //gallery photo picker
-        val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-            viewModel.latestImageUri = uri
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                // Create a new file into which the image will be copied.
+                val newImageFile = createImageFile(context)
+                try {
+                    // Copy the image data from the gallery URI to the new file.
+                    context.contentResolver.openInputStream(selectedUri)?.use { inputStream ->
+                        FileOutputStream(newImageFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    // Update the ViewModel with the new file's URI.
+                    viewModel.latestImageUri = Uri.fromFile(newImageFile)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
 
             navController.navigate("Receipt Preview") {
                 launchSingleTop = true

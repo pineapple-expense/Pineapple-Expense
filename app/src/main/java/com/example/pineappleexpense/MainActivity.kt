@@ -156,11 +156,6 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             credentialsManager.getCredentials(object : Callback<Credentials, CredentialsManagerException> {
                 override fun onSuccess(result: Credentials) {
                     startDestinationState.value = "Home" // Update state
-                    getReceiptUploadURL(fileName = "test", context = navController.context, onSuccess = {
-                        Log.d("NETWORK", "URL SUCCESSFULLY RETRIEVED")
-                    }, onFailure = {
-                        Log.e("NETWORK", "URL RETRIEVAL FAILED")
-                    })
                 }
                 override fun onFailure(error: CredentialsManagerException) {
                     startDestinationState.value = "SignIn" // Update state

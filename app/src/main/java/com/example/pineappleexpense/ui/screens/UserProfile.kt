@@ -1,4 +1,7 @@
 package com.example.pineappleexpense.ui.screens
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,16 +24,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.MainActivity
+import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
-
+import java.security.AccessController.getContext
 
 
 @Composable
 fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier, logout : ()->Unit) {
+    // Retrieve values from SharedPreferences
+    val context = viewModel.getApplication<Application>().applicationContext
+    val sharedPrefs = SharedPrefs(context)
+    val myemail = sharedPrefs.getStr(context, "email")
+
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("UserProfile"),
         containerColor = Color(0xFFF9EEFF),
@@ -65,7 +76,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
-                text = "useremail@email.com",
+                text = myemail.toString(),
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(96.dp))

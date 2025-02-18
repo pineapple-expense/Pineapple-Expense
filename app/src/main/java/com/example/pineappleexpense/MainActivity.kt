@@ -45,6 +45,7 @@ import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
 import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.screens.SignInTest
+import com.example.pineappleexpense.ui.screens.ViewReportScreen
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
@@ -251,6 +252,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             }
             composable("Receipt Preview") {
                 ReceiptPreview(navController, viewModel)
+            }
+            composable("View Report") {
+                ViewReportScreen(navController, viewModel)
             }
         }
         //notify callers that the navigation graph has been created

@@ -1,6 +1,8 @@
 package com.example.pineappleexpense
 
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -38,12 +40,17 @@ import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.callback.Callback
 import com.auth0.android.result.Credentials
+import com.auth0.android.result.UserProfile
+import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.screens.SignInTest
 import com.example.pineappleexpense.data.getReceiptUploadURL
+import com.example.pineappleexpense.ui.screens.ViewReportScreen
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
     private lateinit var credentialsManager: SecureCredentialsManager
+    private lateinit var sharedPrefs: SharedPrefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +67,9 @@ class MainActivity : ComponentActivity() {
             AuthenticationAPIClient(auth0),
             SharedPreferencesStorage(this)
         )
+
+        // Initialize SharedPreferences
+        sharedPrefs = SharedPrefs(this)
 
         enableEdgeToEdge()
         setContent {
@@ -91,11 +101,18 @@ class MainActivity : ComponentActivity() {
                     // Get the access token from the credentials object.
                     // This can be used to call APIs
                     val accessToken = credentials.accessToken
+                    val idToken = credentials.idToken
+
+                    // Store tokens in SharedPreferences
+                    sharedPrefs.setStr(this@MainActivity,"aToken", accessToken)
+                    sharedPrefs.setStr(this@MainActivity,"iToken", idToken)
 
                     //save credentials for automatic future login
                     credentialsManager.saveCredentials(credentials)
 
+
                     runOnUiThread {
+                        showUserProfile(accessToken)
                         // Navigate to the Home screen
                         navController.navigate("Home") {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -110,7 +127,6 @@ class MainActivity : ComponentActivity() {
                         ).show()
                     }
 
-
                 }
             })
     }
@@ -122,7 +138,8 @@ class MainActivity : ComponentActivity() {
                 override fun onSuccess(payload: Void?) {
                     // Clear the stored credentials
                     credentialsManager.clearCredentials()
-
+                    // Clear stored data from SharedPreferences
+                    sharedPrefs.clearInfo(this@MainActivity)
                     runOnUiThread {
                         // Navigate to the sign-in page after logging out
                         navController.navigate("SignIn") {
@@ -142,7 +159,35 @@ class MainActivity : ComponentActivity() {
             })
     }
 
+    private fun showUserProfile(accessToken: String) {
+        var client = AuthenticationAPIClient(auth0)
+
+        // Uses the access token obtained during login to retrieve user info
+        client.userInfo(accessToken)
+            .start(object: Callback<UserProfile, AuthenticationException> {
+
+                override fun onFailure(exception: AuthenticationException) {
+                    runOnUiThread {
+                        // Something went wrong
+                        Toast.makeText(this@MainActivity, "Failed to retrieve user info. Reason: ${exception.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                // Stores the user information in SharedPreferences.
+                override fun onSuccess(profile: UserProfile) {
+                    val email = profile.email.toString()
+                    val name = profile.name.toString()
+                    val id = profile.getId().toString()
+
+                    sharedPrefs.setStr(this@MainActivity, "email", email)
+                    sharedPrefs.setStr(this@MainActivity, "name", name)
+                    sharedPrefs.setStr(this@MainActivity, "id", id)
+                }
+            })
+    }
 }
+
+
 
 
 @Composable
@@ -206,6 +251,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             }
             composable("Receipt Preview") {
                 ReceiptPreview(navController, viewModel)
+            }
+            composable("View Report") {
+                ViewReportScreen(navController, viewModel)
             }
         }
         //notify callers that the navigation graph has been created

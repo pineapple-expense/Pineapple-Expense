@@ -4,6 +4,7 @@ package com.example.pineappleexpense
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
@@ -29,9 +29,7 @@ import com.example.pineappleexpense.ui.screens.HomeScreen
 import com.example.pineappleexpense.ui.screens.ReceiptPreview
 import com.example.pineappleexpense.ui.screens.Registration
 import com.example.pineappleexpense.ui.screens.Settings
-import com.example.pineappleexpense.ui.screens.SignIn
 import com.example.pineappleexpense.ui.screens.UserProfile
-import com.example.pineappleexpense.ui.screens.ViewPreviousExpense
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.auth0.android.Auth0
 import com.auth0.android.authentication.AuthenticationAPIClient
@@ -45,7 +43,9 @@ import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
 import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.screens.SignInTest
+import com.example.pineappleexpense.data.getReceiptUploadURL
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
@@ -199,10 +199,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
     LaunchedEffect(Unit) {
         if (credentialsManager != null && credentialsManager.hasValidCredentials()) {
             credentialsManager.getCredentials(object : Callback<Credentials, CredentialsManagerException> {
-                override fun onSuccess(credentials: Credentials) {
+                override fun onSuccess(result: Credentials) {
                     startDestinationState.value = "Home" // Update state
                 }
-
                 override fun onFailure(error: CredentialsManagerException) {
                     startDestinationState.value = "SignIn" // Update state
                 }

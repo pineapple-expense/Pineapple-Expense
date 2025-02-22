@@ -55,7 +55,8 @@ fun ViewReportScreen(
                     },
                     isExpenseInReport = { expense ->
                         reportExpenses.contains(expense)
-                    }
+                    },
+                    navController
                 )
             }
         }

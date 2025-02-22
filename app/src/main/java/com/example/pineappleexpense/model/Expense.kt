@@ -9,11 +9,11 @@ import java.util.Date
 //data class to store information about an expense
 @Entity(tableName = "expense_table")
 data class Expense(
-    val title: String,
-    val total: Float,
-    val date: Date,
-    val comment: String,
-    val category: String,
-    val imageUri: Uri? = null,
+    var title: String,
+    var total: Float,
+    var date: Date,
+    var comment: String,
+    var category: String,
+    var imageUri: Uri? = null,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) : Serializable

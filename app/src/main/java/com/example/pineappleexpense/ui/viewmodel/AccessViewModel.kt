@@ -2,6 +2,7 @@ package com.example.pineappleexpense.ui.viewmodel
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.pineappleexpense.model.DatabaseInstance
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class AccessViewModel(application: Application): AndroidViewModel(application) {
@@ -42,6 +45,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     //add the following expense to the current report
     fun addToCurrentReport(expenseId: Int) {
+        Log.d("pineapple", "adding id $expenseId to report")
         viewModelScope.launch() {
             viewModelScope.launch() {
                 val report = reportDao.getReportByName("current")
@@ -96,6 +100,18 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             expenseDao.deleteExpense(expense)
             loadExpenses()
+        }
+    }
+
+    fun updateExpense(expense: Expense) {
+        viewModelScope.launch(Dispatchers.IO) {
+            expenseDao.updateExpense(expense)
+
+            val updatedExpenses = expenseDao.getAllExpenses()
+
+            withContext(Dispatchers.Main) {
+                _expenseList.value = updatedExpenses
+            }
         }
     }
 

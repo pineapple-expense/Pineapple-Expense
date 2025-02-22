@@ -1,6 +1,7 @@
 package com.example.pineappleexpense.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,13 +41,27 @@ import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel) {
-    val imageUri = viewModel.latestImageUri
-    var category: String
-    var date: Date? = null
-    var total: Float? = null
-    var comment: String
-    var title: String
+fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, expenseID: Int) {
+
+    val expense = viewModel.expenseList.value.find { it.id == expenseID }
+
+    //navigate home if there is no expense with the passed in ID
+    if (expense == null) {
+        LaunchedEffect(Unit) {
+            navController.navigate("Home") {
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+        return
+    }
+
+    val imageUri = expense.imageUri
+    var category = expense.category
+    var date: Date? = expense.date
+    var total: Float? = expense.total
+    var comment = expense.comment
+    var title = expense.title
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -68,33 +84,33 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(10.dp))
-            title = titleBox()
+            title = titleBox(title)
             Spacer(modifier = Modifier.height(10.dp))
-            category = categoryBox()
+            category = categoryBox(category)
             Spacer(modifier = Modifier.height(10.dp))
             Row (
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.width(5.dp))
-                date = dateBox()
+                date = dateBox(date)
                 Spacer(modifier = Modifier.width(10.dp))
-                total = totalBox()
+                total = totalBox(total)
             }
             Spacer(modifier = Modifier.height(10.dp))
-            comment = commentBox()
+            comment = commentBox(comment)
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = {
-                    //put the receipt information into an Expense object
-                    //currently just gives default values if there is a parsing error, this will be changed to prompt the user in the future
-                    val receipt = Expense(title, total?:0f, date?:SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("0000-00-00"), comment, category, imageUri)
-                    //add the receipt to the viewmodel
-                    viewModel.addExpense(receipt)
-                    //navigate back to home
-                    navController.navigate("Home") {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    Log.d("pineapple", "updating expense")
+                    date?.let { expense.date = it }
+                    expense.category = category
+                    total?.let { expense.total = it }
+                    expense.title = title
+                    expense.comment = comment
+                    //update expense in viewmodel
+                    viewModel.updateExpense(expense)
+                    //navigate back
+                    navController.popBackStack()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 shape = RoundedCornerShape(16.dp),
@@ -103,7 +119,7 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
                 modifier = Modifier.height(30.dp)
             ) {
                 Text(
-                    text = "done",
+                    text = "save",
                     color = Color(0xFF6200EA),
                     fontSize = 12.sp
                 )
@@ -111,9 +127,8 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
         }
     }
 }
-
 @Preview
 @Composable
-fun PreviewReceiptPreview() {
-    ReceiptPreview(rememberNavController(), viewModel())
+fun EditExpensePreview() {
+    EditExpense(rememberNavController(), viewModel(), 0)
 }

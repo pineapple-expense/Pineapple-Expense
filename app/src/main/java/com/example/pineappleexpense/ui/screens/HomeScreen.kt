@@ -35,6 +35,7 @@ import com.example.pineappleexpense.ui.components.ExpenseList
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import kotlin.math.exp
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -75,8 +76,9 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                         viewModel.removeFromCurrentReport(expense.id)
                     },
                     isExpenseInReport = { expense ->
-                        viewModel.currentReportList.value.contains(expense)
-                    }
+                        viewModel.currentReportList.value.any { it.id == expense.id }
+                    },
+                    navController
                 )
             }
             Button(

@@ -35,7 +35,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 @Composable
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
-    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping")
+    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "View Report", "Edit Expense")
     NavigationBar(
 
         modifier = Modifier.height(76.dp),
@@ -44,7 +44,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
         ) {
         NavigationBarItem(
             icon = {
-                if(currentRoute in pagesWithBackButton) {
+                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true){
                     //back button
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -62,7 +62,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             },
             selected = false, //navController.currentDestination?.route == "Settings",
             onClick = {
-                if(currentRoute in pagesWithBackButton) {
+                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true) {
                     //navigate back
                     navController.popBackStack()
                 } else {
@@ -78,7 +78,10 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
             )
         Text(
-            text = "$currentRoute",
+            text = when {
+                currentRoute?.startsWith("editExpense") == true -> "Edit Expense"
+                else                                            -> "$currentRoute"
+            },
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .padding(top = 24.dp)

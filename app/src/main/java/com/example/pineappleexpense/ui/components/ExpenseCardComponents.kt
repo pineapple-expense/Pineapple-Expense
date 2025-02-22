@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.pineappleexpense.model.Expense
 import java.io.File
@@ -43,7 +44,8 @@ fun ExpenseList(
     onDelete: (Expense) -> Unit,
     onAddToReport: (Expense) -> Unit,
     onRemoveFromReport: (Expense) -> Unit,
-    isExpenseInReport: (Expense) -> Boolean
+    isExpenseInReport: (Expense) -> Boolean,
+    navController: NavHostController
 ) {
     var expandedExpense by remember { mutableStateOf<Expense?>(null) }
 
@@ -60,7 +62,8 @@ fun ExpenseList(
                 onDeleteClicked = onDelete,
                 onAddToReportClicked = { onAddToReport(expense) },
                 onRemoveFromReportClicked = { onRemoveFromReport(expense) },
-                inReport = inReport
+                inReport = inReport,
+                navController
             )
         }
     }
@@ -86,7 +89,8 @@ fun ExpenseCard(
     onDeleteClicked: (Expense) -> Unit,
     onAddToReportClicked: () -> Unit = {},
     onRemoveFromReportClicked: () -> Unit = {},
-    inReport: Boolean
+    inReport: Boolean,
+    navController: NavHostController
 ) {
     Card(
         modifier = Modifier
@@ -105,7 +109,14 @@ fun ExpenseCard(
                 onDeleteClicked = onDeleteClicked,
                 onAddToReportClicked = onAddToReportClicked,
                 onRemoveFromReportClicked = onRemoveFromReportClicked,
-                inReport = inReport
+                inReport = inReport,
+                onEditClicked = {
+                    val expenseID = expense.id
+                    navController.navigate("editExpense/$expenseID") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         } else {
             CollapsedExpenseCard(expense = expense)

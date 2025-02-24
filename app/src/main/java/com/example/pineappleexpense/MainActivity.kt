@@ -257,7 +257,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             composable("Receipt Preview") {
                 ReceiptPreview(navController, viewModel)
             }
-            composable("View Report") {
+            composable("Current Report") {
                 ViewReportScreen(navController, viewModel)
             }
             composable(

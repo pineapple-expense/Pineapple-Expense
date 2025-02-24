@@ -5,7 +5,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.ExpenseList
@@ -28,7 +30,7 @@ fun ViewReportScreen(
         topBar = { TopBar(navController, viewModel) },
         bottomBar = { BottomBar(navController, viewModel) }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -37,7 +39,35 @@ fun ViewReportScreen(
                 // If the report is empty, show a placeholder.
                 ReportEmptyContent()
             } else {
-                // Otherwise, display the report expenses in a list.
+                // Find date range and total
+                val earliestDate = reportExpenses.minByOrNull { it.date }?.date
+                val latestDate = reportExpenses.maxByOrNull { it.date }?.date
+
+                val dateFormat = java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.getDefault())
+                val earliestDateStr = earliestDate?.let { dateFormat.format(it) } ?: ""
+                val latestDateStr = latestDate?.let { dateFormat.format(it) } ?: ""
+
+                val totalSum = reportExpenses.map { it.total }.sum()
+
+                // Display date range and total
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = modifier.height(8.dp))
+                    Text(
+                        text = "$earliestDateStr - $latestDateStr",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Total: $%.2f".format(totalSum),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
+                // Display the report expenses in a list.
                 ExpenseList(
                     expenses = reportExpenses,
                     onCardClick = { },
@@ -58,6 +88,26 @@ fun ViewReportScreen(
                     },
                     navController
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = {
+                        viewModel.submitReport()
+                        navController.navigate("Home") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(38, 114, 42, 255)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Submit Report for Review")
+                }
             }
         }
     }

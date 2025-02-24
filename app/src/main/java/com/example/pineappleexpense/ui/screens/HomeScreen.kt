@@ -35,11 +35,10 @@ import com.example.pineappleexpense.ui.components.ExpenseList
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
-import kotlin.math.exp
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val expenses = viewModel.expenseList.value
+    val expenses = viewModel.displayExpenses
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("HomeScreen"),
         containerColor = Color(0xFFF9EEFF),
@@ -83,7 +82,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             }
             Button(
                 onClick = {
-                    navController.navigate("View Report") {
+                    navController.navigate("Current Report") {
                         launchSingleTop = true
                         restoreState = true
                     }

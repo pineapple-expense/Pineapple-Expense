@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                     // Store tokens in SharedPreferences
                     sharedPrefs.setStr(this@MainActivity,"aToken", accessToken)
                     sharedPrefs.setStr(this@MainActivity,"iToken", idToken)
-
+                    
                     //save credentials for automatic future login
                     credentialsManager.saveCredentials(credentials)
 
@@ -212,6 +212,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 }
             })
         } else {
+            logout()
             startDestinationState.value = "SignIn" //default
         }
     }

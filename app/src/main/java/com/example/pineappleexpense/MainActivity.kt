@@ -259,7 +259,6 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 ReceiptPreview(navController, viewModel)
             }
             composable("Current Report") {
-            composable("View Report") {
                 ViewReportScreen(navController, viewModel)
             }
             composable(
@@ -270,7 +269,6 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 val expenseId = backStackEntry.arguments?.getInt("expenseId") ?: return@composable
                 EditExpense(navController, viewModel, expenseId)
             }
-        }
         }
         //notify callers that the navigation graph has been created
         //needed for UI navigation tests to function properly

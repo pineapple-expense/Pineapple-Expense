@@ -16,12 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.example.pineappleexpense.ui.screens.AccountMapping
 import com.example.pineappleexpense.ui.screens.AdminProfile
 import com.example.pineappleexpense.ui.screens.AdminReview
@@ -46,10 +44,7 @@ import com.auth0.android.result.UserProfile
 import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.screens.SignInTest
 import com.example.pineappleexpense.data.getReceiptUploadURL
-import com.example.pineappleexpense.model.Expense
-import com.example.pineappleexpense.ui.screens.EditExpense
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
-import java.util.Date
 
 
 class MainActivity : ComponentActivity() {
@@ -111,7 +106,6 @@ class MainActivity : ComponentActivity() {
                     // Store tokens in SharedPreferences
                     sharedPrefs.setStr(this@MainActivity,"aToken", accessToken)
                     sharedPrefs.setStr(this@MainActivity,"iToken", idToken)
-
                     //save credentials for automatic future login
                     credentialsManager.saveCredentials(credentials)
 
@@ -212,6 +206,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 }
             })
         } else {
+            logout()
             startDestinationState.value = "SignIn" //default
         }
     }
@@ -257,16 +252,8 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             composable("Receipt Preview") {
                 ReceiptPreview(navController, viewModel)
             }
-            composable("Current Report") {
+            composable("View Report") {
                 ViewReportScreen(navController, viewModel)
-            }
-            composable(
-                route = "editExpense/{expenseId}",
-                arguments = listOf(navArgument("expenseId") { type = NavType.IntType })
-            ) { backStackEntry ->
-                // Retrieve the expenseId from arguments
-                val expenseId = backStackEntry.arguments?.getInt("expenseId") ?: return@composable
-                EditExpense(navController, viewModel, expenseId)
             }
         }
         //notify callers that the navigation graph has been created

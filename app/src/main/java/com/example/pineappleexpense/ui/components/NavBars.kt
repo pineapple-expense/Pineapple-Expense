@@ -35,7 +35,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 @Composable
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
-    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "View Report", "Edit Expense")
+    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "Current Report", "Edit Expense")
     NavigationBar(
 
         modifier = Modifier.height(76.dp),

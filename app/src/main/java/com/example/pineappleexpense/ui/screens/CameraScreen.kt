@@ -42,6 +42,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.util.Log
 
 @Composable
 fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
@@ -134,6 +135,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                     }
                     // Update the ViewModel with the new file's URI.
                     viewModel.latestImageUri = Uri.fromFile(newImageFile)
+                    Log.d("CameraScreen","Image URI updated: ${viewModel.latestImageUri}")
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

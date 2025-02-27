@@ -1,5 +1,7 @@
 package com.example.pineappleexpense.data
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.content.Context
 import android.util.Log
 import com.auth0.android.Auth0
@@ -11,16 +13,20 @@ import com.auth0.android.result.Credentials
 import com.example.pineappleexpense.R
 import com.google.gson.Gson
 import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.RequestBody
 import okio.IOException
+import okio.buffer
+import okio.source
 import org.json.JSONObject
 import com.auth0.android.callback.Callback as auth0Callback
 import okhttp3.Callback as okhttp3Callback
-
+import com.example.pineappleexpense.BuildConfig
 
 fun getCredentialsManager(context: Context): SecureCredentialsManager {
     val auth0 = Auth0(
@@ -86,7 +92,13 @@ fun getReceiptUploadURL(context: Context, fileName: String, onSuccess: (String) 
 
                         val responseBody = it.body?.string()
                         Log.d("NETWORK", "Presigned URL: $responseBody")
-                        responseBody?.let(onSuccess) ?: onFailure("Empty response")
+                        try {
+                            val jsonObject = JSONObject(responseBody ?: "{}")
+                            val presignedUrl = jsonObject.getString("presignedUrl")  // Extract URL correctly
+                            onSuccess(presignedUrl)
+                        } catch (e: Exception) {
+                            onFailure("Invalid response format: ${e.message}")
+                        }
                     }
                 }
             })
@@ -168,4 +180,65 @@ fun getPrediction(context: Context, receiptId: String, callback: (Prediction?) -
             Log.e("NETWORK","Failed to get access token: $error")
         }
     )
+}
+fun uploadFileToS3(
+    presignedUrl: String,
+    fileUri: Uri,
+    contentResolver: ContentResolver,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    try {
+        val inputStream = contentResolver.openInputStream(fileUri)
+        if (inputStream == null) {
+            onFailure("Failed to open input stream for URI: $fileUri")
+            return
+        }
+        val requestBody = object : RequestBody() {
+            override fun contentType() = contentResolver.getType(fileUri)?.toMediaTypeOrNull()
+            override fun writeTo(sink: okio.BufferedSink) {
+                inputStream.source().buffer().use {
+                    sink.writeAll(it)
+                }
+            }
+        }
+
+        val request = Request.Builder()
+            .url(presignedUrl)
+            .put(requestBody)
+            .build()
+        OkHttpClient().newCall(request).enqueue(object : okhttp3Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                onFailure("Upload failed: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onFailure("Upload failed with status: ${response.code}")
+                }
+            }
+        })
+    } catch (e: Exception) {
+        onFailure("Error uploading file: ${e.message}")
+    }
+}
+
+fun processImageAndGetPrediction(
+    context: Context,
+    imageUri: Uri,
+    contentResolver: ContentResolver,
+    callback: (Prediction?) -> Unit
+) {
+    val fileName = imageUri.lastPathSegment ?: "image.jpg"
+    getReceiptUploadURL(context, fileName, onSuccess = { presignedUrl ->
+        uploadFileToS3(presignedUrl, imageUri, contentResolver, onSuccess = {
+            getPrediction(context, fileName) { prediction ->
+                callback(prediction)
+            }
+        }, onFailure = { error ->
+            Log.e("UPLOAD", "Upload failed: $error")
+        })
+    }, onFailure = { error -> Log.e("PRESIGNED", "Presigned URL failed: $error") })
 }

@@ -51,7 +51,9 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.util.Log
 import coil.compose.rememberAsyncImagePainter
+
 
 @Composable
 fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
@@ -172,10 +174,13 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                         }
                     }
                     // Update the ViewModel with the new file's URI.
+
                     Uri.fromFile(newImageFile).let {
                         viewModel.latestImageUri = it
                         imageUriForPrediction = it
+                        Log.d("CameraScreen", "Image URI updated: $it")
                     }
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

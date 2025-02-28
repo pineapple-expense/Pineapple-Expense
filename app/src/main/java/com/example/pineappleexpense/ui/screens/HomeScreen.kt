@@ -2,6 +2,8 @@
 
 package com.example.pineappleexpense.ui.screens
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,8 @@ import com.example.pineappleexpense.ui.components.ExpenseList
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import com.example.pineappleexpense.BuildConfig
+import com.example.pineappleexpense.data.processImageAndGetPrediction
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -96,6 +100,29 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             ) {
                 Text("View Report")
             }
+            if (BuildConfig.DEBUG) {
+                Button(
+                    onClick = {
+                        val imageUri = Uri.parse("file:///data/user/0/com.example.pineappleexpense/files/images/IMG_20250227_175804_466.jpg")
+                        processImageAndGetPrediction(
+                            navController.context,
+                            imageUri,
+                            contentResolver = navController.context.contentResolver
+                        ) { result ->
+                            Log.d("HomeScreen", "Prediction: ${result.toString()}")
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 15.dp, bottom = 15.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    )
+                ) {
+                    Text("TEST BUTTON")
+                }
+            }
+
         }
     }
 }

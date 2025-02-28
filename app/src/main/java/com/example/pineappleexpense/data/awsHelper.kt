@@ -1,5 +1,7 @@
 package com.example.pineappleexpense.data
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.content.Context
 import android.util.Log
 import com.auth0.android.Auth0
@@ -11,16 +13,20 @@ import com.auth0.android.result.Credentials
 import com.example.pineappleexpense.R
 import com.google.gson.Gson
 import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.RequestBody
 import okio.IOException
+import okio.buffer
+import okio.source
 import org.json.JSONObject
 import com.auth0.android.callback.Callback as auth0Callback
 import okhttp3.Callback as okhttp3Callback
-
+import java.io.File
 
 fun getCredentialsManager(context: Context): SecureCredentialsManager {
     val auth0 = Auth0(
@@ -71,22 +77,29 @@ fun getReceiptUploadURL(context: Context, fileName: String, onSuccess: (String) 
 
             client.newCall(request).enqueue(object : okhttp3Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    Log.e("NETWORK", "Request failed: ${e.message}")
+                    Log.e("GetUploadURL", "Request failed: ${e.message}")
                     onFailure(e.message ?: "Network error")
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (!it.isSuccessful) {
-                            val errorBody = it.body?.string()
-                            Log.e("NETWORK", "Request failed: $errorBody")
+                            val errorBody = it.body.string()
+                            Log.e("getUploadURL", "Request failed: $errorBody")
                             onFailure("Error: ${it.code} - $errorBody")
                             return
                         }
 
-                        val responseBody = it.body?.string()
+                        val responseBody = it.body.string()
+                        Log.d("NETWORK", "File name: $fileName")
                         Log.d("NETWORK", "Presigned URL: $responseBody")
-                        responseBody?.let(onSuccess) ?: onFailure("Empty response")
+                        try {
+                            val jsonObject = JSONObject(responseBody)
+                            val presignedUrl = jsonObject.getString("presignedUrl")  // Extract URL correctly
+                            onSuccess(presignedUrl)
+                        } catch (e: Exception) {
+                            onFailure("Invalid response format: ${e.message}")
+                        }
                     }
                 }
             })
@@ -132,18 +145,18 @@ fun getPrediction(context: Context, receiptId: String, callback: (Prediction?) -
 
             client.newCall(request).enqueue(object : okhttp3Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    Log.e("NETWORK", "Request failed: ${e.message}")
+                    Log.e("getPrediction", "Request failed: ${e.message}")
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (!it.isSuccessful) {
-                            val errorBody = it.body?.string()
-                            Log.e("NETWORK", "Get prediction failed: $errorBody")
+                            val errorBody = it.body.string()
+                            Log.e("getPrediction", "Get prediction failed: $errorBody")
                             return
                         }
 
-                        val json = JSONObject(response.body!!.string())
+                        val json = JSONObject(response.body.string())
 
                         val predictedDateJson = json.getJSONObject("predicted_date")
 
@@ -165,7 +178,83 @@ fun getPrediction(context: Context, receiptId: String, callback: (Prediction?) -
             })
         },
         onFailure = { error ->
-            Log.e("NETWORK","Failed to get access token: $error")
+            Log.e("getPrediction","Failed to get access token: $error")
         }
     )
+}
+
+fun uploadFileToS3(
+    presignedUrl: String,
+    fileUri: Uri,
+    contentResolver: ContentResolver,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    try {
+        val file = File(fileUri.path ?: throw IOException("Invalid file"))
+        val fileSize = file.length()
+
+        val requestBody = object : RequestBody() {
+            override fun contentType() = contentResolver.getType(fileUri)?.toMediaTypeOrNull() ?: "image/jpeg".toMediaTypeOrNull()
+
+            override fun contentLength(): Long = fileSize
+
+            override fun writeTo(sink: okio.BufferedSink) {
+                contentResolver.openInputStream(fileUri)?.source()?.buffer()?.use { source ->
+                    sink.writeAll(source)
+                } ?: throw IOException("Unable to open input stream")
+            }
+        }
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                    .newBuilder()
+                    .removeHeader("Expect")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        val request = Request.Builder()
+            .url(presignedUrl)
+            .put(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : okhttp3Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                onFailure("Upload failed: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    val errorMessage = response.body.string()
+                    onFailure("Upload failed with error: $errorMessage")
+                }
+            }
+        })
+
+    } catch (e: Exception) {
+        onFailure("Error uploading file: ${e.message}")
+    }
+}
+
+fun processImageAndGetPrediction(
+    context: Context,
+    imageUri: Uri,
+    contentResolver: ContentResolver,
+    callback: (Prediction?) -> Unit
+) {
+    val fileName = imageUri.lastPathSegment ?: "image.jpg"
+    getReceiptUploadURL(context, fileName, onSuccess = { presignedUrl ->
+        uploadFileToS3(presignedUrl, imageUri, contentResolver, onSuccess = {
+            getPrediction(context, fileName) { prediction ->
+                callback(prediction)
+            }
+        }, onFailure = { error ->
+            Log.e("UPLOAD", "Upload failed: $error")
+        })
+    }, onFailure = { error -> Log.e("PRESIGNED", "Presigned URL failed: $error") })
 }

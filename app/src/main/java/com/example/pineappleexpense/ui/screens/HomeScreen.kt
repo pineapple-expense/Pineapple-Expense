@@ -38,7 +38,6 @@ import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.BuildConfig
-import com.example.pineappleexpense.data.getReceiptUploadURL
 import com.example.pineappleexpense.data.processImageAndGetPrediction
 
 @Composable

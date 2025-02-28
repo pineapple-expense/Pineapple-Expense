@@ -28,12 +28,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
+import com.example.pineappleexpense.data.PredictedDate
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.components.*
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -41,6 +43,7 @@ import java.util.Locale
 @Composable
 fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel) {
     val imageUri = viewModel.latestImageUri
+    val prediction = viewModel.currentPrediction
     var category: String
     var date: Date? = null
     var total: Float? = null
@@ -70,15 +73,15 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
             Spacer(modifier = Modifier.height(10.dp))
             title = titleBox()
             Spacer(modifier = Modifier.height(10.dp))
-            category = categoryBox()
+            category = categoryBox(prediction?.category)
             Spacer(modifier = Modifier.height(10.dp))
             Row (
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.width(5.dp))
-                date = dateBox()
+                date = dateBox(predictionDatetoDate(prediction?.date))
                 Spacer(modifier = Modifier.width(10.dp))
-                total = totalBox()
+                total = totalBox(prediction?.amount?.toFloatOrNull())
             }
             Spacer(modifier = Modifier.height(10.dp))
             comment = commentBox()
@@ -110,6 +113,21 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
             }
         }
     }
+}
+
+private fun predictionDatetoDate(date: PredictedDate?): Date? {
+    date?.let {
+        return try {
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.YEAR, date.year.toInt())
+            calendar.set(Calendar.MONTH, date.month.toInt() - 1)
+            calendar.set(Calendar.DAY_OF_MONTH, date.day.toInt())
+            calendar.time
+        } catch (e: NumberFormatException) {
+            null
+        }
+    }
+    return null
 }
 
 @Preview

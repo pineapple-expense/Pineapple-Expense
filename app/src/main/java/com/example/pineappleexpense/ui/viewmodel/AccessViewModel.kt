@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.model.DatabaseInstance
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
@@ -24,6 +25,9 @@ import java.util.Locale
 class AccessViewModel(application: Application): AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(UserRole.User)
     val userState: StateFlow<UserRole> = _uiState.asStateFlow()
+
+    var latestImageUri by mutableStateOf<Uri?>(null)
+    var currentPrediction by mutableStateOf<Prediction?>(null)
 
     //room database
     private val database = DatabaseInstance.getDatabase(application)
@@ -156,8 +160,6 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             loadCurrentReport()
         }
     }
-
-    var latestImageUri by mutableStateOf<Uri?>(null)
 
     fun toggleAccess(s:String = "User") {
         if(s=="User") {

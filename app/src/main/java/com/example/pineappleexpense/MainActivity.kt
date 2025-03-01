@@ -43,9 +43,9 @@ import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.callback.Callback
 import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
-import com.example.pineappleexpense.model.SharedPrefs
 import com.example.pineappleexpense.ui.screens.SignInTest
 import com.example.pineappleexpense.data.getReceiptUploadURL
+import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.screens.EditExpense
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
@@ -54,8 +54,7 @@ import java.util.Date
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
-    private lateinit var credentialsManager: SecureCredentialsManager
-    private lateinit var sharedPrefs: SharedPrefs
+    private lateinit var securedManager: Auth0Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,21 +65,13 @@ class MainActivity : ComponentActivity() {
             getString(R.string.com_auth0_domain) // Your Domain from strings.xml
         )
 
-        // Initialize SecureCredentialsManager
-        credentialsManager = SecureCredentialsManager(
-            this,
-            AuthenticationAPIClient(auth0),
-            SharedPreferencesStorage(this)
-        )
-
-        // Initialize SharedPreferences
-        sharedPrefs = SharedPrefs(this)
+        securedManager = Auth0Manager(this@MainActivity, application)
 
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
             PineappleExpenseTheme {
-                MainScreen( navController, login = {loginWithBrowser(navController)}, logout = {logout(navController)}, credentialsManager)
+                MainScreen( navController, login = {loginWithBrowser(navController)}, logout = {logout(navController)}, securedManager.getCredentialsManager())
             }
         }
     }
@@ -105,20 +96,12 @@ class MainActivity : ComponentActivity() {
                 override fun onSuccess(credentials: Credentials) {
                     // Get the access token from the credentials object.
                     // This can be used to call APIs
-                    val accessToken = credentials.accessToken
-                    val idToken = credentials.idToken
 
-                    // Store tokens in SharedPreferences
-                    sharedPrefs.setStr(this@MainActivity,"aToken", accessToken)
-                    sharedPrefs.setStr(this@MainActivity,"iToken", idToken)
-                    
-                    //save credentials for automatic future login
-                    credentialsManager.saveCredentials(credentials)
-
+                    securedManager.storeCredentials(credentials)
+                    securedManager.storeTokens(credentials)
 
                     runOnUiThread {
-                        showUserProfile(accessToken)
-                        // Navigate to the Home screen
+                        showUserProfile(securedManager.getAccess().toString())
                         navController.navigate("Home") {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
@@ -140,11 +123,10 @@ class MainActivity : ComponentActivity() {
         WebAuthProvider.logout(auth0)
             .withScheme(getString(R.string.com_auth0_scheme)) // Match your app's scheme
             .start(this, object : Callback<Void?, AuthenticationException> {
+
                 override fun onSuccess(payload: Void?) {
                     // Clear the stored credentials
-                    credentialsManager.clearCredentials()
-                    // Clear stored data from SharedPreferences
-                    sharedPrefs.clearInfo(this@MainActivity)
+                    securedManager.clearData()
                     runOnUiThread {
                         // Navigate to the sign-in page after logging out
                         navController.navigate("SignIn") {
@@ -166,27 +148,18 @@ class MainActivity : ComponentActivity() {
 
     private fun showUserProfile(accessToken: String) {
         var client = AuthenticationAPIClient(auth0)
-
         // Uses the access token obtained during login to retrieve user info
         client.userInfo(accessToken)
             .start(object: Callback<UserProfile, AuthenticationException> {
-
                 override fun onFailure(exception: AuthenticationException) {
                     runOnUiThread {
                         // Something went wrong
                         Toast.makeText(this@MainActivity, "Failed to retrieve user info. Reason: ${exception.message}", Toast.LENGTH_LONG).show()
                     }
                 }
-
-                // Stores the user information in SharedPreferences.
+                // Upon success, stores the user information in SharedPreferences
                 override fun onSuccess(profile: UserProfile) {
-                    val email = profile.email.toString()
-                    val name = profile.name.toString()
-                    val id = profile.getId().toString()
-
-                    sharedPrefs.setStr(this@MainActivity, "email", email)
-                    sharedPrefs.setStr(this@MainActivity, "name", name)
-                    sharedPrefs.setStr(this@MainActivity, "id", id)
+                    securedManager.storeUserInfo(profile)
                 }
             })
     }
@@ -202,8 +175,8 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
 
     // Check credentials asynchronously
     LaunchedEffect(Unit) {
-        if (credentialsManager != null && credentialsManager.hasValidCredentials()) {
-            credentialsManager.getCredentials(object : Callback<Credentials, CredentialsManagerException> {
+        if (viewModel.getManager() != null && viewModel.getManager().hasValidCredentials()) {
+            viewModel.getManager().getCredentials(object : Callback<Credentials, CredentialsManagerException> {
                 override fun onSuccess(result: Credentials) {
                     startDestinationState.value = "Home" // Update state
                 }

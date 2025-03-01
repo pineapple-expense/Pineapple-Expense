@@ -1,6 +1,7 @@
 package com.example.pineappleexpense.ui.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.State
@@ -9,7 +10,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.auth0.android.Auth0
+import com.auth0.android.authentication.AuthenticationAPIClient
+import com.auth0.android.authentication.storage.CredentialsManagerException
+import com.auth0.android.authentication.storage.SecureCredentialsManager
+import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.example.pineappleexpense.data.Prediction
+import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.DatabaseInstance
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
@@ -28,6 +35,9 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     var latestImageUri by mutableStateOf<Uri?>(null)
     var currentPrediction by mutableStateOf<Prediction?>(null)
+
+    // Initialize Auth0 credentials manager
+    private val manager = Auth0Manager(getApplication<Application>().applicationContext, application)
 
     //room database
     private val database = DatabaseInstance.getDatabase(application)
@@ -58,6 +68,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         loadExpenses()
         loadCurrentReport()
     }
+
 
     //add the following expense to the current report
     fun addToCurrentReport(expenseId: Int) {
@@ -167,6 +178,44 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         } else {
             _uiState.value = UserRole.Admin
         }
+    }
+
+    /**
+     * Returns the credentials manager.
+     */
+    fun getManager(): SecureCredentialsManager {
+        return manager.getCredentialsManager()
+    }
+
+    fun getAccessToken(): String? {
+        return manager.getAccess()
+    }
+
+    fun getIdToken(): String? {
+        return manager.getIDToken()
+    }
+
+    fun getExpireTime(): String? {
+        return manager.getExpireTime()
+    }
+
+    fun getUserEmail(): String? {
+        return manager.getEmail()
+    }
+
+    fun getUserName(): String? {
+        return manager.getName()
+    }
+
+    fun getUniqueID(): String? {
+        return manager.getId()
+    }
+
+    /**
+     * Check if credentials are still valid during application use.
+     * */
+    fun validateCredentials(): Boolean {
+        return manager.validate()
     }
 }
 

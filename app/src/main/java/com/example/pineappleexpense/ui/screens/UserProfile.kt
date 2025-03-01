@@ -38,9 +38,8 @@ import java.security.AccessController.getContext
 @Composable
 fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier, logout : ()->Unit) {
     // Retrieve values from SharedPreferences
-    val context = viewModel.getApplication<Application>().applicationContext
-    val sharedPrefs = SharedPrefs(context)
-    val myemail = sharedPrefs.getStr(context, "email")
+    val myemail = viewModel.getUserEmail()
+    val name = viewModel.getUserName()
 
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("UserProfile"),
@@ -66,14 +65,10 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
-                text = "User FName",
+                text = name.toString(),
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text (
-                text = "User LName",
-                fontSize = 24.sp
-            )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
                 text = myemail.toString(),

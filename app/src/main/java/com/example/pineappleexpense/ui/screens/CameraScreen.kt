@@ -2,6 +2,10 @@ package com.example.pineappleexpense.ui.screens
 
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
@@ -38,21 +42,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.pineappleexpense.R
 import com.example.pineappleexpense.data.PredictedDate
 import com.example.pineappleexpense.data.Prediction
+import com.example.pineappleexpense.data.processImageAndGetPrediction
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.CameraPreview
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.util.Log
-import coil.compose.rememberAsyncImagePainter
 
 
 @Composable
@@ -65,17 +70,47 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
     LaunchedEffect(imageUriForPrediction) {
         imageUriForPrediction?.let { uri ->
             isLoading = true
-            // Call the suspend function to simulate network delay and get prediction
-            val prediction = mockGetPrediction(uri.toString())
-            viewModel.currentPrediction = prediction
-            isLoading = false
-            // Navigate to the receipt preview page after prediction completes
-            navController.navigate("Receipt Preview") {
-                launchSingleTop = true
-                restoreState = true
+            var timeout = false
+
+            //launch coroutine to timeout getting the prediction after 20 seconds
+            var timeoutJob = launch {
+                delay(20000L)
+                //if still loading after 20 seconds then timeout
+                if(isLoading) {
+                    timeout = true
+                    viewModel.currentPrediction = null
+                    isLoading = false
+
+                    navController.navigate("Receipt Preview") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+
+                    //display a message if a timeout occurs
+                    Toast.makeText(context, "network error: did not respond", Toast.LENGTH_SHORT).show()
+
+                    imageUriForPrediction = null
+                }
             }
-            // Reset the trigger state
-            imageUriForPrediction = null
+
+            //uploads the receipt image to s3 and gets back the receipt prediction
+            processImageAndGetPrediction(context, uri, context.contentResolver) {prediction ->
+                Handler(Looper.getMainLooper()).post {
+                    //ensure timeout hasn't triggered
+                    if(!timeout) {
+                        timeoutJob.cancel()
+                        viewModel.currentPrediction = prediction
+                        isLoading = false
+                        // Navigate to the receipt preview page after prediction completes
+                        navController.navigate("Receipt Preview") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        // Reset the trigger state
+                        imageUriForPrediction = null
+                    }
+                }
+            }
         }
     }
 

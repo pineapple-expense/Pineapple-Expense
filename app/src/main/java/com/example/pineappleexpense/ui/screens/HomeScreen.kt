@@ -38,7 +38,6 @@ import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.BuildConfig
-import com.example.pineappleexpense.data.processImageAndGetPrediction
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -103,14 +102,8 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             if (BuildConfig.DEBUG) {
                 Button(
                     onClick = {
-                        val imageUri = Uri.parse("file:///data/user/0/com.example.pineappleexpense/files/images/IMG_20250227_175804_466.jpg")
-                        processImageAndGetPrediction(
-                            navController.context,
-                            imageUri,
-                            contentResolver = navController.context.contentResolver
-                        ) { result ->
-                            Log.d("HomeScreen", "Prediction: ${result.toString()}")
-                        }
+                        val idToken = viewModel.getIdToken()
+                        Log.d("DEBUG", "ID Token: $idToken")
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -122,7 +115,6 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                     Text("TEST BUTTON")
                 }
             }
-
         }
     }
 }

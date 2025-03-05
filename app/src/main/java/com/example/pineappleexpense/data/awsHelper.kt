@@ -133,7 +133,11 @@ fun getPrediction(context: Context, receiptId: String, callback: (Prediction?) -
             val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/predictions"
 
             val jsonMediaType = "application/json".toMediaType()
-            val jsonBody = Gson().toJson(mapOf("receipt_id" to receiptId))
+            val jsonBody = Gson().toJson(mapOf(
+                "receipt_id" to receiptId,
+                "fname" to "John",
+                "lname" to "Doe"
+            ))
             val requestBody = jsonBody.toRequestBody(jsonMediaType)
 
             val request = Request.Builder()

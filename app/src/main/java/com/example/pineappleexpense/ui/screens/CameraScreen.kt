@@ -94,7 +94,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
             }
 
             //uploads the receipt image to s3 and gets back the receipt prediction
-            processImageAndGetPrediction(context, uri, context.contentResolver) {prediction ->
+            processImageAndGetPrediction(viewModel, uri, context.contentResolver) {prediction ->
                 Handler(Looper.getMainLooper()).post {
                     //ensure timeout hasn't triggered
                     if(!timeout) {

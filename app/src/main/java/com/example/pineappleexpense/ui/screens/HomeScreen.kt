@@ -38,8 +38,6 @@ import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.BuildConfig
-import com.example.pineappleexpense.data.processImageAndGetPrediction
-import com.example.pineappleexpense.ui.components.ReportList
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -60,37 +58,34 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Column {
-                if (expenses.isEmpty()) {
-                    NoPendingExpensesCard(navController)
-                } else {
-                    ExpenseList(
-                        expenses = expenses,
-                        onCardClick = { },
-                        onDelete = { expense ->
-                            expense.imageUri?.let { uri ->
-                                deleteImageFromInternalStorage(uri.path ?: "")
-                            }
-                            viewModel.removeExpense(expense)
-                            viewModel.removeFromCurrentReport(expense.id)
-                        },
-                        onAddToReport = { expense ->
-                            viewModel.addToCurrentReport(expense.id)
-                        },
-                        onRemoveFromReport = { expense ->
-                            viewModel.removeFromCurrentReport(expense.id)
-                        },
-                        isExpenseInReport = { expense ->
-                            viewModel.currentReportList.value.any { it.id == expense.id }
-                        },
-                        navController
-                    )
-                }
-                ReportList(viewModel.pendingReports.value, navController, viewModel)
+            if (expenses.isEmpty()) {
+                NoPendingExpensesCard(navController)
+            } else {
+                ExpenseList(
+                    expenses = expenses,
+                    onCardClick = { },
+                    onDelete = { expense ->
+                        expense.imageUri?.let { uri ->
+                            deleteImageFromInternalStorage(uri.path ?: "")
+                        }
+                        viewModel.removeExpense(expense)
+                        viewModel.removeFromCurrentReport(expense.id)
+                    },
+                    onAddToReport = { expense ->
+                        viewModel.addToCurrentReport(expense.id)
+                    },
+                    onRemoveFromReport = { expense ->
+                        viewModel.removeFromCurrentReport(expense.id)
+                    },
+                    isExpenseInReport = { expense ->
+                        viewModel.currentReportList.value.any { it.id == expense.id }
+                    },
+                    navController
+                )
             }
             Button(
                 onClick = {
-                    navController.navigate("viewReport/current") {
+                    navController.navigate("Current Report") {
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -107,14 +102,8 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             if (BuildConfig.DEBUG) {
                 Button(
                     onClick = {
-                        val imageUri = Uri.parse("file:///data/user/0/com.example.pineappleexpense/files/images/IMG_20250227_175804_466.jpg")
-                        processImageAndGetPrediction(
-                            navController.context,
-                            imageUri,
-                            contentResolver = navController.context.contentResolver
-                        ) { result ->
-                            Log.d("HomeScreen", "Prediction: ${result.toString()}")
-                        }
+                        val idToken = viewModel.getIdToken()
+                        Log.d("DEBUG", "ID Token: $idToken")
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -126,7 +115,6 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                     Text("TEST BUTTON")
                 }
             }
-
         }
     }
 }

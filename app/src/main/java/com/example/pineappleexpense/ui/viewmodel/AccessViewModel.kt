@@ -66,7 +66,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     //load get all stored expenses from the room database on app start
     init {
         loadExpenses()
-        loadCurrentReport()
+        loadReports()
     }
 
 
@@ -85,7 +85,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                     val newReport = Report(name = "current", expenseIds = listOf(expenseId))
                     reportDao.insertReport(newReport)
                 }
-                loadCurrentReport()
+                loadReports()
             }
         }
     }
@@ -96,16 +96,29 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             reportDao.getReportByName("current")?.expenseIds?.let {
                 reportDao.updateExpensesForReport("current", it.filter { it != expenseId })
             }
-            loadCurrentReport()
+            loadReports()
         }
     }
 
-    //update the local currentReportList value with the expenses in the current report
-    private fun loadCurrentReport() {
-        viewModelScope.launch() {
-            reportDao.getReportByName("current")?.expenseIds?.let {
-                _currentReportList.value = expenseDao.getExpensesByIds(it)
+    /**
+     * Loads all reports, separating out the "current" report and storing the rest in _pendingReports.
+     * - _currentReportList is updated with the expenses for the "current" report (if it exists).
+     * - _pendingReports is updated with every other report.
+     */
+    private fun loadReports() {
+        viewModelScope.launch {
+            val allReports = reportDao.getAllReports()
+            // Find the "current" report (if any)
+            val currentReport = allReports.firstOrNull { it.name == "current" }
+            if (currentReport != null) {
+                // Update the local current report list with its expenses
+                _currentReportList.value = expenseDao.getExpensesByIds(currentReport.expenseIds)
+            } else {
+                // If no current report, clear current report list
+                _currentReportList.value = emptyList()
             }
+            // Put all other reports in _pendingReports
+            _pendingReports.value = allReports.filter { it.name != "current" }
         }
     }
 
@@ -131,7 +144,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
                 // Clear the current report (or you could delete it if preferred)
                 reportDao.updateExpensesForReport("current", emptyList())
-                loadCurrentReport()
+                loadReports()
 
                 // Update the local pendingReports variable
                 _pendingReports.value = _pendingReports.value + newReport
@@ -139,6 +152,23 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                 Log.d("pineapple", "Submitted report '$newReportName' with expenses: ${newReport.expenseIds}")
             } else {
                 Log.d("pineapple", "No current report found to submit")
+            }
+        }
+    }
+
+    //deletes a report (todo: make this unsend the report as well)
+    fun unsendAndDeleteReport(reportName: String) {
+        viewModelScope.launch {
+            // Retrieve the report by name
+            val report = reportDao.getReportByName(reportName)
+            if (report != null) {
+                // Delete the report only (expenses remain intact)
+                reportDao.deleteReport(report)
+                // Reload reports to update UI state
+                loadReports()
+                loadExpenses()
+            } else {
+                Log.d("pineapple", "Report '$reportName' not found for deletion")
             }
         }
     }
@@ -168,7 +198,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             expenseDao.updateExpense(expense)
             loadExpenses()
-            loadCurrentReport()
+            loadReports()
         }
     }
 

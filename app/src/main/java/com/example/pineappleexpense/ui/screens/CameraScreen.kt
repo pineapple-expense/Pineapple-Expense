@@ -87,7 +87,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                     }
 
                     //display a message if a timeout occurs
-                    Toast.makeText(context, "network error: did not respond", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "network error: timeout", Toast.LENGTH_SHORT).show()
 
                     imageUriForPrediction = null
                 }

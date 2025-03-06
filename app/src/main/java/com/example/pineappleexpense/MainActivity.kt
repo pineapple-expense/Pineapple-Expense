@@ -231,8 +231,13 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             composable("Receipt Preview") {
                 ReceiptPreview(navController, viewModel)
             }
-            composable("Current Report") {
-                ViewReportScreen(navController, viewModel)
+            composable(
+                route = "viewReport/{reportName}",
+                arguments = listOf(navArgument("reportName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                //retrieve report name from arguments
+                val reportName = backStackEntry.arguments?.getString("reportName") ?: return@composable
+                ViewReportScreen(navController, viewModel, reportName)
             }
             composable(
                 route = "editExpense/{expenseId}",

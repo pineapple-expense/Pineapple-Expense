@@ -8,6 +8,9 @@ interface ReportDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReport(report: Report)
 
+    @Query("SELECT * FROM report_table")
+    suspend fun getAllReports(): List<Report>
+
     @Query("SELECT * FROM report_table WHERE id = :id")
     suspend fun getReportById(id: Int): Report?
 

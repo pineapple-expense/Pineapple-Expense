@@ -19,9 +19,21 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 fun ViewReportScreen(
     navController: NavHostController,
     viewModel: AccessViewModel,
+    reportName: String,
     modifier: Modifier = Modifier
 ) {
-    val reportExpenses = viewModel.currentReportList.value
+    val reportExpenses = if (reportName == "current") {
+        viewModel.currentReportList.value
+    } else {
+        val report = viewModel.pendingReports.value.firstOrNull { it.name == reportName }
+        if (report != null) {
+            viewModel.expenseList.value.filter { expense ->
+                report.expenseIds.contains(expense.id)
+            }
+        } else {
+            emptyList()
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -77,11 +89,15 @@ fun ViewReportScreen(
                         }
                         // Remove the expense from both the main list and the report list
                         viewModel.removeExpense(expense)
-                        viewModel.removeFromCurrentReport(expense.id)
+                        if (reportName == "current") {
+                            viewModel.removeFromCurrentReport(expense.id)
+                        }
                     },
                     onAddToReport = { },
                     onRemoveFromReport = { expense ->
-                        viewModel.removeFromCurrentReport(expense.id)
+                        if (reportName == "current") {
+                            viewModel.removeFromCurrentReport(expense.id)
+                        }
                     },
                     isExpenseInReport = { expense ->
                         reportExpenses.contains(expense)
@@ -91,22 +107,42 @@ fun ViewReportScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Button(
-                    onClick = {
-                        viewModel.submitReport()
-                        navController.navigate("Home") {
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(38, 114, 42, 255)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text("Submit Report for Review")
+                if (reportName == "current") {
+                    Button(
+                        onClick = {
+                            viewModel.submitReport()
+                            navController.navigate("Home") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(38, 114, 42, 255)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Submit Report for Review")
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            viewModel.unsendAndDeleteReport(reportName)
+                            navController.navigate("Home") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Unsend and Delete Report")
+                    }
                 }
             }
         }

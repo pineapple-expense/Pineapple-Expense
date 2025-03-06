@@ -35,7 +35,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 @Composable
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
-    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "Current Report", "Edit Expense")
+    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "Edit Expense")
     NavigationBar(
 
         modifier = Modifier.height(76.dp),
@@ -44,7 +44,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
         ) {
         NavigationBarItem(
             icon = {
-                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true){
+                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true){
                     //back button
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -62,7 +62,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             },
             selected = false, //navController.currentDestination?.route == "Settings",
             onClick = {
-                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true) {
+                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true) {
                     //navigate back
                     navController.popBackStack()
                 } else {
@@ -80,6 +80,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
         Text(
             text = when {
                 currentRoute?.startsWith("editExpense") == true -> "Edit Expense"
+                currentRoute?.startsWith("viewReport") == true -> "View Report"
                 else                                            -> "$currentRoute"
             },
             style = MaterialTheme.typography.titleLarge,

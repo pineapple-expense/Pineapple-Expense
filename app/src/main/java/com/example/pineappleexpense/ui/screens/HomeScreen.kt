@@ -38,6 +38,7 @@ import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.BuildConfig
+import com.example.pineappleexpense.ui.components.ReportList
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -58,34 +59,38 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (expenses.isEmpty()) {
-                NoPendingExpensesCard(navController)
-            } else {
-                ExpenseList(
-                    expenses = expenses,
-                    onCardClick = { },
-                    onDelete = { expense ->
-                        expense.imageUri?.let { uri ->
-                            deleteImageFromInternalStorage(uri.path ?: "")
-                        }
-                        viewModel.removeExpense(expense)
-                        viewModel.removeFromCurrentReport(expense.id)
-                    },
-                    onAddToReport = { expense ->
-                        viewModel.addToCurrentReport(expense.id)
-                    },
-                    onRemoveFromReport = { expense ->
-                        viewModel.removeFromCurrentReport(expense.id)
-                    },
-                    isExpenseInReport = { expense ->
-                        viewModel.currentReportList.value.any { it.id == expense.id }
-                    },
-                    navController
-                )
+            Column {
+                if (expenses.isEmpty()) {
+                    NoPendingExpensesCard(navController)
+                } else {
+                    ExpenseList(
+                        expenses = expenses,
+                        onCardClick = { },
+                        onDelete = { expense ->
+                            expense.imageUri?.let { uri ->
+                                deleteImageFromInternalStorage(uri.path ?: "")
+                            }
+                            viewModel.removeExpense(expense)
+                            viewModel.removeFromCurrentReport(expense.id)
+                        },
+                        onAddToReport = { expense ->
+                            viewModel.addToCurrentReport(expense.id)
+                        },
+                        onRemoveFromReport = { expense ->
+                            viewModel.removeFromCurrentReport(expense.id)
+                        },
+                        isExpenseInReport = { expense ->
+                            viewModel.currentReportList.value.any { it.id == expense.id }
+                        },
+                        navController
+                    )
+                }
+                ReportList(viewModel.pendingReports.value, navController, viewModel)
             }
+
             Button(
                 onClick = {
-                    navController.navigate("Current Report") {
+                    navController.navigate("viewReport/current") {
                         launchSingleTop = true
                         restoreState = true
                     }

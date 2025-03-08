@@ -15,7 +15,7 @@ object DatabaseInstance {
                 context.applicationContext,
                 AppLocalDatabase::class.java,
                 "app_local_database"
-            ).addMigrations(MIGRATION_1_2).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
             INSTANCE = instance
             instance
         }
@@ -27,5 +27,13 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         database.execSQL(
             "CREATE TABLE report_table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL, expenseIds TEXT NOT NULL)"
         )
+    }
+}
+
+// Migration from version 2 to 3 to add the status column
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Add a new column 'status' with a default value "unsubmitted"
+        database.execSQL("ALTER TABLE report_table ADD COLUMN status TEXT NOT NULL DEFAULT 'Unsubmitted'")
     }
 }

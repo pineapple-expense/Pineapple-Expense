@@ -4,8 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,19 +24,9 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Displays a list of expense cards.
- *
- * @param expenses List of expenses to display.
- * @param onCardClick Called when a card is clicked.
- * @param onDelete Called when a delete action is triggered.
- * @param onAddToReport Called when adding an expense to the report.
- * @param onRemoveFromReport Called when removing an expense from the report.
- * @param isExpenseInReport Function to determine if an expense is in the report.
- */
-
+//returns a card for each expense passed in
 @Composable
-fun ExpenseList(
+fun expenseCardsList(
     expenses: List<Expense>,
     onCardClick: (Expense) -> Unit,
     onDelete: (Expense) -> Unit,
@@ -46,16 +34,19 @@ fun ExpenseList(
     onRemoveFromReport: (Expense) -> Unit,
     isExpenseInReport: (Expense) -> Boolean,
     navController: NavHostController
-) {
+): List<@Composable () -> Unit> {
+    // Local state for expanded card
     var expandedExpense by remember { mutableStateOf<Expense?>(null) }
 
-    LazyColumn {
-        items(expenses) { expense ->
+    // Return a list of composable lambdas (each lambda represents one card)
+    return expenses.map { expense ->
+        {
             val inReport = isExpenseInReport(expense)
             ExpenseCard(
                 expense = expense,
                 isExpanded = expandedExpense == expense,
                 onCardClicked = { clickedExpense ->
+                    // Toggle expansion
                     expandedExpense = if (expandedExpense == clickedExpense) null else clickedExpense
                     onCardClick(clickedExpense)
                 },
@@ -68,6 +59,7 @@ fun ExpenseList(
         }
     }
 }
+
 
 /**
  * A single expense card that toggles between a collapsed and expanded view.

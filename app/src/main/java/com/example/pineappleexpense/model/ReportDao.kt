@@ -1,7 +1,6 @@
 package com.example.pineappleexpense.model
 
 import androidx.room.*
-import com.example.pineappleexpense.model.Expense
 
 @Dao
 interface ReportDao {
@@ -19,6 +18,9 @@ interface ReportDao {
 
     @Query("UPDATE report_table SET expenseIds = :newExpenseIds WHERE name = :reportName")
     suspend fun updateExpensesForReport(reportName: String, newExpenseIds: List<Int>)
+
+    @Query("UPDATE report_table SET status = :newStatus WHERE name = :reportName")
+    suspend fun updateReportStatus(reportName: String, newStatus: String)
 
     @Delete
     suspend fun deleteReport(report: Report)

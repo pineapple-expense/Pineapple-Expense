@@ -118,15 +118,13 @@ fun ViewReportScreen(
                     navController
                 )
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(expenseCards) { expenseCard ->
                         expenseCard()
                     }
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
 
                 if (reportName == "current") {
                     Button(

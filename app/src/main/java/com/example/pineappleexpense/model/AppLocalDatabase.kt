@@ -10,7 +10,7 @@ import com.google.gson.reflect.TypeToken
 import java.util.Date
 
 //main access point for the room database to store expenses
-@Database(entities = [Expense::class, Report::class], version = 2, exportSchema = false)
+@Database(entities = [Expense::class, Report::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppLocalDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao

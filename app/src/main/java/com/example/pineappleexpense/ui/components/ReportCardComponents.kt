@@ -3,8 +3,6 @@ package com.example.pineappleexpense.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,58 +17,47 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 
-//Displays a list of reports in a LazyColumn.
-//Each report is shown in a non-expandable card.
-//Clicking on a card navigates to a report detail screen.
+//returns a card for each report passed in
 @Composable
-fun ReportList(
+fun reportCardsList(
     reports: List<Report>,
     navController: NavHostController,
     viewModel: AccessViewModel
-) {
-    LazyColumn {
-        items(reports) { report ->
+): List<@Composable () -> Unit> {
+    // Each report just maps to a ReportCard composable
+    return reports.map { report ->
+        {
             ReportCard(
                 report = report,
-                navController,
-                viewModel
+                navController = navController,
+                viewModel = viewModel
             )
         }
     }
 }
 
 
+
 // A single report card showing:
 // - The report name,
 // - The total amount of all expenses in the report,
 // - The date range of the expenses in the report,
-// - Navigates to a detail screen when clicked
+// - Navigates to a screen showing expenses in the report when clicked
 @Composable
 fun ReportCard(
     report: Report,
     navController: NavHostController,
     viewModel: AccessViewModel
 ) {
-    // Calculate total from all expenses
-    val expenseList = viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }
-    val totalAmount = expenseList.map { it.total }.sum()
-
-    // Get date range
-    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-    val sortedExpenses = expenseList.sortedBy { it.date }
-    val dateRangeText = if (sortedExpenses.isNotEmpty()) {
-        val startDate = dateFormatter.format(sortedExpenses.first().date)
-        val endDate = dateFormatter.format(sortedExpenses.last().date)
-        "$startDate - $endDate"
-    } else {
-        "No expenses"
-    }
+    val totalAmount = viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }.map { it.total }.sum()
+    val dateRangeText = expensesDateRange(viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) })
 
     Card(
         modifier = Modifier
@@ -130,5 +117,19 @@ fun ReportCard(
                 )
             }
         }
+    }
+}
+
+//generate the date range string for a given report
+fun expensesDateRange(reportExpenses: List<Expense>): String {
+    val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+    val sortedExpenses = reportExpenses.sortedBy { it.date }
+
+    return if (sortedExpenses.isNotEmpty()) {
+        val startDate = dateFormatter.format(sortedExpenses.first().date)
+        val endDate = dateFormatter.format(sortedExpenses.last().date)
+        "$startDate - $endDate"
+    } else {
+        "No expenses"
     }
 }

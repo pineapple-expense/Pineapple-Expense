@@ -1,6 +1,8 @@
 package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -9,10 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.BottomBar
-import com.example.pineappleexpense.ui.components.ExpenseList
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
+import com.example.pineappleexpense.ui.components.expenseCardsList
+import com.example.pineappleexpense.ui.components.expensesDateRange
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
@@ -22,10 +26,11 @@ fun ViewReportScreen(
     reportName: String,
     modifier: Modifier = Modifier
 ) {
+    var report: Report? = null
     val reportExpenses = if (reportName == "current") {
         viewModel.currentReportList.value
     } else {
-        val report = viewModel.pendingReports.value.firstOrNull { it.name == reportName }
+        report = viewModel.pendingReports.value.firstOrNull { it.name == reportName }
         if (report != null) {
             viewModel.expenseList.value.filter { expense ->
                 report.expenseIds.contains(expense.id)
@@ -52,13 +57,7 @@ fun ViewReportScreen(
                 ReportEmptyContent()
             } else {
                 // Find date range and total
-                val earliestDate = reportExpenses.minByOrNull { it.date }?.date
-                val latestDate = reportExpenses.maxByOrNull { it.date }?.date
-
-                val dateFormat = java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.getDefault())
-                val earliestDateStr = earliestDate?.let { dateFormat.format(it) } ?: ""
-                val latestDateStr = latestDate?.let { dateFormat.format(it) } ?: ""
-
+                val dateRange = expensesDateRange(reportExpenses)
                 val totalSum = reportExpenses.map { it.total }.sum()
 
                 // Display date range and total
@@ -69,18 +68,32 @@ fun ViewReportScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = modifier.height(8.dp))
+
+                    // Row for date range and total on the same line
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = dateRange,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Total: $%.2f".format(totalSum),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    // Status displayed underneath
                     Text(
-                        text = "$earliestDateStr - $latestDateStr",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Total: $%.2f".format(totalSum),
+                        text = "Status: ${report?.status ?: "none"}",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
 
                 // Display the report expenses in a list.
-                ExpenseList(
+                val expenseCards = expenseCardsList(
                     expenses = reportExpenses,
                     onCardClick = { },
                     onDelete = { expense ->
@@ -104,6 +117,14 @@ fun ViewReportScreen(
                     },
                     navController
                 )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(expenseCards) { expenseCard ->
+                        expenseCard()
+                    }
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
 

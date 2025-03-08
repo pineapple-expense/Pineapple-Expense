@@ -2,7 +2,6 @@
 
 package com.example.pineappleexpense.ui.screens
 
-import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
@@ -14,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,12 +34,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.BottomBar
-import com.example.pineappleexpense.ui.components.ExpenseList
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.BuildConfig
-import com.example.pineappleexpense.ui.components.ReportList
+import com.example.pineappleexpense.ui.components.expenseCardsList
+import com.example.pineappleexpense.ui.components.reportCardsList
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -59,33 +60,43 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Column {
-                if (expenses.isEmpty()) {
-                    NoPendingExpensesCard(navController)
-                } else {
-                    ExpenseList(
-                        expenses = expenses,
-                        onCardClick = { },
-                        onDelete = { expense ->
-                            expense.imageUri?.let { uri ->
-                                deleteImageFromInternalStorage(uri.path ?: "")
-                            }
-                            viewModel.removeExpense(expense)
-                            viewModel.removeFromCurrentReport(expense.id)
-                        },
-                        onAddToReport = { expense ->
-                            viewModel.addToCurrentReport(expense.id)
-                        },
-                        onRemoveFromReport = { expense ->
-                            viewModel.removeFromCurrentReport(expense.id)
-                        },
-                        isExpenseInReport = { expense ->
-                            viewModel.currentReportList.value.any { it.id == expense.id }
-                        },
-                        navController
-                    )
+            val reportCards = reportCardsList (viewModel.pendingReports.value, navController, viewModel)
+            val expenseCards = expenseCardsList(
+                expenses = expenses,
+                onCardClick = { },
+                onDelete = { expense ->
+                    expense.imageUri?.let { uri ->
+                        deleteImageFromInternalStorage(uri.path ?: "")
+                    }
+                    viewModel.removeExpense(expense)
+                    viewModel.removeFromCurrentReport(expense.id)
+                },
+                onAddToReport = { expense ->
+                    viewModel.addToCurrentReport(expense.id)
+                },
+                onRemoveFromReport = { expense ->
+                    viewModel.removeFromCurrentReport(expense.id)
+                },
+                isExpenseInReport = { expense ->
+                    viewModel.currentReportList.value.any { it.id == expense.id }
+                },
+                navController
+            )
+            if (expenses.isEmpty()) {
+                NoPendingExpensesCard(navController)
+            }
+            //put both the expense cards and report cards in the lazy column
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                items(expenseCards) { expenseCard ->
+                    expenseCard()
                 }
-                ReportList(viewModel.pendingReports.value, navController, viewModel)
+
+                items(reportCards) { reportCard ->
+                    reportCard()
+                }
             }
 
             Button(

@@ -1,7 +1,6 @@
 package com.example.pineappleexpense.ui.viewmodel
 
 import android.app.Application
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.State
@@ -10,11 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.auth0.android.Auth0
-import com.auth0.android.authentication.AuthenticationAPIClient
-import com.auth0.android.authentication.storage.CredentialsManagerException
 import com.auth0.android.authentication.storage.SecureCredentialsManager
-import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.DatabaseInstance
@@ -137,7 +132,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                 val newReportName = sdf.format(Date())
 
                 // Create a new report with the new name and the same expense IDs as the current report
-                val newReport = Report(name = newReportName, expenseIds = currentReport.expenseIds)
+                val newReport = Report(name = newReportName, expenseIds = currentReport.expenseIds, status = "Under Review")
 
                 // Insert the new report into the database
                 reportDao.insertReport(newReport)

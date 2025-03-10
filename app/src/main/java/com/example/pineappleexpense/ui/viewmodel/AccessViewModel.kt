@@ -43,19 +43,35 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     private val _expenseList = mutableStateOf<List<Expense>>(emptyList())
     val expenseList: State<List<Expense>> get() = _expenseList
 
-    //local current report list
-    private val _currentReportList = mutableStateOf<List<Expense>>(emptyList())
-    val currentReportList: State<List<Expense>> get() = _currentReportList
+    //local current report expense list
+    private val _currentReportExpenses = mutableStateOf<List<Expense>>(emptyList())
+    val currentReportExpenses: State<List<Expense>> get() = _currentReportExpenses
 
-    //local pending reports list (for submitted reports)
-    private val _pendingReports = mutableStateOf<List<Report>>(emptyList())
-    val pendingReports: State<List<Report>> get() = _pendingReports
+    // local report list (contains all reports)
+    private val _reportList = mutableStateOf<List<Report>>(emptyList())
+    val reportList: State<List<Report>> get() = _reportList
 
-    //computed property that returns expenses not in any pending report (for displaying on the home page)
+    // Computed property that returns pending reports (excluding "current")
+    val pendingReports: List<Report>
+        get() = _reportList.value.filter { it.name != "current" && it.status == "Under Review" }
+
+    // Computed property that returns accepted reports (excluding "current")
+    val acceptedReports: List<Report>
+        get() = _reportList.value.filter { it.name != "current" && it.status == "Accepted" }
+
+    // Computed property that returns rejected reports (excluding "current")
+    val rejectedReports: List<Report>
+        get() = _reportList.value.filter { it.name != "current" && it.status == "Rejected" }
+
+    //computed property that returns expenses not in any pending, accepted report, or rejected reports (for displaying on the home page)
     val displayExpenses: List<Expense>
         get() {
-            val pendingIds = pendingReports.value.flatMap { it.expenseIds }.toSet()
-            return expenseList.value.filter { expense -> expense.id !in pendingIds }
+            val pendingIds = pendingReports.flatMap { it.expenseIds }.toSet()
+            val acceptedExpenses = acceptedReports.flatMap { it.expenseIds }.toSet()
+            val rejectedExpenses = rejectedReports.flatMap { it.expenseIds }.toSet()
+            return expenseList.value.filter { expense ->
+                expense.id !in pendingIds && expense.id !in acceptedExpenses && expense.id !in rejectedExpenses
+            }
         }
 
     //load get all stored expenses from the room database on app start
@@ -97,23 +113,22 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     /**
      * Loads all reports, separating out the "current" report and storing the rest in _pendingReports.
-     * - _currentReportList is updated with the expenses for the "current" report (if it exists).
+     * - _currentReportExpenses is updated with the expenses for the "current" report (if it exists).
      * - _pendingReports is updated with every other report.
      */
     private fun loadReports() {
         viewModelScope.launch {
             val allReports = reportDao.getAllReports()
+            _reportList.value = allReports
             // Find the "current" report (if any)
             val currentReport = allReports.firstOrNull { it.name == "current" }
             if (currentReport != null) {
                 // Update the local current report list with its expenses
-                _currentReportList.value = expenseDao.getExpensesByIds(currentReport.expenseIds)
+                _currentReportExpenses.value = expenseDao.getExpensesByIds(currentReport.expenseIds)
             } else {
                 // If no current report, clear current report list
-                _currentReportList.value = emptyList()
+                _currentReportExpenses.value = emptyList()
             }
-            // Put all other reports in _pendingReports
-            _pendingReports.value = allReports.filter { it.name != "current" }
         }
     }
 
@@ -141,13 +156,18 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                 reportDao.updateExpensesForReport("current", emptyList())
                 loadReports()
 
-                // Update the local pendingReports variable
-                _pendingReports.value = _pendingReports.value + newReport
-
                 Log.d("pineapple", "Submitted report '$newReportName' with expenses: ${newReport.expenseIds}")
             } else {
                 Log.d("pineapple", "No current report found to submit")
             }
+        }
+    }
+
+    // Changes the status of a report to be accepted
+    fun acceptReport(report: Report) {
+        viewModelScope.launch {
+            reportDao.updateReportStatus(report.name, "Accepted")
+            loadReports()
         }
     }
 

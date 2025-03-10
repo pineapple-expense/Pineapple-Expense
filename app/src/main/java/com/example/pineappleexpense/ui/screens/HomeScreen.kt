@@ -60,7 +60,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            val reportCards = reportCardsList (viewModel.pendingReports.value, navController, viewModel)
+            val reportCards = reportCardsList (viewModel.pendingReports, navController, viewModel)
             val expenseCards = expenseCardsList(
                 expenses = expenses,
                 onCardClick = { },
@@ -78,7 +78,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                     viewModel.removeFromCurrentReport(expense.id)
                 },
                 isExpenseInReport = { expense ->
-                    viewModel.currentReportList.value.any { it.id == expense.id }
+                    viewModel.currentReportExpenses.value.any { it.id == expense.id }
                 },
                 navController
             )
@@ -110,10 +110,10 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                     .align(Alignment.BottomStart)
                     .padding(start = 15.dp, bottom = 15.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (viewModel.currentReportList.value.isEmpty()) Color.Gray else Color(0xFF4E0AA6)
+                    containerColor = if (viewModel.currentReportExpenses.value.isEmpty()) Color.Gray else Color(0xFF4E0AA6)
                 )
             ) {
-                Text("View Report")
+                Text("View Current Report")
             }
             if (BuildConfig.DEBUG) {
                 Button(

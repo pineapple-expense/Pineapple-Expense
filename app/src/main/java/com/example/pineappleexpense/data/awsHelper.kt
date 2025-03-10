@@ -30,6 +30,8 @@ import okhttp3.Callback as okhttp3Callback
 import java.io.File
 
 import java.util.concurrent.TimeUnit
+
+// Deprecated-use CredentialsManager stored in viewmodel instead
 fun getCredentialsManager(context: Context): SecureCredentialsManager {
     val auth0 = Auth0(
         context.getString(R.string.com_auth0_client_id),
@@ -42,6 +44,7 @@ fun getCredentialsManager(context: Context): SecureCredentialsManager {
     )
 }
 
+// Deprecated-use CredentialsManager stored in viewmodel instead
 fun fetchAccessToken(context: Context, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
     val credentialsManager = getCredentialsManager(context)
 
@@ -59,50 +62,79 @@ fun fetchAccessToken(context: Context, onSuccess: (String) -> Unit, onFailure: (
     })
 }
 
-fun getReceiptUploadURL(viewModel: AccessViewModel, fileName: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
-    val client = OkHttpClient()
-    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/s3-presigned-url"
-    val jsonMediaType = "application/json".toMediaType()
-    val jsonBody = Gson().toJson(mapOf("fileName" to fileName))
-    val requestBody = jsonBody.toRequestBody(jsonMediaType)
-    val token = viewModel.getAccessToken()
-
-    val request = Request.Builder()
-        .url(url)
-        .post(requestBody)
-        .addHeader("Authorization", "Bearer $token")
-        .addHeader("Content-Type", "application/json")
+fun makeApiRequest(
+    url: String,
+    method: String = "POST",
+    headers: Map<String, String> = emptyMap(),
+    body: Map<String, Any>? = null,
+    onSuccess: (String) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val client = OkHttpClient.Builder()
+        .callTimeout(20, TimeUnit.SECONDS)
         .build()
 
-    client.newCall(request).enqueue(object : okhttp3Callback {
+
+    val jsonMediaType = "application/json".toMediaType()
+    val jsonBody = body?.let { Gson().toJson(it).toRequestBody(jsonMediaType) }
+
+    val requestBuilder = Request.Builder().url(url)
+
+    headers.forEach { (key, value) ->
+        requestBuilder.addHeader(key, value)
+    }
+
+    when (method.uppercase()) {
+        "POST" -> requestBuilder.post(jsonBody ?: "".toRequestBody(jsonMediaType))
+        "PUT" -> requestBuilder.put(jsonBody ?: "".toRequestBody(jsonMediaType))
+        "GET" -> requestBuilder.get()
+        "DELETE" -> requestBuilder.delete()
+    }
+
+    val request = requestBuilder.build()
+
+    client.newCall(request).enqueue(object : okhttp3.Callback {
         override fun onFailure(call: Call, e: IOException) {
-            Log.e("GetUploadURL", "Request failed: ${e.message}")
             onFailure(e.message ?: "Network error")
         }
 
         override fun onResponse(call: Call, response: Response) {
             response.use {
                 if (!it.isSuccessful) {
-                    val errorBody = it.body.string()
-                    Log.e("getUploadURL", "Request failed: $errorBody")
-                    onFailure("Error: ${it.code} - $errorBody")
-                    return
-                }
-
-                val responseBody = it.body.string()
-                Log.d("NETWORK", "File name: $fileName")
-                Log.d("NETWORK", "Presigned URL: $responseBody")
-                try {
-                    val jsonObject = JSONObject(responseBody)
-                    val presignedUrl = jsonObject.getString("presignedUrl")  // Extract URL correctly
-                    onSuccess(presignedUrl)
-                } catch (e: Exception) {
-                    onFailure("Invalid response format: ${e.message}")
+                    onFailure("Error: ${it.code} - ${it.body.string()}")
+                } else {
+                    onSuccess(it.body.string())
                 }
             }
         }
     })
 }
+
+
+fun getReceiptUploadURL(viewModel: AccessViewModel, fileName: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/s3-presigned-url"
+    val token = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf(
+            "Authorization" to "Bearer $token",
+            "Content-Type" to "application/json"
+        ),
+        body = mapOf("fileName" to fileName),
+        onSuccess = { responseBody ->
+            try {
+                val jsonObject = JSONObject(responseBody)
+                onSuccess(jsonObject.getString("presignedUrl"))
+            } catch (e: Exception) {
+                onFailure("Invalid response format: ${e.message}")
+            }
+        },
+        onFailure = onFailure
+    )
+}
+
 
 data class PredictedDate(
     val fullDate: String,
@@ -120,41 +152,24 @@ data class Prediction(
 )
 
 fun getPrediction(viewModel: AccessViewModel, receiptId: String, callback: (Prediction?) -> Unit) {
-    val client = OkHttpClient.Builder()
-        .readTimeout(30, TimeUnit.SECONDS) // Increase read timeout to 30 seconds
-        .build()
-
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/predictions"
-
-    val jsonMediaType = "application/json".toMediaType()
-    val jsonBody = Gson().toJson(mapOf(
-        "receipt_id" to receiptId,
-        "name" to viewModel.getUserName(),
-    ))
-    val requestBody = jsonBody.toRequestBody(jsonMediaType)
     val token = viewModel.getAccessToken()
-    val request = Request.Builder()
-        .url(url)
-        .post(requestBody)
-        .addHeader("Authorization", "Bearer $token")
-        .addHeader("Content-Type", "application/json")
-        .build()
+    val name = viewModel.getUserName() ?: "Unknown"
 
-    client.newCall(request).enqueue(object : okhttp3Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            Log.e("getPrediction", "Request failed: ${e.message}")
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!it.isSuccessful) {
-                    val errorBody = it.body.string()
-                    Log.e("getPrediction", "Get prediction failed: $errorBody")
-                    return
-                }
-
-                val json = JSONObject(response.body.string())
-
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf(
+            "Authorization" to "Bearer $token",
+            "Content-Type" to "application/json"
+        ),
+        body = mapOf<String, Any>(
+            "receipt_id" to receiptId,
+            "name" to name
+        ),
+        onSuccess = { responseBody ->
+            try {
+                val json = JSONObject(responseBody)
                 val predictedDateJson = json.getJSONObject("predicted_date")
 
                 val prediction = Prediction(
@@ -170,9 +185,16 @@ fun getPrediction(viewModel: AccessViewModel, receiptId: String, callback: (Pred
                     amount = json.getString("predicted_amount")
                 )
                 callback(prediction)
+            } catch (e: Exception) {
+                Log.e("getPrediction", "Parsing error: ${e.message}")
+                callback(null)
             }
+        },
+        onFailure = { error ->
+            Log.e("getPrediction", "Request failed: $error")
+            callback(null)
         }
-    })
+    )
 }
 
 fun uploadFileToS3(

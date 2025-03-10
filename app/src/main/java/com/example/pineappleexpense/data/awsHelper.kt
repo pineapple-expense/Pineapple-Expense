@@ -29,6 +29,7 @@ import com.auth0.android.callback.Callback as auth0Callback
 import okhttp3.Callback as okhttp3Callback
 import java.io.File
 
+import java.util.concurrent.TimeUnit
 fun getCredentialsManager(context: Context): SecureCredentialsManager {
     val auth0 = Auth0(
         context.getString(R.string.com_auth0_client_id),
@@ -119,14 +120,16 @@ data class Prediction(
 )
 
 fun getPrediction(viewModel: AccessViewModel, receiptId: String, callback: (Prediction?) -> Unit) {
-    val client = OkHttpClient()
+    val client = OkHttpClient.Builder()
+        .readTimeout(30, TimeUnit.SECONDS) // Increase read timeout to 30 seconds
+        .build()
+
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/predictions"
 
     val jsonMediaType = "application/json".toMediaType()
     val jsonBody = Gson().toJson(mapOf(
         "receipt_id" to receiptId,
-        "fname" to "John",
-        "lname" to "Doe"
+        "name" to viewModel.getUserName(),
     ))
     val requestBody = jsonBody.toRequestBody(jsonMediaType)
     val token = viewModel.getAccessToken()

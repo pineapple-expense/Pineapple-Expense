@@ -28,9 +28,9 @@ fun ViewReportScreen(
 ) {
     var report: Report? = null
     val reportExpenses = if (reportName == "current") {
-        viewModel.currentReportList.value
+        viewModel.currentReportExpenses.value
     } else {
-        report = viewModel.pendingReports.value.firstOrNull { it.name == reportName }
+        report = viewModel.reportList.value.firstOrNull { it.name == reportName }
         if (report != null) {
             viewModel.expenseList.value.filter { expense ->
                 report.expenseIds.contains(expense.id)
@@ -145,22 +145,38 @@ fun ViewReportScreen(
                         Text("Submit Report for Review")
                     }
                 } else {
-                    Button(
-                        onClick = {
-                            viewModel.unsendAndDeleteReport(reportName)
-                            navController.navigate("Home") {
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text("Unsend and Delete Report")
+                    Column {
+                        Button(
+                            onClick = {
+                                report?.let { viewModel.acceptReport(it) }
+                                navController.navigate("Home") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Text("Accept Report (temp button)")
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.unsendAndDeleteReport(reportName)
+                                navController.navigate("Home") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text("Unsend and Delete Report")
+                        }
                     }
                 }
             }

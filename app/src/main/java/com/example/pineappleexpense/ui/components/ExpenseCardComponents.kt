@@ -263,7 +263,7 @@ fun ExpandedExpenseCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Remove from Report",
+                        text = "Remove from Current Report",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
@@ -276,7 +276,7 @@ fun ExpandedExpenseCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Add to Report",
+                        text = "Add to Current Report",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary
                     )

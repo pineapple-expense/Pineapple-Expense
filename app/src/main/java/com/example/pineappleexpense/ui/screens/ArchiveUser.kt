@@ -1,13 +1,13 @@
 package com.example.pineappleexpense.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -20,29 +20,34 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.UserScreenTemplate
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
-data class ArchiveRow(val startDate: String, val endDate: String, val total: String, val isApproved: Boolean)
-
 @Composable
-fun UserArchiveCard(archiveRow: ArchiveRow) {
-    //Text(text = "Start Date: ${archiveRow.startDate}")
+fun UserArchiveCard(report: Report, viewModel: AccessViewModel, navController: NavHostController) {
+    val expenses = viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }
+
     ListItem(
-        headlineContent = {Text("${archiveRow.startDate} - ${archiveRow.endDate}", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)},
-        supportingContent = {Text("Total: \$${archiveRow.total}")},
+        modifier = Modifier.clickable{
+            navController.navigate("viewReport/${report.name}") {
+                launchSingleTop = true
+                restoreState = true
+            }
+        },
+        headlineContent = {Text(report.name, style = androidx.compose.material3.MaterialTheme.typography.titleMedium)},
+        supportingContent = {Text("Total: \$${expenses.map { it.total }.sum()}")},
         leadingContent = {
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
                         color = Color(0xFFEDE7F6),
-                        shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (archiveRow.isApproved) Icons.Default.Check else Icons.Default.Close,
+                    imageVector = Icons.Default.Check,
                     contentDescription = "Checked",
                     tint = Color.Black
                 )
@@ -52,24 +57,18 @@ fun UserArchiveCard(archiveRow: ArchiveRow) {
 }
 
 @Composable
-fun UserArchiveList(archiveRows: List<ArchiveRow>) {
+fun UserArchiveList(archiveRows: List<Report>, viewModel: AccessViewModel, navController: NavHostController) {
     LazyColumn {
-        items(archiveRows.size) { index ->
-            UserArchiveCard(archiveRow = archiveRows[index])
+        items(archiveRows) { report ->
+            UserArchiveCard(report, viewModel, navController)
         }
     }
 }
 
 @Composable
 fun UserArchiveScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    // Test data for the archive rows
-    // Should get data from viewmodel once that has backend implementation
-    val archiveRows = listOf(
-        ArchiveRow("2023-01-01", "2023-01-31", "100.00", true),
-        ArchiveRow("2023-02-01", "2023-02-28", "150.00", false)
-    )
     UserScreenTemplate(navController, viewModel) {
-        UserArchiveList(archiveRows)
+        UserArchiveList(viewModel.acceptedReports, viewModel, navController)
     }
 }
 

@@ -2,15 +2,7 @@ package com.example.pineappleexpense.data
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.content.Context
 import android.util.Log
-import com.auth0.android.Auth0
-import com.auth0.android.authentication.AuthenticationAPIClient
-import com.auth0.android.authentication.storage.CredentialsManagerException
-import com.auth0.android.authentication.storage.SecureCredentialsManager
-import com.auth0.android.authentication.storage.SharedPreferencesStorage
-import com.auth0.android.result.Credentials
-import com.example.pineappleexpense.R
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.google.gson.Gson
 import okhttp3.Call
@@ -25,42 +17,10 @@ import okio.IOException
 import okio.buffer
 import okio.source
 import org.json.JSONObject
-import com.auth0.android.callback.Callback as auth0Callback
 import okhttp3.Callback as okhttp3Callback
 import java.io.File
 
 import java.util.concurrent.TimeUnit
-
-// Deprecated-use CredentialsManager stored in viewmodel instead
-fun getCredentialsManager(context: Context): SecureCredentialsManager {
-    val auth0 = Auth0(
-        context.getString(R.string.com_auth0_client_id),
-        context.getString(R.string.com_auth0_domain)
-    )
-    return SecureCredentialsManager(
-        context.applicationContext, // Use application context to prevent leaks
-        AuthenticationAPIClient(auth0),
-        SharedPreferencesStorage(context.applicationContext)
-    )
-}
-
-// Deprecated-use CredentialsManager stored in viewmodel instead
-fun fetchAccessToken(context: Context, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
-    val credentialsManager = getCredentialsManager(context)
-
-    credentialsManager.getCredentials(object : auth0Callback<Credentials, CredentialsManagerException> {
-        override fun onSuccess(result: Credentials) {
-            val token = result.accessToken
-            Log.d("AUTH", "Token retrieved: $token")
-            onSuccess(token)
-        }
-
-        override fun onFailure(error: CredentialsManagerException) {
-            Log.e("AUTH", "Failed to get credentials: ${error.message}")
-            onFailure(error.message ?: "Unknown error")
-        }
-    })
-}
 
 fun makeApiRequest(
     url: String,

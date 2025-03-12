@@ -17,7 +17,12 @@ import org.json.JSONObject
 import okhttp3.Callback as okhttp3Callback
 import java.io.File
 
-fun getReceiptUploadURL(viewModel: AccessViewModel, fileName: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+fun getReceiptUploadURL(
+    viewModel: AccessViewModel,
+    fileName: String,
+    onSuccess: (String) -> Unit,
+    onFailure: (String) -> Unit)
+{
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/s3-presigned-url"
     val token = viewModel.getAccessToken()
 
@@ -57,7 +62,11 @@ data class Prediction(
     val amount: String
 )
 
-fun getPrediction(viewModel: AccessViewModel, receiptId: String, callback: (Prediction?) -> Unit) {
+fun getPrediction(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    callback: (Prediction?) -> Unit)
+{
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/predictions"
     val token = viewModel.getAccessToken()
     val name = viewModel.getUserName() ?: "Unknown"
@@ -108,8 +117,8 @@ fun uploadFileToS3(
     fileUri: Uri,
     contentResolver: ContentResolver,
     onSuccess: () -> Unit,
-    onFailure: (String) -> Unit
-) {
+    onFailure: (String) -> Unit)
+{
     try {
         val file = File(fileUri.path ?: throw IOException("Invalid file"))
         val fileSize = file.length()

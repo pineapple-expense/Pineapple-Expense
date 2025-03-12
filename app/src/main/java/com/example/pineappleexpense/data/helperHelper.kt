@@ -35,6 +35,7 @@ fun makeApiRequest(
     when (method.uppercase()) {
         "POST" -> requestBuilder.post(jsonBody ?: "".toRequestBody(jsonMediaType))
         "PUT" -> requestBuilder.put(jsonBody ?: "".toRequestBody(jsonMediaType))
+        "PATCH" -> requestBuilder.patch(jsonBody ?: "".toRequestBody(jsonMediaType))
         "GET" -> requestBuilder.get()
         "DELETE" -> requestBuilder.delete()
     }

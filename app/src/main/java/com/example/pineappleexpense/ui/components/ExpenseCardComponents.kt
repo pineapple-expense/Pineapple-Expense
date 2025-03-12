@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.pineappleexpense.model.Expense
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,7 +35,8 @@ fun expenseCardsList(
     onAddToReport: (Expense) -> Unit,
     onRemoveFromReport: (Expense) -> Unit,
     isExpenseInReport: (Expense) -> Boolean,
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: AccessViewModel
 ): List<@Composable () -> Unit> {
     // Local state for expanded card
     var expandedExpense by remember { mutableStateOf<Expense?>(null) }
@@ -54,7 +57,8 @@ fun expenseCardsList(
                 onAddToReportClicked = { onAddToReport(expense) },
                 onRemoveFromReportClicked = { onRemoveFromReport(expense) },
                 inReport = inReport,
-                navController
+                navController,
+                viewModel
             )
         }
     }
@@ -82,7 +86,8 @@ fun ExpenseCard(
     onAddToReportClicked: () -> Unit = {},
     onRemoveFromReportClicked: () -> Unit = {},
     inReport: Boolean,
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: AccessViewModel
 ) {
     Card(
         modifier = Modifier
@@ -108,7 +113,8 @@ fun ExpenseCard(
                         launchSingleTop = true
                         restoreState = true
                     }
-                }
+                },
+                viewModel
             )
         } else {
             CollapsedExpenseCard(expense = expense)
@@ -180,7 +186,8 @@ fun ExpandedExpenseCard(
     onAddToReportClicked: () -> Unit,
     onRemoveFromReportClicked: () -> Unit,
     inReport: Boolean,
-    onEditClicked: () -> Unit = {}
+    onEditClicked: () -> Unit = {},
+    viewModel: AccessViewModel
 ) {
     val formattedDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(expense.date)
 
@@ -262,11 +269,20 @@ fun ExpandedExpenseCard(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = "Remove from Current Report",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                    if(viewModel.currentReportExpenses.value.contains(expense)) {
+                        Text(
+                            text = "Remove from Current Report",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                    else {
+                        Text(
+                            text = "Remove from Report",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             } else {
                 Button(

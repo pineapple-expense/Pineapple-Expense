@@ -33,13 +33,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.BuildConfig
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
-import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
-import com.example.pineappleexpense.BuildConfig
 import com.example.pineappleexpense.ui.components.expenseCardsList
 import com.example.pineappleexpense.ui.components.reportCardsList
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -80,7 +80,8 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 isExpenseInReport = { expense ->
                     viewModel.currentReportExpenses.value.any { it.id == expense.id }
                 },
-                navController
+                navController,
+                viewModel
             )
             if (expenses.isEmpty()) {
                 NoPendingExpensesCard(navController)

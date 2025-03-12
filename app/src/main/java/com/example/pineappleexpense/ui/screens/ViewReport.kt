@@ -115,7 +115,8 @@ fun ViewReportScreen(
                     isExpenseInReport = { expense ->
                         reportExpenses.contains(expense)
                     },
-                    navController
+                    navController,
+                    viewModel
                 )
                 LazyColumn(
                     modifier = Modifier.weight(1f),

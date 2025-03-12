@@ -2,6 +2,7 @@ package com.example.pineappleexpense.data
 
 import android.util.Log
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import org.json.JSONArray
 
 // Create a new empty report on the server
 fun createReportRemote(
@@ -115,10 +116,67 @@ fun recallReport(
     )
 }
 
-//fun getReturnedReports(
-//    viewModel: AccessViewModel,
-//    onSuccess: (List<String>) -> Unit,
-//    onFailure: (String) -> Unit
-//) {
-//    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/GetReturnedReports"
-//}
+fun getReturnedReports(
+    viewModel: AccessViewModel,
+    onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/RetrieveSubmittedAndReturnedReports"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "GET",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        onSuccess = { responseBody ->
+            try {
+                val jsonArray = JSONArray(responseBody)
+                val reports = mutableListOf<Pair<String, Double>>()
+
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObject = jsonArray.getJSONObject(i)
+                    val reportNumber = jsonObject.getString("report_number")
+                    val totalAmount = jsonObject.getDouble("total")
+                    reports.add(Pair(reportNumber, totalAmount))
+                }
+                onSuccess(reports)
+            } catch (e: Exception) {
+                onFailure("Invalid response format: ${e.message}")
+            }
+        },
+        onFailure = onFailure
+    )
+}
+
+fun getApprovedReports(
+    viewModel: AccessViewModel,
+    onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/RetrieveApprovedReports"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "GET",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        onSuccess = { responseBody ->
+            try {
+                val jsonArray = JSONArray(responseBody)
+                val reports = mutableListOf<Pair<String, Double>>()
+
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObject = jsonArray.getJSONObject(i)
+                    val reportNumber = jsonObject.getString("report_number")
+                    val totalAmount = jsonObject.getDouble("total")
+                    reports.add(Pair(reportNumber, totalAmount))
+                }
+                onSuccess(reports)
+            } catch (e: Exception) {
+                onFailure("Invalid response format: ${e.message}")
+            }
+        },
+        onFailure = onFailure
+    )
+}
+

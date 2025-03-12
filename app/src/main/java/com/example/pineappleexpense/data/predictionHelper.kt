@@ -2,116 +2,27 @@ package com.example.pineappleexpense.data
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.content.Context
 import android.util.Log
-import com.auth0.android.Auth0
-import com.auth0.android.authentication.AuthenticationAPIClient
-import com.auth0.android.authentication.storage.CredentialsManagerException
-import com.auth0.android.authentication.storage.SecureCredentialsManager
-import com.auth0.android.authentication.storage.SharedPreferencesStorage
-import com.auth0.android.result.Credentials
-import com.example.pineappleexpense.R
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
-import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.RequestBody
 import okio.IOException
 import okio.buffer
 import okio.source
 import org.json.JSONObject
-import com.auth0.android.callback.Callback as auth0Callback
 import okhttp3.Callback as okhttp3Callback
 import java.io.File
 
-import java.util.concurrent.TimeUnit
-
-// Deprecated-use CredentialsManager stored in viewmodel instead
-fun getCredentialsManager(context: Context): SecureCredentialsManager {
-    val auth0 = Auth0(
-        context.getString(R.string.com_auth0_client_id),
-        context.getString(R.string.com_auth0_domain)
-    )
-    return SecureCredentialsManager(
-        context.applicationContext, // Use application context to prevent leaks
-        AuthenticationAPIClient(auth0),
-        SharedPreferencesStorage(context.applicationContext)
-    )
-}
-
-// Deprecated-use CredentialsManager stored in viewmodel instead
-fun fetchAccessToken(context: Context, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
-    val credentialsManager = getCredentialsManager(context)
-
-    credentialsManager.getCredentials(object : auth0Callback<Credentials, CredentialsManagerException> {
-        override fun onSuccess(result: Credentials) {
-            val token = result.accessToken
-            Log.d("AUTH", "Token retrieved: $token")
-            onSuccess(token)
-        }
-
-        override fun onFailure(error: CredentialsManagerException) {
-            Log.e("AUTH", "Failed to get credentials: ${error.message}")
-            onFailure(error.message ?: "Unknown error")
-        }
-    })
-}
-
-fun makeApiRequest(
-    url: String,
-    method: String = "POST",
-    headers: Map<String, String> = emptyMap(),
-    body: Map<String, Any>? = null,
+fun getReceiptUploadURL(
+    viewModel: AccessViewModel,
+    fileName: String,
     onSuccess: (String) -> Unit,
-    onFailure: (String) -> Unit
-) {
-    val client = OkHttpClient.Builder()
-        .callTimeout(20, TimeUnit.SECONDS)
-        .build()
-
-
-    val jsonMediaType = "application/json".toMediaType()
-    val jsonBody = body?.let { Gson().toJson(it).toRequestBody(jsonMediaType) }
-
-    val requestBuilder = Request.Builder().url(url)
-
-    headers.forEach { (key, value) ->
-        requestBuilder.addHeader(key, value)
-    }
-
-    when (method.uppercase()) {
-        "POST" -> requestBuilder.post(jsonBody ?: "".toRequestBody(jsonMediaType))
-        "PUT" -> requestBuilder.put(jsonBody ?: "".toRequestBody(jsonMediaType))
-        "GET" -> requestBuilder.get()
-        "DELETE" -> requestBuilder.delete()
-    }
-
-    val request = requestBuilder.build()
-
-    client.newCall(request).enqueue(object : okhttp3.Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            onFailure(e.message ?: "Network error")
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!it.isSuccessful) {
-                    onFailure("Error: ${it.code} - ${it.body.string()}")
-                } else {
-                    onSuccess(it.body.string())
-                }
-            }
-        }
-    })
-}
-
-
-fun getReceiptUploadURL(viewModel: AccessViewModel, fileName: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    onFailure: (String) -> Unit)
+{
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/s3-presigned-url"
     val token = viewModel.getAccessToken()
 
@@ -151,7 +62,11 @@ data class Prediction(
     val amount: String
 )
 
-fun getPrediction(viewModel: AccessViewModel, receiptId: String, callback: (Prediction?) -> Unit) {
+fun getPrediction(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    callback: (Prediction?) -> Unit)
+{
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/predictions"
     val token = viewModel.getAccessToken()
     val name = viewModel.getUserName() ?: "Unknown"
@@ -202,8 +117,8 @@ fun uploadFileToS3(
     fileUri: Uri,
     contentResolver: ContentResolver,
     onSuccess: () -> Unit,
-    onFailure: (String) -> Unit
-) {
+    onFailure: (String) -> Unit)
+{
     try {
         val file = File(fileUri.path ?: throw IOException("Invalid file"))
         val fileSize = file.length()

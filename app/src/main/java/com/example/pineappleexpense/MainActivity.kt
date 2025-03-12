@@ -47,6 +47,7 @@ import com.example.pineappleexpense.ui.screens.SignInTest
 import com.example.pineappleexpense.data.getReceiptUploadURL
 import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.Expense
+import com.example.pineappleexpense.ui.screens.AdminArchiveScreen
 import com.example.pineappleexpense.ui.screens.EditExpense
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
 import java.util.Date
@@ -209,6 +210,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             }
             composable("Archive") {
                 UserArchiveScreen(navController, viewModel)
+            }
+            composable("Admin Archive") {
+                AdminArchiveScreen(navController, viewModel)
             }
             composable("Profile") {
                 UserProfile(navController, viewModel, logout = logout)

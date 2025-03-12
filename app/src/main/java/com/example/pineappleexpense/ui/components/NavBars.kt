@@ -19,6 +19,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import com.example.pineappleexpense.ui.viewmodel.UserRole
 
 
 @Composable
@@ -114,6 +116,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
 
 @Composable
 fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+    val userState = viewModel.userState.collectAsState().value
     NavigationBar(
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
@@ -158,10 +161,17 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             selected = navController.currentDestination?.route == "Archive",
             onClick = {
                 if (navController.currentDestination?.route != "Archive") {
-                    navController.navigate("Archive") {
-                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                        launchSingleTop = true
-                        restoreState = true
+                    if(userState == UserRole.Admin) {
+                        navController.navigate("Admin Archive") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    else if(userState == UserRole.User) {
+                        navController.navigate("Archive") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             },

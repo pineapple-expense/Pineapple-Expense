@@ -48,6 +48,8 @@ import com.example.pineappleexpense.data.getReceiptUploadURL
 import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.screens.AdminArchiveScreen
+import com.example.pineappleexpense.ui.screens.AdminHome
+import com.example.pineappleexpense.ui.screens.AdminViewReportScreen
 import com.example.pineappleexpense.ui.screens.EditExpense
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
 import java.util.Date
@@ -206,7 +208,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             }
             composable("Home") {
                 HomeScreen(navController, viewModel)
-
+            }
+            composable("Admin Home") {
+                AdminHome(navController, viewModel)
             }
             composable("Archive") {
                 UserArchiveScreen(navController, viewModel)
@@ -242,6 +246,14 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 //retrieve report name from arguments
                 val reportName = backStackEntry.arguments?.getString("reportName") ?: return@composable
                 ViewReportScreen(navController, viewModel, reportName)
+            }
+            composable(
+                route = "adminViewReport/{reportName}",
+                arguments = listOf(navArgument("reportName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                //retrieve report name from arguments
+                val reportName = backStackEntry.arguments?.getString("reportName") ?: return@composable
+                AdminViewReportScreen(navController, viewModel, reportName)
             }
             composable(
                 route = "editExpense/{expenseId}",

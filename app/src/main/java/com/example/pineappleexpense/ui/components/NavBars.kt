@@ -38,11 +38,10 @@ import com.example.pineappleexpense.ui.viewmodel.UserRole
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
     val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "Edit Expense")
+    val userState = viewModel.userState.collectAsState().value
     NavigationBar(
-
         modifier = Modifier.height(76.dp),
         containerColor = Color(0xFFF3DDFF),
-
         ) {
         NavigationBarItem(
             icon = {
@@ -83,6 +82,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             text = when {
                 currentRoute?.startsWith("editExpense") == true -> "Edit Expense"
                 currentRoute?.startsWith("viewReport") == true -> "View Report"
+                currentRoute?.startsWith("adminViewReport") == true -> "Admin Report"
                 else                                            -> "$currentRoute"
             },
             style = MaterialTheme.typography.titleLarge,
@@ -102,10 +102,19 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifie
             selected = navController.currentDestination?.route == "Settings",
             onClick = {
                 if (navController.currentDestination?.route != "Profile" && currentRoute !in pagesWithBackButton) {
-                    navController.navigate("Profile") {
-                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                        launchSingleTop = true
-                        restoreState = true
+                    if (userState == UserRole.Admin) {
+                        navController.navigate("Admin Profile") {
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    else {
+                        navController.navigate("Profile") {
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             },
@@ -127,10 +136,19 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             selected = navController.currentDestination?.route == "Home",
             onClick = {
                 if (navController.currentDestination?.route != "Home") {
-                    navController.navigate("Home") {
-                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                        launchSingleTop = true
-                        restoreState = true
+                    if (userState == UserRole.Admin) {
+                        navController.navigate("Admin Home") {
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    else {
+                        navController.navigate("Home") {
+                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             },

@@ -31,6 +31,10 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
 fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier, logout: ()->Unit) {
+    // Retrieve values from SharedPreferences
+    val myemail = viewModel.getUserEmail()
+    val name = viewModel.getUserName()
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
@@ -56,17 +60,13 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
-                text = "User FName",
+                text = name.toString(),
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text (
-                text = "User LName",
-                fontSize = 24.sp
-            )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
-                text = "useremail@email.com",
+                text = myemail.toString(),
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(96.dp))

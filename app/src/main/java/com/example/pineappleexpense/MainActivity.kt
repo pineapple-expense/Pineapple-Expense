@@ -102,6 +102,7 @@ class MainActivity : ComponentActivity() {
 
                     securedManager.storeCredentials(credentials)
                     securedManager.storeTokens(credentials)
+                    securedManager.changeSessionStatus(false)
 
                     runOnUiThread {
                         showUserProfile(securedManager.getAccess().toString())
@@ -130,6 +131,7 @@ class MainActivity : ComponentActivity() {
                 override fun onSuccess(payload: Void?) {
                     // Clear the stored credentials
                     securedManager.clearData()
+                    securedManager.changeSessionStatus(true)
                     runOnUiThread {
                         // Navigate to the sign-in page after logging out
                         navController.navigate("SignIn") {
@@ -188,7 +190,10 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 }
             })
         } else {
-            logout()
+            if (!viewModel.isNewSession()) {
+                logout()
+                Toast.makeText(viewModel.getApplication(), "Your session has expired. Please enter your credentials to log in again.", Toast.LENGTH_LONG).show()
+            }
             startDestinationState.value = "SignIn" //default
         }
     }

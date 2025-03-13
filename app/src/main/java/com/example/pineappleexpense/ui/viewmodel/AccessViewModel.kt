@@ -265,6 +265,13 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     }
 
     /**
+     * Checks if the user is in a new session.
+     */
+    fun isNewSession(): Boolean {
+        return manager.getSessionStatus()
+    }
+
+    /**
      * Check if credentials are still valid during application use.
      * */
     fun validateCredentials(): Boolean {

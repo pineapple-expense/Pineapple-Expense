@@ -54,7 +54,10 @@ fun expenseCardsList(
                     onCardClick(clickedExpense)
                 },
                 onDeleteClicked = onDelete,
-                onAddToReportClicked = { onAddToReport(expense) },
+                onAddToReportClicked = {
+                    onAddToReport(expense)
+                    expandedExpense = null
+                },
                 onRemoveFromReportClicked = { onRemoveFromReport(expense) },
                 inReport = inReport,
                 navController,

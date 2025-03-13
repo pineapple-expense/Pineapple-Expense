@@ -171,6 +171,14 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    // Changes the status of a report to be rejected
+    fun rejectReport(report: Report) {
+        viewModelScope.launch {
+            reportDao.updateReportStatus(report.name, "Rejected")
+            loadReports()
+        }
+    }
+
     //deletes a report (todo: make this unsend the report as well)
     fun unsendAndDeleteReport(reportName: String) {
         viewModelScope.launch {

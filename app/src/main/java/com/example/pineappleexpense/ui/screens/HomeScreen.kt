@@ -61,6 +61,7 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 .padding(innerPadding)
         ) {
             val reportCards = reportCardsList (viewModel.pendingReports, navController, viewModel)
+            val rejectedReports = reportCardsList (viewModel.rejectedReports, navController, viewModel)
             val expenseCards = expenseCardsList(
                 expenses = expenses,
                 onCardClick = { },
@@ -87,10 +88,14 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 NoPendingExpensesCard(navController)
             }
             //put both the expense cards and report cards in the lazy column
+            // Rejected reports will appear at the top
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
+                items(rejectedReports) { reportCard ->
+                    reportCard()
+                }
                 items(expenseCards) { expenseCard ->
                     expenseCard()
                 }

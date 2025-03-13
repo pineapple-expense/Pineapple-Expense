@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +22,7 @@ import androidx.navigation.NavHostController
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import com.example.pineappleexpense.ui.viewmodel.UserRole
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -58,63 +61,133 @@ fun ReportCard(
 ) {
     val totalAmount = viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }.map { it.total }.sum()
     val dateRangeText = expensesDateRange(viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) })
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable {
-                navController.navigate("viewReport/${report.name}") {
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            },
-        elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5))
-    ) {
-        Row(
+    val userState = viewModel.userState.collectAsState().value
+    if (userState == UserRole.Admin) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(8.dp)
+                .clickable {
+                    navController.navigate("adminViewReport/${report.name}") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+            elevation = CardDefaults.cardElevation(4.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5))
         ) {
-            // Report icon
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Folder Icon",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                // Report icon
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Folder Icon",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Report details
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "report: ${report.name}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Total: $${"%.2f".format(totalAmount)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = dateRangeText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
+        }
+    }
+    else {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable {
+                    navController.navigate("viewReport/${report.name}") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+            elevation = CardDefaults.cardElevation(4.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Report icon
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (report.status == "Rejected")
+                        Icon(
+                            imageVector =  Icons.Default.Close,
+                            contentDescription = "X Icon",
+                            tint = Color.Red
+                        )
+                    else
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = "Folder Icon",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                }
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-            // Report details
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "report: ${report.name}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Total: $${"%.2f".format(totalAmount)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = dateRangeText,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                // Report details
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "report: ${report.name}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Total: $${"%.2f".format(totalAmount)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = dateRangeText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
     }

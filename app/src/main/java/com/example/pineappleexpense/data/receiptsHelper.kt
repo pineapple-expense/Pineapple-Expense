@@ -187,3 +187,120 @@ fun processImageAndGetPrediction(
         })
     }, onFailure = { error -> Log.e("PRESIGNED", "Presigned URL failed: $error") })
 }
+
+fun uploadReceiptNoImage(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    amount: String,
+    date: String,
+    category: String,
+    comment: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/InsertMissingReceipt"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf(
+            "receipt_id" to receiptId,
+            "amount" to amount,
+            "date" to date,
+            "category" to category,
+            "comment" to comment
+            ),
+        onSuccess = {
+            Log.d("uploadReceiptNoImage", "Successfully uploaded receipt $receiptId")
+            onSuccess()
+        },
+        onFailure = onFailure
+    )
+}
+
+fun updateReceiptRemote(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    amount: String,
+    date: String,
+    category: String,
+    title: String,
+    comment: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/UpdateReceipt"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "PATCH",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf(
+            "receipt_id" to receiptId,
+            "amount" to amount,
+            "date" to date,
+            "category" to category,
+            "title" to title,
+            "comment" to comment
+            ),
+        onSuccess = {
+            Log.d("updateReceiptRemote", "Successfully updated receipt $receiptId")
+            onSuccess()
+        },
+        onFailure = { error -> onFailure("Request failed: $error") }
+    )
+}
+
+data class Receipt(
+    val receiptId: String,
+    val userId: String,
+    val amount: Double,
+    val date: String,
+    val category: String,
+    val merchant: String
+)
+
+fun getUnassignedReceipts(
+    viewModel: AccessViewModel,
+    onSuccess: (List<Receipt>) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/RetrieveReceiptsWithNoReport"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "GET",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        onSuccess = { responseBody ->
+            try {
+                val jsonObject = JSONObject(responseBody)
+                val receiptsArray = jsonObject.getJSONArray("receipts")
+                val receipts = mutableListOf<Receipt>()
+
+                for (i in 0 until receiptsArray.length()) {
+                    val receiptJson = receiptsArray.getJSONObject(i)
+
+                    val receipt = Receipt(
+                        receiptId = receiptJson.getString("receipt_id"),
+                        userId = receiptJson.getString("user_id"),
+                        amount = receiptJson.getDouble("act_amount"),
+                        date = receiptJson.getString("date"),
+                        category = receiptJson.optString("category", "Unknown"),
+                        merchant = receiptJson.optString("merchant", "Unknown")
+                    )
+
+                    receipts.add(receipt)
+                }
+
+                onSuccess(receipts)
+            } catch (e: Exception) {
+                onFailure("Invalid response format: ${e.message}")
+            }
+        },
+        onFailure = onFailure
+    )
+}

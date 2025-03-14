@@ -188,7 +188,8 @@ fun processImageAndGetPrediction(
     }, onFailure = { error -> Log.e("PRESIGNED", "Presigned URL failed: $error") })
 }
 
-fun uploadReceiptNoImage(
+// Creates a new receipt on the server w/o an attached image
+fun createNewReceiptRemote(
     viewModel: AccessViewModel,
     receiptId: String,
     amount: String,
@@ -265,6 +266,7 @@ data class Receipt(
     val merchant: String
 )
 
+// Gets receipts that have not been assigned a report
 fun getUnassignedReceipts(
     viewModel: AccessViewModel,
     onSuccess: (List<Receipt>) -> Unit,

@@ -123,7 +123,8 @@ fun recallReport(
     )
 }
 
-fun getReturnedReports(
+// Get reports that have either been submitted or returned but not approved
+fun getSubmittedAndReturnedReports(
     viewModel: AccessViewModel,
     onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)
     onFailure: (String) -> Unit
@@ -155,6 +156,7 @@ fun getReturnedReports(
     )
 }
 
+// Get a list of approved reports
 fun getApprovedReports(
     viewModel: AccessViewModel,
     onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)

@@ -188,7 +188,8 @@ fun processImageAndGetPrediction(
     }, onFailure = { error -> Log.e("PRESIGNED", "Presigned URL failed: $error") })
 }
 
-fun uploadReceiptNoImage(
+// Creates a new receipt on the server w/o an attached image
+fun createNewReceiptRemote(
     viewModel: AccessViewModel,
     receiptId: String,
     amount: String,
@@ -200,6 +201,7 @@ fun uploadReceiptNoImage(
 ) {
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/InsertMissingReceipt"
     val accessToken = viewModel.getAccessToken()
+    val name = viewModel.getUserName() ?: "Unknown"
 
     makeApiRequest(
         url = url,
@@ -210,7 +212,8 @@ fun uploadReceiptNoImage(
             "amount" to amount,
             "date" to date,
             "category" to category,
-            "comment" to comment
+            "comment" to comment,
+            "name" to name
             ),
         onSuccess = {
             Log.d("uploadReceiptNoImage", "Successfully uploaded receipt $receiptId")
@@ -263,6 +266,7 @@ data class Receipt(
     val merchant: String
 )
 
+// Gets receipts that have not been assigned a report
 fun getUnassignedReceipts(
     viewModel: AccessViewModel,
     onSuccess: (List<Receipt>) -> Unit,

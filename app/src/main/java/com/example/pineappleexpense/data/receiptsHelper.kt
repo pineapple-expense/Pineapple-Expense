@@ -259,11 +259,11 @@ fun updateReceiptRemote(
 
 data class Receipt(
     val receiptId: String,
-    val userId: String,
     val amount: Double,
     val date: String,
     val category: String,
-    val merchant: String
+    val title: String,
+    val comment: String,
 )
 
 // Gets receipts that have not been assigned a report
@@ -290,11 +290,11 @@ fun getUnassignedReceipts(
 
                     val receipt = Receipt(
                         receiptId = receiptJson.getString("receipt_id"),
-                        userId = receiptJson.getString("user_id"),
                         amount = receiptJson.getDouble("act_amount"),
-                        date = receiptJson.getString("date"),
+                        date = receiptJson.getString("act_date"),
                         category = receiptJson.optString("category", "Unknown"),
-                        merchant = receiptJson.optString("merchant", "Unknown")
+                        title = receiptJson.optString("title"),
+                        comment = receiptJson.optString("comment")
                     )
 
                     receipts.add(receipt)

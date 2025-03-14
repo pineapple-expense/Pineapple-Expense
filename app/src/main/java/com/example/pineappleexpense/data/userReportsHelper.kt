@@ -90,7 +90,7 @@ fun deleteReportRemote(
     val accessToken = viewModel.getAccessToken()
     makeApiRequest(
         url = url,
-        method = "DELETE",
+        method = "POST",
         headers = mapOf("Authorization" to "Bearer $accessToken"),
         body = mapOf("report_number" to reportID),
         onSuccess = {

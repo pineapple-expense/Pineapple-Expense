@@ -51,6 +51,25 @@ class Auth0Manager (private val context: Context, application: Application) {
     }
 
     /**
+     * Check if the user is running a new session of the app.
+     * New sessions apply to users who were not already logged in.
+     */
+    fun getSessionStatus(): Boolean {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("new_session", true)
+    }
+
+    /**
+     * Changes the session status.
+     */
+    fun changeSessionStatus(status: Boolean) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+        sharedPreferences.edit()
+            .putBoolean("new_session", status)
+            .apply()
+    }
+
+    /**
      * Check if credentials in the credentials manager are still valid.
      */
     fun validate(): Boolean {

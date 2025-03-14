@@ -13,11 +13,16 @@ fun createReportRemote(
 ) {
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/CreateReport"
     val token = viewModel.getAccessToken()
+    val name = viewModel.getUserName() ?: "Unknown"
+
     makeApiRequest(
         url = url,
         method = "PUT",
         headers = mapOf("Authorization" to "Bearer $token"),
-        body = mapOf("report_number" to reportID),
+        body = mapOf(
+            "report_number" to reportID,
+            "name" to name
+            ),
         onSuccess = {
             Log.d("createReportRemote", "Successfully created report number $reportID")
             onSuccess()
@@ -52,7 +57,6 @@ fun addReceiptToReportRemote(
 // Submit a report that's on the server
 fun submitReport(
     viewModel: AccessViewModel,
-    reportID: String,
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit
 ) {
@@ -63,12 +67,15 @@ fun submitReport(
         url = url,
         method = "PATCH",
         headers = mapOf("Authorization" to "Bearer $accessToken"),
-        body = mapOf("report_number" to reportID),
+        body = mapOf(),
         onSuccess = {
-            Log.d("submitReport", "Successfully submitted report number $reportID")
+            Log.d("submitReport", "Successfully submitted report")
             onSuccess()
         },
-        onFailure = onFailure
+        onFailure = {
+            Log.e("submitReport", "Failed to submit report: $it")
+            onFailure(it)
+        }
     )
 }
 

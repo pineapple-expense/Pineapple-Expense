@@ -93,7 +93,7 @@ fun AdminNoPendingReportsCard(navController: NavHostController) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "There are currently have no pending reports to review.",
+                    text = "There are currently no pending reports to review.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Gray
                 )

@@ -96,13 +96,14 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
                 items(rejectedReports) { reportCard ->
                     reportCard()
                 }
+                items(reportCards) { reportCard ->
+                    reportCard()
+                }
                 items(expenseCards) { expenseCard ->
                     expenseCard()
                 }
 
-                items(reportCards) { reportCard ->
-                    reportCard()
-                }
+
             }
 
             Button(

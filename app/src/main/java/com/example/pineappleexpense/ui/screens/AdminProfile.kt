@@ -34,6 +34,7 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
     // Retrieve values from SharedPreferences
     val myemail = viewModel.getUserEmail()
     val name = viewModel.getUserName()
+    val company = viewModel.getCompanyName()
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -61,9 +62,13 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
             Spacer(modifier = Modifier.height(16.dp))
             Text (
                 text = name.toString(),
-                fontSize = 24.sp
+                fontSize = 28.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
+            Text (
+                text = company.toString(),
+                fontSize = 20.sp
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
                 text = myemail.toString(),

@@ -8,5 +8,7 @@ data class Report(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val expenseIds: List<Int>, // Store the IDs of related Expense objects
-    val status: String = "Unsubmitted"
+    val status: String = "Unsubmitted",
+    val userName: String = "",
+    val comment: String = ""
 )

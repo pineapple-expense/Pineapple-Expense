@@ -15,7 +15,7 @@ object DatabaseInstance {
                 context.applicationContext,
                 AppLocalDatabase::class.java,
                 "app_local_database"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
             INSTANCE = instance
             instance
         }
@@ -35,5 +35,14 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(database: SupportSQLiteDatabase) {
         // Add a new column 'status' with a default value "unsubmitted"
         database.execSQL("ALTER TABLE report_table ADD COLUMN status TEXT NOT NULL DEFAULT 'Unsubmitted'")
+    }
+}
+
+// Migration from version 3 to 4 to add the userName and comment columns
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Add a new columns 'userName' and 'comment' with default empty values
+        database.execSQL("ALTER TABLE report_table ADD COLUMN userName TEXT NOT NULL DEFAULT ''")
+        database.execSQL("ALTER TABLE report_table ADD COLUMN comment TEXT NOT NULL DEFAULT ''")
     }
 }

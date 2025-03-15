@@ -3,14 +3,23 @@ package com.example.pineappleexpense.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
@@ -126,42 +135,106 @@ fun AdminViewReportScreen(
                         expenseCard()
                     }
                 }
-                    Column {
-                        Button(
-                            onClick = {
-                                report?.let { viewModel.acceptReport(it) } // Approve report, send to archive
-                                navController.navigate("Admin Home") {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Text("Approve Report")
-                        }
-                        Button(
-                            onClick = {
-                                report?.let { viewModel.rejectReport(it) } // Reject report, user will see it on home screen
-                                navController.navigate("Admin Home") {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text("Reject Report")
-                        }
+
+                // Dialog box for admin to add a comment to report
+                val showDialog = remember { mutableStateOf(false) }
+
+                var savedComment = report?.comment /** Store savedComment in report */
+                if (showDialog.value) {
+                    var comment by remember { mutableStateOf(savedComment.toString())}
+                    AlertDialog(
+                        onDismissRequest = { showDialog.value = false },
+                        title = {
+                            Text("Comment")
+                        },
+                        text = {
+                            OutlinedTextField(
+                                value = comment,
+                                onValueChange = { comment = it }
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Blue
+                                ),
+                                onClick = {
+                                    viewModel.setReportComment(report?.name.toString(), comment)
+                                    showDialog.value = false
+                                })
+                            {
+                                Text("Save")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray
+                                ),
+                                onClick = {
+                                    showDialog.value = false
+                                })
+                            {
+                                Text("Exit")
+                            }
+                        },
+                    )
+                }
+                // Add comment button
+                Button(
+                    onClick = {
+                        showDialog.value = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.DarkGray
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text("Comment on this report")
+                }
+
+                Row(
+                    modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Approve button
+                    Button(
+                        onClick = {
+                            report?.let { viewModel.acceptReport(it) } // Approve report, send to archive
+                            navController.navigate("Admin Home") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                    ) {
+                        Text("Approve Report")
+                    }
+                    // Reject button
+                    Button(
+                        onClick = {
+                            report?.let { viewModel.rejectReport(it) } // Reject report, user will see it on home screen
+                            navController.navigate("Admin Home") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red
+                        ),
+                        modifier = Modifier
+                            .padding(16.dp)
+                    ) {
+                        Text("Reject Report")
                     }
                 }
             }
         }
+    }
 }
 
 @Composable

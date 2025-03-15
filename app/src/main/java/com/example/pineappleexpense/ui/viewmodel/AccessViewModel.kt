@@ -147,7 +147,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                 val newReportName = sdf.format(Date())
 
                 // Create a new report with the new name and the same expense IDs as the current report
-                val newReport = Report(name = newReportName, expenseIds = currentReport.expenseIds, status = "Under Review")
+                val newReport = Report(name = newReportName, expenseIds = currentReport.expenseIds, status = "Under Review", userName = manager.getName().toString())
 
                 // Insert the new report into the database
                 reportDao.insertReport(newReport)
@@ -277,6 +277,10 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     fun getUniqueID(): String? {
         return manager.getId()
+    }
+
+    fun getCompanyName(): String? {
+        return manager.getCompany()
     }
 
     /**

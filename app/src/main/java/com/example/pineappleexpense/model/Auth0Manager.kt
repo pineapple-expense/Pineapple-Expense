@@ -19,6 +19,7 @@ class Auth0Manager (private val context: Context, application: Application) {
     private val email = "email"
     private val id = "id"
     private val expiresAt = "expires_at"
+    private val companyName = "company_name"
 
     // Initialize auth0
     private val auth0 =
@@ -134,6 +135,11 @@ class Auth0Manager (private val context: Context, application: Application) {
         return sharedPreferences.getString(id, String.toString())
     }
 
+    fun getCompany(): String? {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(companyName, String.toString())
+    }
+
     /**
      * Private function. Save the relevant auth0 tokens to shared preferences.
      */
@@ -156,6 +162,7 @@ class Auth0Manager (private val context: Context, application: Application) {
             .putString(name, profile.name)
             .putString(email, profile.email)
             .putString(id, profile.getId())
+            .putString(companyName, profile.nickname)
             .apply()
     }
 }

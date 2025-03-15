@@ -1,15 +1,25 @@
 package com.example.pineappleexpense.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.BottomBar
@@ -92,6 +102,68 @@ fun ViewReportScreen(
                     )
                 }
 
+                // Check the comment left on the report
+                val showDialog = remember { mutableStateOf(false) }
+                val savedComment = report?.comment
+                if (showDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog.value = false },
+                        title = {
+                            Text(
+                                "Comment from Admin:",
+                                fontWeight = FontWeight.Bold,
+                            )
+                        },
+                        text = {
+                            Text(
+                                savedComment.toString(),
+                                fontSize = 16.sp
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray
+                                ),
+                                onClick = {
+                                    showDialog.value = false
+                                })
+                            {
+                                Text("Exit")
+                            }
+                        },
+                        dismissButton = {
+                        },
+                    )
+                }
+
+                if (report != null) {
+                    if (report.comment != "") {
+                            BadgedBox(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .clickable { showDialog.value = true },
+                                badge = {
+                                    Badge(
+                                        containerColor = Color.Red
+                                    ) {
+                                        val badgeNum = "!"
+                                        Text(
+                                            badgeNum,
+                                            color = Color.White
+                                        )
+                                    }
+                                })
+                            {
+                                Icon(
+                                    imageVector = Icons.Default.MailOutline,
+                                    contentDescription = "View report comment"
+                                )
+                            }
+                    }
+                }
+
+
                 // Display the report expenses in a list.
                 val expenseCards = expenseCardsList(
                     expenses = reportExpenses,
@@ -147,20 +219,6 @@ fun ViewReportScreen(
                     }
                 } else {
                     Column {
-                        Button(
-                            onClick = {
-                                report?.let { viewModel.acceptReport(it) }
-                                navController.navigate("Home") {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Text("Accept Report (temp button)")
-                        }
                         Button(
                             onClick = {
                                 viewModel.unsendAndDeleteReport(reportName)

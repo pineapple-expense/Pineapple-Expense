@@ -103,6 +103,12 @@ fun ReportCard(
                 // Report details
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
+                        text = report.userName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
                         text = "report: ${report.name}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold

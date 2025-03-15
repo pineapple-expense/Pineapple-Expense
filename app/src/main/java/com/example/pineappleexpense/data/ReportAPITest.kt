@@ -36,7 +36,7 @@ fun testFullReportLifecycle(viewModel: AccessViewModel) {
                                 recallReport(viewModel, reportID, onSuccess = {
                                     Log.d("TestLifecycle", "Step 7: Report $reportID recalled successfully")
 
-                                    // Step 8: Try to get submitted/returned reports again (expect failure) or for returned list to be shorter
+                                    // Step 8: Try to get submitted/returned reports again (expect shorter list)
                                     getSubmittedAndReturnedReports(viewModel, onSuccess = { reportsAfterRecall ->
                                         if (reportsAfterRecall.size < reports.size) {
                                             Log.d("TestLifecycle", "Step 8: Retrieved ${reportsAfterRecall.size} submitted/returned reports after recall (expected)")
@@ -44,15 +44,19 @@ fun testFullReportLifecycle(viewModel: AccessViewModel) {
                                             // Step 9: Delete the report
                                             deleteReportRemote(viewModel, reportID, onSuccess = {
                                                 Log.d("TestLifecycle", "Step 9: Report $reportID deleted successfully")
+
+                                                // Step 10: Delete the receipt
+                                                deleteReceiptRemote(viewModel, receiptID, onSuccess = {
+                                                    Log.d("TestLifecycle", "Step 10: Receipt $receiptID deleted successfully")
+                                                }, onFailure = { error ->
+                                                    Log.e("TestLifecycle", "Step 10: Failed to delete receipt $receiptID: $error")
+                                                })
+
                                             }, onFailure = { error ->
                                                 Log.e("TestLifecycle", "Step 9: Failed to delete report $reportID: $error")
                                             })
-                                        }
-                                        else {
-                                            Log.d(
-                                                "TestLifecycle",
-                                                "Step 8: Retrieved ${reportsAfterRecall.size} submitted/returned reports after recall (unexpected)"
-                                            )
+                                        } else {
+                                            Log.d("TestLifecycle", "Step 8: Retrieved ${reportsAfterRecall.size} submitted/returned reports after recall (unexpected)")
                                         }
                                     }, onFailure = { error ->
                                         Log.d("TestLifecycle", "Step 8: Failed to retrieve submitted reports after recall: $error")

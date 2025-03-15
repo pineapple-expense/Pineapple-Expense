@@ -308,3 +308,25 @@ fun getUnassignedReceipts(
         onFailure = onFailure
     )
 }
+
+fun deleteReceiptRemote(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/DeleteReceipt"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf("receipt_id" to receiptId),
+        onSuccess = {
+            Log.d("deleteReceiptRemote", "Successfully deleted receipt $receiptId")
+            onSuccess()
+        },
+        onFailure = { error -> onFailure("Delete receipt failed: $error") }
+    )
+}

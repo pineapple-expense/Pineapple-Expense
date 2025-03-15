@@ -22,6 +22,9 @@ interface ReportDao {
     @Query("UPDATE report_table SET status = :newStatus WHERE name = :reportName")
     suspend fun updateReportStatus(reportName: String, newStatus: String)
 
+    @Query("UPDATE report_table SET comment = :newComment WHERE name = :reportName")
+    suspend fun updateComment(reportName: String, newComment: String)
+
     @Delete
     suspend fun deleteReport(report: Report)
 }

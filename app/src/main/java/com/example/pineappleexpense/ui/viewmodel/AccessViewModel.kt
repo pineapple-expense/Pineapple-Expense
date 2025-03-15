@@ -93,7 +93,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                     reportDao.updateExpensesForReport("current", report.expenseIds + expenseId)
                 } else {
                     // Report doesn't exist; Create a new report
-                    val newReport = Report(name = "current", expenseIds = listOf(expenseId))
+                    val newReport = Report(name = "current", expenseIds = listOf(expenseId), userName = manager.getName() ?: "")
                     reportDao.insertReport(newReport)
                 }
                 loadReports()
@@ -192,6 +192,21 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                 loadExpenses()
             } else {
                 Log.d("pineapple", "Report '$reportName' not found for deletion")
+            }
+        }
+    }
+
+    // Change the comment of a report
+    fun setReportComment(reportName: String, newComment: String) {
+        viewModelScope.launch {
+            // Make sure report exists
+            if (reportDao.getReportByName(reportName) != null) {
+                reportDao.updateComment(reportName, newComment)
+                // Reload reports to update UI state
+                loadReports()
+                loadExpenses()
+            } else {
+                Log.d("pineapple", "Report '$reportName' not found")
             }
         }
     }

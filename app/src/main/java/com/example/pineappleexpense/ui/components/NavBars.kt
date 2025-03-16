@@ -12,12 +12,16 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -34,94 +38,105 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.example.pineappleexpense.ui.viewmodel.UserRole
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val currentRoute = navController.currentBackStackEntry?.destination?.route
-    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "User Profile", "Profile", "Account Mapping", "Edit Expense")
+fun TopBar(navController: NavHostController, viewModel: AccessViewModel) {
+    val currentRoute = navController.currentDestination?.route
+    val pagesWithBackButton = setOf("Receipt Preview", "Settings", "Profile", "Admin Profile", "Account Mapping")
+    val currentRouteHasBackButton = (currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true)
     val userState = viewModel.userState.collectAsState().value
-    NavigationBar(
-        modifier = Modifier.height(76.dp),
-        containerColor = Color(0xFFF3DDFF),
-        ) {
-        NavigationBarItem(
-            icon = {
-                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true){
-                    //back button
+
+    CenterAlignedTopAppBar(
+        navigationIcon = {
+            if(currentRouteHasBackButton){
+                //back button
+                IconButton(
+                    onClick = {
+                        //delete image file if in receipt preview page
+                        if(currentRoute == "Receipt Preview") {
+                            viewModel.latestImageUri?.let { uri ->
+                                deleteImageFromInternalStorage(uri.path ?: "")
+                            }
+                            viewModel.latestImageUri = null
+                        }
+                        //navigate back
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        modifier = Modifier.padding(top = 32.dp).testTag("BackButton")
+                        modifier = Modifier.testTag("BackButton")
                     )
-                } else {
-                    //setting icon
+                }
+            } else {
+                //setting icon
+                IconButton(
+                    onClick = {
+                        if (currentRoute != "Settings") {
+                            navController.navigate("Settings") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                    modifier = Modifier.padding(start = 40.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Filled.Settings,
                         contentDescription = "Settings",
-                        modifier = Modifier.padding(top = 32.dp).testTag("SettingsIcon")
+                        modifier = Modifier.testTag("SettingsIcon")
                     )
                 }
-            },
-            selected = false, //navController.currentDestination?.route == "Settings",
-            onClick = {
-                if(currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true) {
-                    //navigate back
-                    navController.popBackStack()
-                } else {
-                    if (navController.currentDestination?.route != "Settings") {
-                        navController.navigate("Settings") {
-                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF)),
+            }
+        },
+        title = {
+            Text(
+                text = when {
+                    currentRoute?.startsWith("editExpense") == true -> "Edit Expense"
+                    currentRoute?.startsWith("viewReport") == true -> "View Report"
+                    currentRoute?.startsWith("adminViewReport") == true -> "Admin Report"
+                    else                                            -> "$currentRoute"
+                },
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(top = 8.dp)
             )
-        Text(
-            text = when {
-                currentRoute?.startsWith("editExpense") == true -> "Edit Expense"
-                currentRoute?.startsWith("viewReport") == true -> "View Report"
-                currentRoute?.startsWith("adminViewReport") == true -> "Admin Report"
-                else                                            -> "$currentRoute"
-            },
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .padding(top = 24.dp)
-                .align(alignment = Alignment.CenterVertically)
-        )
-        //render account button on pages with no back button
-        NavigationBarItem(
-            icon = {
-                if(currentRoute !in pagesWithBackButton) Icon(
-                    imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = "Profile",
-                    modifier = Modifier.padding(top = 32.dp).testTag("ProfileIcon")
-                )
-            },
-            selected = navController.currentDestination?.route == "Settings",
-            onClick = {
-                if (navController.currentDestination?.route != "Profile" && currentRoute !in pagesWithBackButton) {
-                    if (userState == UserRole.Admin) {
-                        navController.navigate("Admin Profile") {
-                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                            launchSingleTop = true
-                            restoreState = true
+        },
+        modifier = Modifier.height(76.dp),
+        actions = {
+            if(!currentRouteHasBackButton) {
+                IconButton(
+                    onClick = {
+                        if (currentRoute != "Profile" && currentRoute != "Admin Profile") {
+                            if (userState == UserRole.Admin) {
+                                navController.navigate("Admin Profile") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                            else {
+                                navController.navigate("Profile") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
                         }
-                    }
-                    else {
-                        navController.navigate("Profile") {
-                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
+                    },
+                    modifier = Modifier.padding(end = 40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        contentDescription = "Profile",
+                        modifier = Modifier.testTag("ProfileIcon")
+                    )
                 }
-            },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFF3DDFF))
-        )
-    } // End nav bar
+            }
+        },
+        colors = TopAppBarColors(containerColor = Color(0xFFF3DDFF), Color.DarkGray, Color.DarkGray, Color.Black, Color.DarkGray),
+    )
 }
+
 
 @Composable
 fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
@@ -130,6 +145,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
     ) {
+        Spacer(modifier = Modifier.weight(0.5f))
         NavigationBarItem(
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home", modifier.size(24.dp)) },
             label = { Text("Review") },
@@ -138,14 +154,12 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
                 if (navController.currentDestination?.route != "Home") {
                     if (userState == UserRole.Admin) {
                         navController.navigate("Admin Home") {
-                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
                     else {
                         navController.navigate("Home") {
-                            //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -155,24 +169,25 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
-        Spacer(modifier = Modifier.weight(1f))
-        NavigationBarItem(
-            icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
-            label = { Text("Camera") },
-            selected = navController.currentDestination?.route == "Camera",
-            onClick = {
-                if (navController.currentDestination?.route != "Camera") {
-                    navController.navigate("Camera") {
-                        //popUpTo(navController.graph.startDestinationId) { saveState = true } //seems to cause issues with the back button
-                        launchSingleTop = true
-                        restoreState = true
+        if(userState == UserRole.User) {
+            Spacer(modifier = Modifier.weight(1f))
+            NavigationBarItem(
+                icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
+                label = { Text("Camera") },
+                selected = navController.currentDestination?.route == "Camera",
+                onClick = {
+                    if (navController.currentDestination?.route != "Camera") {
+                        navController.navigate("Camera") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        Spacer(modifier = Modifier.weight(1f))
+                },
+                colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.DateRange, contentDescription = "Archive") },
             label = { Text("Archive") },
@@ -196,6 +211,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
+        Spacer(modifier = Modifier.weight(0.5f))
     }
 }
 
@@ -205,5 +221,4 @@ fun PreviewTopBotBar() {
     val navController = rememberNavController()
     val viewModel: AccessViewModel = viewModel()
     TopBar(navController, viewModel)
-
 }

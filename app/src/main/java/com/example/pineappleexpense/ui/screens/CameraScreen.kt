@@ -233,7 +233,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                 ) {
                     Spacer(modifier = Modifier.width(40.dp))
                     IconButton(
-                        modifier = Modifier.size(50.dp),
+                        modifier = Modifier.size(60.dp),
                         onClick = { launcher.launch("image/*") }
                     ) {
                         Icon(

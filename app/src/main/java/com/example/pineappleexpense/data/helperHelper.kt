@@ -19,9 +19,8 @@ fun makeApiRequest(
     onFailure: (String) -> Unit
 ) {
     val client = OkHttpClient.Builder()
-        .callTimeout(20, TimeUnit.SECONDS)
+        .callTimeout(60, TimeUnit.SECONDS)
         .build()
-
 
     val jsonMediaType = "application/json".toMediaType()
     val jsonBody = body?.let { Gson().toJson(it).toRequestBody(jsonMediaType) }

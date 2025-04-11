@@ -122,6 +122,10 @@ fun predictionDatetoDate(date: PredictedDate?): Date? {
             calendar.set(Calendar.YEAR, date.year.toInt())
             calendar.set(Calendar.MONTH, date.month.toInt() - 1)
             calendar.set(Calendar.DAY_OF_MONTH, date.day.toInt())
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
             calendar.time
         } catch (e: NumberFormatException) {
             null

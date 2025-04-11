@@ -9,7 +9,7 @@ jobs:
   test:
     name: Unit + Instrumented Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Code
@@ -43,9 +43,10 @@ jobs:
       - name: Start Android Emulator
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
-          api-level: 34
-          target: default
-          arch: x86_64
+          api-level: 30
+          target: google_apis
+          arch: x86
+          profile: Nexus 5
           script: ./gradlew connectedDebugAndroidTest
 
       - name: Upload Unit Test Report

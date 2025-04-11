@@ -48,6 +48,13 @@ jobs:
           arch: x86_64
           script: ./gradlew connectedDebugAndroidTest
 
+      - name: Upload Unit Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unitTest-report
+          path: app/build/reports/tests/testDebugUnitTest
+
       - name: Upload Instrumented Test Report
         if: always()
         uses: actions/upload-artifact@v4

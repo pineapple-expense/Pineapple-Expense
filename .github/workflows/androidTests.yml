@@ -3,7 +3,10 @@ name: Android Tests
 on:
   pull_request:
     branches:
-      - main  # or whatever your default branch is
+      - main
+  push:
+    branches:
+      - main
 
 jobs:
   test:

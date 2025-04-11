@@ -115,7 +115,7 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
     }
 }
 
-private fun predictionDatetoDate(date: PredictedDate?): Date? {
+fun predictionDatetoDate(date: PredictedDate?): Date? {
     date?.let {
         return try {
             val calendar = Calendar.getInstance()

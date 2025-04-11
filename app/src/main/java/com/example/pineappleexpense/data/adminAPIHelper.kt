@@ -50,3 +50,51 @@ fun retrieveSubmittedReports(
 
 }
 
+fun approveReport(
+    viewModel: AccessViewModel,
+    userId: String,
+    reportNumber: String,
+    comment: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/admin/ApproveReport"
+    val accessToken = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf(
+            "user_id" to userId,
+            "report_number" to reportNumber,
+            "comment" to comment
+        ),
+        onSuccess = { onSuccess() },
+        onFailure = onFailure,
+    )
+}
+
+fun returnReport(
+    viewModel: AccessViewModel,
+    userId: String,
+    reportNumber: String,
+    comment: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/admin/ReturnReport"
+    val accessToken = viewModel.getAccessToken()
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf(
+            "user_id" to userId,
+            "report_number" to reportNumber,
+            "comment" to comment
+        ),
+        onSuccess = { onSuccess() },
+        onFailure = { error -> onFailure("Request failed: $error") }
+    )
+}

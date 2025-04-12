@@ -45,7 +45,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Unit Tests
-          path: app/build/test-results/testDebugUnitTest
+          path: app/build/test-results/testDebugUnitTest/*.xml
           reporter: java-junit
 
   instrumentation-tests:
@@ -99,5 +99,5 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Android Instrumented Tests
-          path: app/build/outputs/androidTest-results/connected
+          path: app/build/outputs/androidTest-results/connected/*.xml
           reporter: java-junit

@@ -5,11 +5,15 @@ on:
     branches:
       - main
 
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Code
@@ -40,17 +44,18 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
-      - name: Upload Unit Test Report
+      - name: Publish Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: dorny/test-reporter@v1
         with:
-          name: unitTest-report
-          path: app/build/reports/tests/testDebugUnitTest
+          name: Unit Tests
+          path: app/build/test-results/testDebugUnitTest/*.xml
+          reporter: java-junit
 
   instrumentation-tests:
     name: Instrumented Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Code
@@ -84,7 +89,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Start Android Emulator
+      - name: Run instrumentation tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -93,9 +98,10 @@ jobs:
           profile: Nexus 5
           script: ./gradlew connectedDebugAndroidTest
 
-      - name: Upload Instrumented Test Report
+      - name: Publish Instrumented Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: dorny/test-reporter@v1
         with:
-          name: androidTest-report
-          path: app/build/reports/androidTests/connected
+          name: Android Instrumented Tests
+          path: app/build/outputs/androidTest-results/connected/debug/*.xml
+          reporter: java-junit

@@ -1,0 +1,23 @@
+name: Debug Instrumented Test Report Path
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-path:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Grant execute permissions
+        run: chmod +x ./gradlew
+      - name: Run instrumentation test
+        run: ./gradlew connectedDebugAndroidTest
+      - name: List XML test output
+        run: find app/build/outputs/androidTest-results -name "*.xml"

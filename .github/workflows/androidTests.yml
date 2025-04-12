@@ -103,5 +103,5 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Android Instrumented Tests
-          path: app/build/outputs/androidTest-results/connected/*.xml
+          path: app/build/outputs/androidTest-results/connected/debug/*.xml
           reporter: java-junit

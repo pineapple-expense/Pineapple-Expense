@@ -48,7 +48,7 @@ jobs:
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: Unit Tests
+          name: Unit Test Results
           path: app/build/test-results/testDebugUnitTest/*.xml
           reporter: java-junit
 
@@ -102,6 +102,6 @@ jobs:
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: Android Instrumented Tests
+          name: Instrumented Test Results
           path: app/build/outputs/androidTest-results/connected/debug/*.xml
           reporter: java-junit

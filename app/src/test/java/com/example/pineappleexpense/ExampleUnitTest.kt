@@ -4,6 +4,8 @@ import org.junit.Test
 
 import org.junit.Assert.*
 
+// Trivial change to test the CI/CD pipeline. Feel free to delete this comment.
+
 /**
  * Example local unit test, which will execute on the development machine (host).
  *

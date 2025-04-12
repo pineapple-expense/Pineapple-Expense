@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   unit-tests:
     name: Unit Tests

@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,14 +68,16 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var imageUriForPrediction by remember { mutableStateOf<Uri?>(null) }
+    var timeoutJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    var timeout by remember { mutableStateOf(false) }
 
     LaunchedEffect(imageUriForPrediction) {
         imageUriForPrediction?.let { uri ->
             isLoading = true
-            var timeout = false
+            timeout = false
 
             //launch coroutine to timeout getting the prediction after 20 seconds
-            var timeoutJob = launch {
+            timeoutJob = launch {
                 delay(20000L)
                 //if still loading after 20 seconds then timeout
                 if(isLoading) {
@@ -98,7 +102,7 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                 Handler(Looper.getMainLooper()).post {
                     //ensure timeout hasn't triggered
                     if(!timeout) {
-                        timeoutJob.cancel()
+                        timeoutJob?.cancel()
                         viewModel.currentPrediction = prediction
                         isLoading = false
                         // Navigate to the receipt preview page after prediction completes
@@ -259,6 +263,28 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
                     androidx.compose.material3.CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "Analyzing Receipt...", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            // Cancel the timeout job and set timeout to true
+                            timeoutJob?.cancel()
+                            timeout = true
+                            // Skip the analysis and go directly to receipt preview
+                            viewModel.currentPrediction = null
+                            isLoading = false
+                            navController.navigate("Receipt Preview") {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                            imageUriForPrediction = null
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Text("Skip Analysis")
+                    }
                 }
             }
         }

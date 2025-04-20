@@ -41,6 +41,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
     val myemail = viewModel.getUserEmail()
     val name = viewModel.getUserName()
     val company = viewModel.getCompanyName()
+    val role = viewModel.getCurrentRole()
 
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("UserProfile"),
@@ -74,28 +75,35 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
                 text = company.toString(),
                 fontSize = 20.sp
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text (
+                text = role.toString(),
+                fontSize = 16.sp
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text (
                 text = myemail.toString(),
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(96.dp))
-            Button(
-                onClick = {
-                    navController.navigate("Admin Profile")
-                    viewModel.toggleAccess("Admin")
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFC56666), // Background color
-                    contentColor = Color.White // Text or icon color
-                )
-            ) {
-                Text(
-                    text = "Switch to Admin View",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            if (role == "Admin") {
+                Button(
+                    onClick = {
+                        navController.navigate("Admin Profile")
+                        viewModel.toggleAccess("Admin")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFC56666), // Background color
+                        contentColor = Color.White // Text or icon color
+                    )
+                ) {
+                    Text(
+                        text = "Switch to Admin View",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
             Button(

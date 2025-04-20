@@ -35,6 +35,7 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
     val myemail = viewModel.getUserEmail()
     val name = viewModel.getUserName()
     val company = viewModel.getCompanyName()
+    val role = viewModel.getCurrentRole()
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -68,6 +69,11 @@ fun AdminProfile(navController: NavHostController, viewModel: AccessViewModel, m
             Text (
                 text = company.toString(),
                 fontSize = 20.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text (
+                text = role.toString(),
+                fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text (

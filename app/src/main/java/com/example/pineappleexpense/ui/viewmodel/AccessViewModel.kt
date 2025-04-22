@@ -248,6 +248,10 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    fun getCurrentRole(): String? {
+        return manager.getRole()
+    }
+
     /**
      * Returns the credentials manager.
      */

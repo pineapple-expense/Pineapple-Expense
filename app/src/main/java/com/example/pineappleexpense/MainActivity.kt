@@ -103,9 +103,9 @@ class MainActivity : ComponentActivity() {
                     securedManager.storeCredentials(credentials)
                     securedManager.storeTokens(credentials)
                     securedManager.changeSessionStatus(false)
+                    showUserProfile(securedManager.getAccess().toString())
 
                     runOnUiThread {
-                        showUserProfile(securedManager.getAccess().toString())
                         navController.navigate("Home") {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true

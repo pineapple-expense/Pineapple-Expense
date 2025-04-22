@@ -7,6 +7,8 @@ import com.auth0.android.authentication.AuthenticationAPIClient
 import com.auth0.android.result.Credentials
 import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.auth0.android.authentication.storage.SharedPreferencesStorage
+import com.auth0.android.jwt.Claim
+import com.auth0.android.jwt.JWT
 import com.auth0.android.result.UserProfile
 
 class Auth0Manager (private val context: Context, application: Application) {
@@ -20,6 +22,7 @@ class Auth0Manager (private val context: Context, application: Application) {
     private val id = "id"
     private val expiresAt = "expires_at"
     private val companyName = "company_name"
+    private val roleType = "role_type"
 
     // Initialize auth0
     private val auth0 =
@@ -82,7 +85,7 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getAccess(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(accessToken, String.toString())
+        return sharedPreferences.getString(accessToken, toString())
     }
 
     /**
@@ -90,7 +93,7 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getIDToken(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(idToken, String.toString())
+        return sharedPreferences.getString(idToken, toString())
     }
 
     /**
@@ -98,7 +101,7 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getExpireTime(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(expiresAt, String.toString())
+        return sharedPreferences.getString(expiresAt, toString())
     }
 
     /**
@@ -116,7 +119,7 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getName(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(name, String.toString())
+        return sharedPreferences.getString(name, toString())
     }
 
     /**
@@ -124,7 +127,7 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getEmail(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(email, String.toString())
+        return sharedPreferences.getString(email, toString())
     }
 
     /**
@@ -132,12 +135,17 @@ class Auth0Manager (private val context: Context, application: Application) {
      */
     fun getId(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(id, String.toString())
+        return sharedPreferences.getString(id, toString())
     }
 
     fun getCompany(): String? {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
-        return sharedPreferences.getString(companyName, String.toString())
+        return sharedPreferences.getString(companyName, toString())
+    }
+
+    fun getRole(): String? {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(roleType, toString())
     }
 
     /**
@@ -151,6 +159,7 @@ class Auth0Manager (private val context: Context, application: Application) {
             .putString(refreshToken, credentials.refreshToken)
             .putString(expiresAt, credentials.expiresAt.toString())
             .apply()
+        setRole(credentials.idToken)
     }
 
     /**
@@ -163,6 +172,15 @@ class Auth0Manager (private val context: Context, application: Application) {
             .putString(email, profile.email)
             .putString(id, profile.getId())
             .putString(companyName, profile.nickname)
+            .apply()
+    }
+
+    private fun setRole(idToken: String) {
+        var jwt = JWT(idToken)
+        var claim: String? = jwt.getClaim("roleType").asString()
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        sharedPreferences.edit()
+            .putString(roleType, claim)
             .apply()
     }
 }

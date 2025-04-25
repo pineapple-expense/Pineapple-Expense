@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.pineappleexpense.model.Expense
@@ -40,29 +39,42 @@ fun expenseCardsList(
 ): List<@Composable () -> Unit> {
     // Local state for expanded card
     var expandedExpense by remember { mutableStateOf<Expense?>(null) }
+    // Local state for fullscreen image
+    var fullscreenImageUri by remember { mutableStateOf<String?>(null) }
 
     // Return a list of composable lambdas (each lambda represents one card)
     return expenses.map { expense ->
         {
             val inReport = isExpenseInReport(expense)
-            ExpenseCard(
-                expense = expense,
-                isExpanded = expandedExpense == expense,
-                onCardClicked = { clickedExpense ->
-                    // Toggle expansion
-                    expandedExpense = if (expandedExpense == clickedExpense) null else clickedExpense
-                    onCardClick(clickedExpense)
-                },
-                onDeleteClicked = onDelete,
-                onAddToReportClicked = {
-                    onAddToReport(expense)
-                    expandedExpense = null
-                },
-                onRemoveFromReportClicked = { onRemoveFromReport(expense) },
-                inReport = inReport,
-                navController,
-                viewModel
-            )
+            Box {
+                ExpenseCard(
+                    expense = expense,
+                    isExpanded = expandedExpense == expense,
+                    onCardClicked = { clickedExpense ->
+                        // Toggle expansion
+                        expandedExpense = if (expandedExpense == clickedExpense) null else clickedExpense
+                        onCardClick(clickedExpense)
+                    },
+                    onDeleteClicked = onDelete,
+                    onAddToReportClicked = {
+                        onAddToReport(expense)
+                        expandedExpense = null
+                    },
+                    onRemoveFromReportClicked = { onRemoveFromReport(expense) },
+                    inReport = inReport,
+                    navController,
+                    viewModel,
+                    onImageClick = { uri -> fullscreenImageUri = uri }
+                )
+
+                // Show fullscreen image viewer if an image is selected
+                fullscreenImageUri?.let { uri ->
+                    FullscreenImageViewer(
+                        imageUri = uri,
+                        onClose = { fullscreenImageUri = null }
+                    )
+                }
+            }
         }
     }
 }
@@ -90,7 +102,8 @@ fun ExpenseCard(
     onRemoveFromReportClicked: () -> Unit = {},
     inReport: Boolean,
     navController: NavHostController,
-    viewModel: AccessViewModel
+    viewModel: AccessViewModel,
+    onImageClick: (String) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -117,17 +130,18 @@ fun ExpenseCard(
                         restoreState = true
                     }
                 },
-                viewModel
+                viewModel,
+                onImageClick = onImageClick
             )
         } else {
-            CollapsedExpenseCard(expense = expense)
+            CollapsedExpenseCard(expense = expense, onImageClick = onImageClick)
         }
     }
 }
 
 //The collapsed (compact) view of an expense.
 @Composable
-fun CollapsedExpenseCard(expense: Expense) {
+fun CollapsedExpenseCard(expense: Expense, onImageClick: (String) -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,7 +188,8 @@ fun CollapsedExpenseCard(expense: Expense) {
                 contentDescription = null,
                 modifier = Modifier
                     .size(64.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onImageClick(uri.toString()) },
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
         }
@@ -190,7 +205,8 @@ fun ExpandedExpenseCard(
     onRemoveFromReportClicked: () -> Unit,
     inReport: Boolean,
     onEditClicked: () -> Unit = {},
-    viewModel: AccessViewModel
+    viewModel: AccessViewModel,
+    onImageClick: (String) -> Unit = {}
 ) {
     val formattedDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(expense.date)
 
@@ -242,7 +258,8 @@ fun ExpandedExpenseCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onImageClick(uri.toString()) },
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
         }

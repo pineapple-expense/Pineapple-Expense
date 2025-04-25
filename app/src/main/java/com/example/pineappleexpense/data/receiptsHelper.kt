@@ -46,6 +46,37 @@ fun getReceiptUploadURL(
     )
 }
 
+fun getReceiptDownloadURL(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    onSuccess: (String) -> Unit,
+    onFailure: (String) -> Unit
+)
+{
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/RetrievePresignURLToGetObject"
+    val token = viewModel.getAccessToken()
+
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf(
+            "Authorization" to "Bearer $token",
+            "Content-Type" to "application/json"
+        ),
+        body = mapOf("receipt_id" to receiptId),
+        onSuccess = { responseBody ->
+            try {
+                val jsonObject = JSONObject(responseBody)
+                onSuccess(jsonObject.getString("presignedUrl"))
+            } catch (e: Exception) {
+                onFailure("Invalid response format: ${e.message}")
+            }
+        },
+        onFailure = { error ->
+            onFailure("Request failed: $error")
+        }
+    )
+}
 
 data class PredictedDate(
     val fullDate: String,

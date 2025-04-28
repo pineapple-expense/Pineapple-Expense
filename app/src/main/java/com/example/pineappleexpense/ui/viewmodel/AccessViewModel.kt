@@ -22,6 +22,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.runtime.mutableStateMapOf
+import com.example.pineappleexpense.model.CategoryMapping
 
 
 class AccessViewModel(application: Application): AndroidViewModel(application) {
@@ -38,6 +40,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     private val database = DatabaseInstance.getDatabase(application)
     private val expenseDao = database.expenseDao()
     private val reportDao = database.reportDao()
+    private val categoryMappingDao = database.categoryMappingDao()
 
     //local expense list
     private val _expenseList = mutableStateOf<List<Expense>>(emptyList())
@@ -74,12 +77,50 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             }
         }
 
+    //local category mappings
+    private val _accountMappings = mutableStateMapOf<String, String>()
+    val accountMappings: Map<String, String> get() = _accountMappings
+
     //load get all stored expenses from the room database on app start
     init {
         loadExpenses()
         loadReports()
+        loadMappings()
     }
 
+    private fun loadMappings() {
+        viewModelScope.launch {
+            categoryMappingDao.getAllMappings().collect { mappings ->
+                _accountMappings.clear()
+                mappings.forEach { mapping ->
+                    _accountMappings[mapping.category] = mapping.accountCode
+                }
+            }
+        }
+    }
+
+    fun addAccountMapping(category: String, accountCode: String) {
+        viewModelScope.launch {
+            categoryMappingDao.insertMapping(CategoryMapping(category, accountCode))
+        }
+    }
+
+    fun removeAccountMapping(category: String) {
+        viewModelScope.launch {
+            categoryMappingDao.getMappingByCategory(category)?.let { mapping ->
+                categoryMappingDao.deleteMapping(mapping)
+            }
+        }
+    }
+
+    fun updateAccountMapping(oldCategory: String, newCategory: String, accountCode: String) {
+        viewModelScope.launch {
+            categoryMappingDao.getMappingByCategory(oldCategory)?.let { oldMapping ->
+                categoryMappingDao.deleteMapping(oldMapping)
+            }
+            categoryMappingDao.insertMapping(CategoryMapping(newCategory, accountCode))
+        }
+    }
 
     //add the following expense to the current report
     fun addToCurrentReport(expenseId: Int) {
@@ -103,7 +144,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     //remove the following expense from the current report
     fun removeFromCurrentReport(expenseId: Int) {
-        viewModelScope.launch() {
+        viewModelScope.launch {
             reportDao.getReportByName("current")?.expenseIds?.let {
                 reportDao.updateExpensesForReport("current", it.filter { it != expenseId })
             }

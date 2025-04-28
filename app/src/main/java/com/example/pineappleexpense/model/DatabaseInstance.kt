@@ -15,7 +15,7 @@ object DatabaseInstance {
                 context.applicationContext,
                 AppLocalDatabase::class.java,
                 "app_local_database"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
             INSTANCE = instance
             instance
         }
@@ -44,5 +44,14 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         // Add a new columns 'userName' and 'comment' with default empty values
         database.execSQL("ALTER TABLE report_table ADD COLUMN userName TEXT NOT NULL DEFAULT ''")
         database.execSQL("ALTER TABLE report_table ADD COLUMN comment TEXT NOT NULL DEFAULT ''")
+    }
+}
+
+// Migration from version 4 to 5 to add the category_mappings table
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            "CREATE TABLE category_mappings (category TEXT PRIMARY KEY NOT NULL, accountCode TEXT NOT NULL)"
+        )
     }
 }

@@ -10,11 +10,16 @@ import com.google.gson.reflect.TypeToken
 import java.util.Date
 
 //main access point for the room database to store expenses
-@Database(entities = [Expense::class, Report::class], version = 4, exportSchema = false)
+@Database(
+    entities = [Expense::class, Report::class, CategoryMapping::class],
+    version = 5,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppLocalDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun reportDao(): ReportDao
+    abstract fun categoryMappingDao(): CategoryMappingDao
 }
 
 //needed to convert complex types to and from ones that can be stored in the database

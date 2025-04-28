@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -192,7 +191,7 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                         onClick = {
                             showMenu = false
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
-                            val csvContent = buildCsvContent(expenses)
+                            val csvContent = buildCsvContent(expenses, viewModel)
                             saveCsvToDownloads(context, csvContent)
                         }
                     )
@@ -201,7 +200,7 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                         onClick = {
                             showMenu = false
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
-                            val csvContent = buildCsvContent(expenses)
+                            val csvContent = buildCsvContent(expenses, viewModel)
                             shareCsvFile(context, csvContent)
                         }
                     )
@@ -253,22 +252,31 @@ fun AdminArchiveCard(report: Report, viewModel: AccessViewModel, navController: 
     )
 }
 
-fun buildCsvContent(expenses: List<Expense>): String {
+fun buildCsvContent(expenses: List<Expense>, viewModel: AccessViewModel): String {
     // CSV Header
-    val header = "Title,Total,Date,Comment,Category"
+    val header = "Title,Total,Date,Comment,Category,Account Code,User Name"
     val csvLines = mutableListOf(header)
 
     val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
 
     // Add each expense as a line
     expenses.forEach { expense ->
+        // Find the report that contains this expense
+        val report = viewModel.reportList.value.find { it.expenseIds.contains(expense.id) }
+        val userName = report?.userName ?: "Unknown"
+        
+        // Get the mapped account code for this expense's category
+        val accountCode = viewModel.accountMappings[expense.category] ?: ""
+        
         val dateStr = dateFormat.format(expense.date)
         val line =
                 "${escapeCsvField(expense.title)}," +
                 "${expense.total}," +
                 "$dateStr," +
                 "${escapeCsvField(expense.comment)}," +
-                escapeCsvField(expense.category)
+                "${escapeCsvField(expense.category)}," +
+                "${escapeCsvField(accountCode)}," +
+                escapeCsvField(userName)
 
         csvLines.add(line)
     }

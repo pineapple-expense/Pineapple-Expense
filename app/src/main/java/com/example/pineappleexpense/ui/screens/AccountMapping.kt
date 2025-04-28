@@ -1,263 +1,306 @@
 package com.example.pineappleexpense.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Shapes
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.materialIcon
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
-// Definitely not done yet.
 @Composable
-fun AccountMapping(navHost: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val userRole = viewModel.userState.collectAsState().value
-    Scaffold (
+fun AccountMapping(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf("") }
+    var selectedAccount by remember { mutableStateOf("") }
+    
+    val categories = listOf("Meals", "Travel", "Supplies", "Safety", "Other")
+    val mappings = viewModel.accountMappings
+
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),
-        bottomBar = {
-            BottomBar(navHost, viewModel)
-        },
-        topBar = {
-            TopBar(navHost, viewModel)
+        bottomBar = { BottomBar(navController, viewModel) },
+        topBar = { TopBar(navController, viewModel) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { 
+                    if (categories.filter { it !in mappings.keys }.isNotEmpty()) {
+                        showAddDialog = true 
+                    }
+                },
+                containerColor = if (categories.filter { it !in mappings.keys }.isEmpty()) Color.Gray else Color(0xFF4E0AA6),
+                contentColor = Color.White
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add mapping",
+                    tint = Color.White
+                )
+            }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .padding(bottom = 8.dp)
-            .background(Color(0xFFF9EEFF))
-            //.height(100.dp)
-            .fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
         ) {
-            AccountCard(modifier = Modifier.padding(innerPadding))
-        }
-    }
-}
-
-@Composable
-fun AccountCard(modifier: Modifier = Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEFB8FF)
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 20.dp
-        ),
-        border = BorderStroke(1.dp, Color.Black),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                //TextBoxCategory()
-                CategoryTextBoxDropdown()
-                TextBoxAccount()
-            }
-    }
-}
-
-@Composable
-fun TextBoxAccount(modifier: Modifier = Modifier) {
-    var text by remember { mutableStateOf("")}
-Row(modifier = Modifier
-    .fillMaxWidth()
-    .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
-    .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
-    .padding(horizontal = 8.dp)
-    .padding(top = 8.dp),
-    horizontalArrangement = Arrangement.Center,
-    verticalAlignment = Alignment.CenterVertically
-) {
-    Text(
-        text = "Account",
-        fontWeight = FontWeight.Bold,
-        fontSize = 16.sp
-    )
-    Box(
-        modifier = Modifier.weight(1f)
-    ) {
-
-
-        TextField(
-            value = text,
-            onValueChange = { newText ->
-                text = newText
-            },
-            label = { Text(text = "") },
-            placeholder = { Text(text = "") },
-            modifier = Modifier.fillMaxWidth()
-                .align(Alignment.CenterStart),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
-            )
-
-        )
-
-    }
-    Spacer(modifier = Modifier.width(16.dp))
-    Button(onClick = {}) {}
-
-}
-
-}
-
-@Composable
-fun TextBoxCategory(modifier: Modifier=Modifier) {
-    var text by remember { mutableStateOf("")}
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
-        .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
-        .padding(horizontal = 8.dp)
-
-    ) {
-        TextField(
-            value = text,
-            onValueChange = { newText ->
-                text = newText
-            },
-            label = { Text(text = "Category") },
-            placeholder = { Text(text = "") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
-            )
-
-        )
-
-        //Button(onClick = {}, modifier = Modifier.align(Alignment.CenterEnd)) { }
-
-    }
-}
-
-@Composable
-fun CategoryTextBoxDropdown() {
-    val categories = listOf("Meals", "Travel", "Supplies", "Safety", "Other")
-    var itemPosition by remember {mutableStateOf(0)}
-    var expanded by remember {mutableStateOf(false)}
-
-    var text = "Categories"
-    Row(modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Black, shape = CutCornerShape(8.dp))
-            .background(Color(0xFFF095FF), shape = CutCornerShape(8.dp))
-            .padding(horizontal = 8.dp)
-            .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-
-        ) {
-
             Text(
-                text = "Category",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                text = "Category Mappings",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color(0xFF4E0AA6),
+                modifier = Modifier.padding(vertical = 16.dp)
             )
-            Spacer(modifier = Modifier.weight(1f))
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(12.dp)
-                    .clickable { expanded = true }
-            ) {
-                Text(text = categories[itemPosition])
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "DropDown Icon"
-                )
 
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = {
-                        expanded = false
-                    }
+            if (mappings.isEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF3E5F5)
+                    )
                 ) {
-                    categories.forEachIndexed { index, category ->
-                        androidx.compose.material3.DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = category,
-                                    fontSize = 14.sp
-                                    ) },
-                            onClick = {
-                                expanded = false
-                                itemPosition = index
+                    Text(
+                        text = "No account mappings set up yet. Tap the + button to add your first mapping.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF666666),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(mappings.entries.toList()) { (category, account) ->
+                        CategoryMappingCard(
+                            category = category,
+                            account = account,
+                            onEdit = {
+                                selectedCategory = category
+                                selectedAccount = account
+                                showEditDialog = true
+                            },
+                            onDelete = {
+                                viewModel.removeAccountMapping(category)
                             }
                         )
-
                     }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Button(onClick = {}) {}
         }
-}
 
+        if (showAddDialog) {
+            MappingDialog(
+                title = "Add Mapping",
+                onDismiss = { showAddDialog = false },
+                onConfirm = { category, account ->
+                    viewModel.addAccountMapping(category, account)
+                    showAddDialog = false
+                },
+                categories = categories.filter { it !in mappings.keys }
+            )
+        }
 
-@Composable
-fun EditButton(onClick: () -> Unit) {
-    Button(onClick = { onClick() }) {
+        if (showEditDialog) {
+            MappingDialog(
+                title = "Edit Mapping",
+                initialCategory = selectedCategory,
+                initialAccount = selectedAccount,
+                onDismiss = { showEditDialog = false },
+                onConfirm = { category, account ->
+                    viewModel.updateAccountMapping(selectedCategory, category, account)
+                    showEditDialog = false
+                },
+                categories = categories
+            )
+        }
     }
 }
 
+@Composable
+fun CategoryMappingCard(
+    category: String,
+    account: String,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEdit),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF3E5F5)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = category,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF4E0AA6)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Account: $account",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF666666)
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete mapping",
+                    tint = Color(0xFF666666)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MappingDialog(
+    title: String,
+    initialCategory: String = "",
+    initialAccount: String = "",
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit,
+    categories: List<String>
+) {
+    var category by remember { mutableStateOf(initialCategory) }
+    var account by remember { mutableStateOf(initialAccount) }
+    var expanded by remember { mutableStateOf(false) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFF4E0AA6),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                            .padding(bottom = 16.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF4E0AA6),
+                            focusedLabelColor = Color(0xFF4E0AA6)
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        categories.forEach { cat ->
+                            DropdownMenuItem(
+                                text = { Text(cat) },
+                                onClick = {
+                                    category = cat
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = account,
+                    onValueChange = { account = it },
+                    label = { Text("Account Code") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF4E0AA6),
+                        focusedLabelColor = Color(0xFF4E0AA6)
+                    )
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFF666666)
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = { onConfirm(category, account) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4E0AA6)
+                        )
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Preview
 @Composable
-fun PreviewComposable() {
-    val navHost = rememberNavController()
+fun PreviewAccountMapping() {
+    val navController = rememberNavController()
     val viewModel: AccessViewModel = viewModel()
-    //AccountCard()
-    AccountMapping(navHost, viewModel)
+    AccountMapping(navController, viewModel)
 }

@@ -23,6 +23,7 @@ class Auth0Manager (private val context: Context, application: Application) {
     private val expiresAt = "expires_at"
     private val companyName = "company_name"
     private val roleType = "role_type"
+    private val isAdmin = "isAdmin"
 
     // Initialize auth0
     private val auth0 =
@@ -148,6 +149,18 @@ class Auth0Manager (private val context: Context, application: Application) {
         return sharedPreferences.getString(roleType, toString())
     }
 
+    fun changeRole(s: String) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        sharedPreferences.edit()
+            .putString(roleType, s)
+            .apply()
+    }
+
+    fun isAdmin(): String? {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(isAdmin, toString())
+    }
+
     /**
      * Private function. Save the relevant auth0 tokens to shared preferences.
      */
@@ -181,6 +194,7 @@ class Auth0Manager (private val context: Context, application: Application) {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE)
         sharedPreferences.edit()
             .putString(roleType, claim)
+            .putString(isAdmin, claim)
             .apply()
     }
 }

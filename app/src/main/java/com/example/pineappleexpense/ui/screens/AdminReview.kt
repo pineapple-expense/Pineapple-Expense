@@ -43,7 +43,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
 fun AdminReview(navHost: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val userRole = viewModel.userState.collectAsState().value
+    val userRole = viewModel.getCurrentRole()
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),

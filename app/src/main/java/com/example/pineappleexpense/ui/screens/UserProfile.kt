@@ -42,6 +42,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
     val name = viewModel.getUserName()
     val company = viewModel.getCompanyName()
     val role = viewModel.getCurrentRole()
+    val admin_check = viewModel.isAdmin()
 
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("UserProfile"),
@@ -86,7 +87,7 @@ fun UserProfile(navController: NavHostController, viewModel: AccessViewModel, mo
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.height(96.dp))
-            if (role == "Admin") {
+            if (admin_check == "Admin") {
                 Button(
                     onClick = {
                         navController.navigate("Admin Profile")

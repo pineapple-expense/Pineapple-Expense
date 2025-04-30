@@ -58,7 +58,7 @@ fun AdminHome(navController: NavHostController, viewModel: AccessViewModel, modi
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            val reportCards = reportCardsList (viewModel.pendingReports, navController, viewModel)
+            val reportCards = reportCardsList(viewModel.pendingReports, navController, viewModel)
             if (reportCards.isEmpty()) {
                 AdminNoPendingReportsCard(navController)
             }

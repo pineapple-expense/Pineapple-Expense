@@ -42,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun ViewPreviousExpense(navHost: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val userRole = viewModel.userState.collectAsState().value
+    val userRole = viewModel.getCurrentRole()
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF9EEFF),

@@ -106,10 +106,19 @@ class MainActivity : ComponentActivity() {
                     showUserProfile(securedManager.getAccess().toString())
 
                     runOnUiThread {
-                        navController.navigate("Home") {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        if (securedManager.getRole() == "Admin") {
+                            navController.navigate("Admin Home") {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                        else {
+                            navController.navigate("Home") {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
 
                         Toast.makeText(
@@ -183,7 +192,10 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
         if (viewModel.getManager() != null && viewModel.getManager().hasValidCredentials()) {
             viewModel.getManager().getCredentials(object : Callback<Credentials, CredentialsManagerException> {
                 override fun onSuccess(result: Credentials) {
-                    startDestinationState.value = "Home" // Update state
+                    if (viewModel.getCurrentRole() == "Admin")
+                        startDestinationState.value = "Admin Home" // Update state
+                    else
+                        startDestinationState.value = "Home"
                 }
                 override fun onFailure(error: CredentialsManagerException) {
                     startDestinationState.value = "SignIn" // Update state

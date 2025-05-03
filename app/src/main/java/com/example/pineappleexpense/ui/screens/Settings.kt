@@ -30,7 +30,7 @@ import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 @Composable
 fun Settings(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val userRole = viewModel.userState.collectAsState().value
+    val userRole = viewModel.getCurrentRole()
     Scaffold (
         modifier = Modifier.fillMaxSize().testTag("Settings"),
         containerColor = Color(0xFFF9EEFF),

@@ -44,7 +44,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel) {
     val currentRoute = navController.currentDestination?.route
     val pagesWithBackButton = setOf("Receipt Preview", "Settings", "Profile", "Admin Profile", "Account Mapping")
     val currentRouteHasBackButton = (currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true)
-    val userState = viewModel.userState.collectAsState().value
+    val userState = viewModel.getCurrentRole()
 
     Box(
         modifier = Modifier
@@ -107,7 +107,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel) {
                 IconButton(
                     onClick = {
                         if (currentRoute != "Profile" && currentRoute != "Admin Profile") {
-                            if (userState == UserRole.Admin) {
+                            if (userState == "Admin") {
                                 navController.navigate("Admin Profile") {
                                     launchSingleTop = true
                                     restoreState = true
@@ -144,7 +144,7 @@ fun TopBar(navController: NavHostController, viewModel: AccessViewModel) {
 
 @Composable
 fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modifier: Modifier = Modifier) {
-    val userState = viewModel.userState.collectAsState().value
+    val userState = viewModel.getCurrentRole()
     NavigationBar(
         modifier = modifier.height(80.dp),
         containerColor = Color(0xFFF3DDFF)
@@ -156,7 +156,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             selected = navController.currentDestination?.route == "Home",
             onClick = {
                 if (navController.currentDestination?.route != "Home") {
-                    if (userState == UserRole.Admin) {
+                    if (userState == "Admin") {
                         navController.navigate("Admin Home") {
                             launchSingleTop = true
                             restoreState = true
@@ -173,7 +173,7 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFD6BBEA)),
             modifier = Modifier.padding(top = 16.dp)
         )
-        if(userState == UserRole.User) {
+        if(userState == "User") {
             Spacer(modifier = Modifier.weight(1f))
             NavigationBarItem(
                 icon = { Icon(Icons.Outlined.Add, contentDescription = "Camera") },
@@ -198,13 +198,13 @@ fun BottomBar(navController: NavHostController, viewModel: AccessViewModel, modi
             selected = navController.currentDestination?.route == "Archive",
             onClick = {
                 if (navController.currentDestination?.route != "Archive") {
-                    if(userState == UserRole.Admin) {
+                    if(userState == "Admin") {
                         navController.navigate("Admin Archive") {
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
-                    else if(userState == UserRole.User) {
+                    else if(userState == "User") {
                         navController.navigate("Archive") {
                             launchSingleTop = true
                             restoreState = true

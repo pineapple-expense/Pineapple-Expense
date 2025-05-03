@@ -319,31 +319,34 @@ fun ExpandedExpenseCard(
                 }
             }
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { onDeleteClicked(expense) },
-                modifier = Modifier.size(48.dp)
+        // ----------------------------------------------------------------------------
+        if (viewModel.getCurrentRole() != "Admin" &&
+            viewModel.displayExpenses.contains(expense))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Expense",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                IconButton(
+                    onClick = { onDeleteClicked(expense) },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Expense",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = onEditClicked,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Expense"
+                    )
+                }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            IconButton(
-                onClick = onEditClicked,
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Expense"
-                )
-            }
-        }
     }
 }
 

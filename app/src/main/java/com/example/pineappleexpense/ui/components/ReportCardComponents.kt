@@ -61,8 +61,8 @@ fun ReportCard(
 ) {
     val totalAmount = viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }.map { it.total }.sum()
     val dateRangeText = expensesDateRange(viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) })
-    val userState = viewModel.userState.collectAsState().value
-    if (userState == UserRole.Admin) {
+    val userState = viewModel.getCurrentRole()
+    if (userState == "Admin") {
         Card(
             modifier = Modifier
                 .fillMaxWidth()

@@ -282,17 +282,21 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun toggleAccess(s:String = "User") {
-        if(s=="User") {
-            _uiState.value = UserRole.User
-        } else {
-            _uiState.value = UserRole.Admin
-        }
+        manager.changeRole(s)
+//        if(s=="User") {
+//            manager.changeRole(s)
+//        } else {
+//            _uiState.value = UserRole.Admin
+//        }
     }
 
     fun getCurrentRole(): String? {
         return manager.getRole()
     }
 
+    fun isAdmin(): String? {
+        return manager.isAdmin()
+    }
     /**
      * Returns the credentials manager.
      */

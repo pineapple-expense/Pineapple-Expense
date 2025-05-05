@@ -1,5 +1,6 @@
 package com.example.pineappleexpense.data
 
+import android.util.Log
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -48,10 +49,12 @@ fun makeApiRequest(
 
         override fun onResponse(call: Call, response: Response) {
             response.use {
+                val responseBodyString = it.body?.string() ?: ""
                 if (!it.isSuccessful) {
-                    onFailure("Error: ${it.code} - ${it.body.string()}")
+                    onFailure("Error: ${it.code} - $responseBodyString")
                 } else {
-                    onSuccess(it.body.string())
+                    Log.d("makeApiRequest", "Response: $responseBodyString")
+                    onSuccess(responseBodyString)
                 }
             }
         }

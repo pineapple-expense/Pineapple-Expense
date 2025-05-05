@@ -16,11 +16,11 @@ https://bellevuec-my.sharepoint.com/shared?login_hint=xiao%2Exu%40bellevuecolleg
 
 ## Introduction
 
-This project is intended to produce a system which can scan, store, and classify reciepts in order to produce expense reports for accounting systems.
+This project is intended to produce a system which can scan, store, and classify receipts in order to produce expense reports for accounting systems.
 
 ## Features
 
-- Automatically read and categorize your reciepts
+- Automatically read and categorize your receipts
 - Stores all your receipts in the cloud for record-keeping and compliance
 - Exports .csv files to integrate with your existing accounting system
 

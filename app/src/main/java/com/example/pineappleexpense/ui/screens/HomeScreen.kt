@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.pineappleexpense.BuildConfig
+import com.example.pineappleexpense.data.getReceiptDownloadURL
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
 import com.example.pineappleexpense.ui.components.deleteImageFromInternalStorage
@@ -130,8 +131,15 @@ fun HomeScreen(navController: NavHostController, viewModel: AccessViewModel, mod
             if (BuildConfig.DEBUG) {
                 Button(
                     onClick = {
-                        val idToken = viewModel.getIdToken()
-                        Log.d("DEBUG", "ID Token: $idToken")
+                        getReceiptDownloadURL(
+                            viewModel, "Groceries4.jpg",
+                            onSuccess = { responseBody ->
+                                Log.d("HomeScreen", "DownloadURL: $responseBody")
+                            },
+                            onFailure = {
+                                Log.e("HomeScreen", "Error: $it")
+                            }
+                        )
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

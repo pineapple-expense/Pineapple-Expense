@@ -67,7 +67,7 @@ fun getReceiptDownloadURL(
         onSuccess = { responseBody ->
             try {
                 val jsonObject = JSONObject(responseBody)
-                onSuccess(jsonObject.getString("presignedUrl"))
+                onSuccess(jsonObject.getString("url"))
             } catch (e: Exception) {
                 onFailure("Invalid response format: ${e.message}")
             }

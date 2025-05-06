@@ -1,6 +1,7 @@
 package com.example.pineappleexpense.data
 
 import android.util.Log
+import com.example.pineappleexpense.BuildConfig
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -53,8 +54,10 @@ fun makeApiRequest(
                 if (!it.isSuccessful) {
                     onFailure("Error: ${it.code} - $responseBodyString")
                 } else {
-                    Log.d("makeApiRequest", "Response: $responseBodyString")
-                    onSuccess(responseBodyString)
+                    if (BuildConfig.DEBUG) {
+                        Log.d("makeApiRequest", "Response: $responseBodyString")
+                        onSuccess(responseBodyString)
+                    }
                 }
             }
         }

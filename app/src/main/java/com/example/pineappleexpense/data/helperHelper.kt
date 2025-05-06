@@ -56,8 +56,8 @@ fun makeApiRequest(
                 } else {
                     if (BuildConfig.DEBUG) {
                         Log.d("makeApiRequest", "Response: $responseBodyString")
-                        onSuccess(responseBodyString)
                     }
+                    onSuccess(responseBodyString)
                 }
             }
         }

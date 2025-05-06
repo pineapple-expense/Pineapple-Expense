@@ -67,6 +67,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation("com.auth0.android:jwtdecode:2.0.2")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.material:material:1.8.0-alpha06")

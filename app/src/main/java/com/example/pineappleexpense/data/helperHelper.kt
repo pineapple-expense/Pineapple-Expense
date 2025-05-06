@@ -50,7 +50,7 @@ fun makeApiRequest(
 
         override fun onResponse(call: Call, response: Response) {
             response.use {
-                val responseBodyString = it.body?.string() ?: ""
+                val responseBodyString = it.body.string()
                 if (!it.isSuccessful) {
                     onFailure("Error: ${it.code} - $responseBodyString")
                 } else {

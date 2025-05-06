@@ -210,6 +210,13 @@ fun DebugMenu(viewModel: AccessViewModel, navController: NavHostController) {
                 }
             )
             androidx.compose.material3.DropdownMenuItem(
+                text = { Text("Log ID Token") },
+                onClick = {
+                    Log.d("DevMode", "${viewModel.getIdToken()}")
+                    expanded = false
+                }
+            )
+            androidx.compose.material3.DropdownMenuItem(
                 text = { Text("Reprogrammable Button") },
                 onClick = {
                     updateReceiptRemote(

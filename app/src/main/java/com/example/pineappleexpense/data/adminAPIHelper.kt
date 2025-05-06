@@ -1,6 +1,11 @@
 package com.example.pineappleexpense.data
 
+import android.util.Log
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import com.google.gson.Gson
+import com.google.gson.JsonParser
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import org.json.JSONArray
 
 data class AdminReport(
@@ -8,6 +13,19 @@ data class AdminReport(
     val totalAmount: Double,
     val name: String,
     val comment: String
+)
+
+data class Expense(
+    @SerializedName("receipt_id")    val receiptId: String,
+    @SerializedName("user_id")       val userId: String,
+    val name: String,
+    @SerializedName("act_amount")    val actAmount: String,
+    @SerializedName("act_date")      val actDate: String,
+    @SerializedName("act_category")  val actCategory: String,
+    val title: String?,
+    val comment: String?,
+    @SerializedName("report_number") val reportNumber: String,
+    @SerializedName("created_at")    val createdAt: String
 )
 
 fun retrieveSubmittedReports(
@@ -96,5 +114,39 @@ fun returnReport(
         ),
         onSuccess = { onSuccess() },
         onFailure = { error -> onFailure("Request failed: $error") }
+    )
+}
+
+fun getReportExpenses(
+    viewModel: AccessViewModel,
+    reportNumber: String,
+    onSuccess: (List<Receipt>) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/RetrieveReportExpenseInformation"
+    val accessToken = viewModel.getAccessToken()
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf("report_number" to reportNumber),
+        onSuccess = { responseBody ->
+            try {
+                // Parse the whole JSON string into a JsonObject
+                val jsonObj = JsonParser.parseString(responseBody).asJsonObject
+                // Extract the JSON array under "receipts"
+                val receiptsJson = jsonObj.getAsJsonArray("receipts")
+                // Create the TypeToken for List<Receipt>
+                val listType = object : TypeToken<List<Expense>>() {}.type
+                // Deserialize directly to List<Receipt>
+                val receipts: List<Receipt> = Gson().fromJson(receiptsJson, listType)
+                onSuccess(receipts)
+            } catch (e: Exception) {
+                onFailure("Failed to parse receipts: ${e.message}")
+            }
+        },
+        onFailure = { error ->
+            onFailure("Request failed: $error")
+        }
     )
 }

@@ -60,6 +60,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 
 @Composable
@@ -294,8 +295,9 @@ fun CameraScreen(navController: NavHostController, viewModel: AccessViewModel) {
 // helper function to create the file object to store an image
 
 private fun createImageFile(context: Context): File {
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
-    val filename = "IMG_$timestamp.jpg"
+    //val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+    val uuid = UUID.randomUUID().toString()
+    val filename = "$uuid.jpg"
     val storageDir = File(context.filesDir, "images")
     if (!storageDir.exists()) {
         storageDir.mkdir()

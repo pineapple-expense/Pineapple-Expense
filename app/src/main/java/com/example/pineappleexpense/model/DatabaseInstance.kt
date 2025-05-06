@@ -15,7 +15,7 @@ object DatabaseInstance {
                 context.applicationContext,
                 AppLocalDatabase::class.java,
                 "app_local_database"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
             INSTANCE = instance
             instance
         }
@@ -53,5 +53,42 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         database.execSQL(
             "CREATE TABLE category_mappings (category TEXT PRIMARY KEY NOT NULL, accountCode TEXT NOT NULL)"
         )
+    }
+}
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 1) Create the new table
+        db.execSQL("""
+      CREATE TABLE IF NOT EXISTS `new_report_table` (
+        `id` TEXT NOT NULL PRIMARY KEY,
+        `name` TEXT NOT NULL,
+        `expenseIds` TEXT NOT NULL,
+        `status` TEXT NOT NULL,
+        `userName` TEXT NOT NULL,
+        `comment` TEXT NOT NULL
+      )
+    """.trimIndent())
+
+        // 2) Copy the old rows, casting id to text
+        db.execSQL("""
+      INSERT INTO `new_report_table` (
+        id, name, expenseIds, status, userName, comment
+      )
+      SELECT
+        CAST(id AS TEXT),
+        name,
+        expenseIds,
+        status,
+        userName,
+        comment
+      FROM `report_table`
+    """.trimIndent())
+
+        // 3) Drop the old table
+        db.execSQL("DROP TABLE `report_table`")
+
+        // 4) Rename new table
+        db.execSQL("ALTER TABLE `new_report_table` RENAME TO `report_table`")
     }
 }

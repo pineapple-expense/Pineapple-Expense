@@ -1,5 +1,7 @@
 package com.example.pineappleexpense.ui.screens
 
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -36,7 +39,9 @@ fun ViewReportScreen(
     reportName: String,
     modifier: Modifier = Modifier
 ) {
+    var isLoading by remember { mutableStateOf(false) }
     var report: Report? = null
+    val context = LocalContext.current
     val reportExpenses = if (reportName == "current") {
         viewModel.currentReportExpenses.value
     } else {
@@ -201,11 +206,21 @@ fun ViewReportScreen(
 
                 if (reportName == "current") {
                     Button(
+                        enabled = !isLoading,
                         onClick = {
-                            viewModel.submitReport()
-                            navController.navigate("Home") {
-                                launchSingleTop = true
-                                restoreState = true
+                            isLoading = true                          // start spinner immediately
+                            viewModel.submitReport { success ->
+                                isLoading = false                    // stop spinner
+                                if (success) {
+                                    navController.navigate("Home") { // now always on Main
+                                        launchSingleTop = true
+                                        restoreState   = true
+                                    }
+                                } else {
+                                    Toast
+                                        .makeText(context, "submit report unsuccessful", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -214,9 +229,7 @@ fun ViewReportScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                    ) {
-                        Text("Submit Report for Review")
-                    }
+                    ) { Text("Submit Report for Review") }
                 } else {
                     Column {
                         Button(
@@ -239,6 +252,17 @@ fun ViewReportScreen(
                     }
                 }
             }
+        }
+    }
+
+    if (isLoading) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }

@@ -12,7 +12,7 @@ import java.util.Date
 //main access point for the room database to store expenses
 @Database(
     entities = [Expense::class, Report::class, CategoryMapping::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -1,6 +1,5 @@
 package com.example.pineappleexpense.data
 
-import android.util.Log
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.google.gson.Gson
 import com.google.gson.JsonParser

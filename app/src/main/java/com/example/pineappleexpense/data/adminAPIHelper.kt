@@ -149,3 +149,39 @@ fun getReportExpenses(
         }
     )
 }
+
+fun getCSVUploadURL(
+    viewModel: AccessViewModel,
+    fileName: String,
+    onSuccess: (String) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/admin/CsvPresignedURL"
+    val accessToken = viewModel.getAccessToken()
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accessToken"),
+        body = mapOf("fileName" to fileName),
+        onSuccess = { responseBody -> onSuccess(responseBody) },
+        onFailure = { error -> onFailure("Request failed: $error") }
+    )
+}
+
+fun getCSVDownloadURL(
+    viewModel: AccessViewModel,
+    fileName: String,
+    onSuccess: (String) -> Unit,
+    onFailure: (String) -> Unit
+) {
+    val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/admin/RetrieveCSVURL"
+    val accesToken = viewModel.getAccessToken()
+    makeApiRequest(
+        url = url,
+        method = "POST",
+        headers = mapOf("Authorization" to "Bearer $accesToken"),
+        body = mapOf("fileName" to fileName),
+        onSuccess = { responseBody -> onSuccess(responseBody) },
+        onFailure = { error -> onFailure("Request failed: $error") }
+    )
+}

@@ -277,7 +277,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 arguments = listOf(navArgument("expenseId") { type = NavType.IntType })
             ) { backStackEntry ->
                 // Retrieve the expenseId from arguments
-                val expenseId = backStackEntry.arguments?.getInt("expenseId") ?: return@composable
+                val expenseId = backStackEntry.arguments?.getString("expenseId") ?: return@composable
                 EditExpense(navController, viewModel, expenseId)
             }
         }

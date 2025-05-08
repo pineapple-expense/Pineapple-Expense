@@ -3,6 +3,7 @@ package com.example.pineappleexpense.ui.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -14,6 +15,8 @@ import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.data.addReceiptToReportRemote
 import com.example.pineappleexpense.data.createReportRemote
+import com.example.pineappleexpense.data.getReportExpenses
+import com.example.pineappleexpense.data.retrieveSubmittedReports
 import com.example.pineappleexpense.data.updateReceiptRemote
 import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.CategoryMapping
@@ -21,6 +24,7 @@ import com.example.pineappleexpense.model.DatabaseInstance
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +33,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.exp
 import com.example.pineappleexpense.data.submitReport as submitReportRemote
 
 
@@ -38,6 +43,10 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     var latestImageUri by mutableStateOf<Uri?>(null)
     var currentPrediction by mutableStateOf<Prediction?>(null)
+
+    //refresh pending reports state (for admin home)
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     // Initialize Auth0 credentials manager
     private val manager = Auth0Manager(getApplication<Application>().applicationContext, application)
@@ -129,7 +138,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     }
 
     //add the following expense to the current report
-    fun addToCurrentReport(expenseId: Int) {
+    fun addToCurrentReport(expenseId: String) {
         Log.d("pineapple", "adding id $expenseId to report")
         viewModelScope.launch() {
             viewModelScope.launch() {
@@ -148,8 +157,24 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    //add the following expense to the current report
+    fun addToReport(reportName: String, expenseId: String) {
+        Log.d("pineapple", "adding id $expenseId to report $reportName")
+        viewModelScope.launch() {
+            val report = reportDao.getReportByName(reportName)
+
+            if (report != null) {
+                // Report exists; Append new expenseId
+                reportDao.updateExpensesForReport("current", report.expenseIds + expenseId)
+            } else {
+                throw Exception("report $reportName does not exist")
+            }
+            loadReports()
+        }
+    }
+
     //remove the following expense from the current report
-    fun removeFromCurrentReport(expenseId: Int) {
+    fun removeFromCurrentReport(expenseId: String) {
         viewModelScope.launch {
             reportDao.getReportByName("current")?.expenseIds?.let {
                 reportDao.updateExpensesForReport("current", it.filter { it != expenseId })
@@ -337,8 +362,64 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    fun fetchPendingReports() = viewModelScope.launch {
+        _isRefreshing.value = true
+        try {
+            // ←- Your network / DB reload here
 
+            retrieveSubmittedReports(
+                this@AccessViewModel, onSuccess = { it.forEach { adminReport ->
+                    //create a new report
+                    val newReport = Report(
+                        id = adminReport.reportNumber,
+                        name = SimpleDateFormat(
+                            "yyyyMMdd_HHmmss",
+                            Locale.getDefault()
+                        ).format(Date()),
+                        expenseIds = emptyList(),
+                        status = "pending",
+                        userName = adminReport.name,
+                        comment = adminReport.comment
+                    )
+                    viewModelScope.launch(Dispatchers.IO) {
+                        reportDao.insertReport(newReport)
+                        loadReports()
+                    }
+                    //download expenses
+                    getReportExpenses(
+                        this@AccessViewModel, newReport.id,
+                        onSuccess = { it.forEach { expense ->
 
+                            //todo: download receipt image and URI
+
+                            val newExpense = Expense(
+                                title = expense.title ?: "untitled expense",
+                                total = expense.actAmount.toFloatOrNull() ?: throw IllegalArgumentException("Invalid total: ${expense.actAmount}"),
+                                date = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).parse(expense.actDate) ?: throw IllegalArgumentException("Invalid date: ${expense.actDate}"),
+                                comment = expense.comment ?: "",
+                                category = expense.actCategory,
+                                imageUri = null,
+                                id = expense.receiptId
+                            )
+                            //add expense to local db
+                            addExpense(newExpense)
+                            //add expense to local report
+                            addToReport(newReport.name, newExpense.id)
+
+                        } },
+                        onFailure = {throw Exception("network error: $it")}
+                    )
+                } },
+                onFailure = {throw Exception("network error: $it")}
+            )
+        } catch (e: Exception) {
+            val context = getApplication<Application>()
+            Log.d("pineapple", "error retrieving reports: ${e.message}")
+            Toast.makeText(context, "error retrieving reports", Toast.LENGTH_LONG).show()
+        } finally {
+            _isRefreshing.value = false
+        }
+    }
 
     // Changes the status of a report to be accepted
     fun acceptReport(report: Report) {

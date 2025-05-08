@@ -1,5 +1,6 @@
 package com.example.pineappleexpense.data
 
+import android.app.Application
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
@@ -16,6 +17,7 @@ import okio.source
 import org.json.JSONObject
 import okhttp3.Callback as okhttp3Callback
 import java.io.File
+import java.io.FileOutputStream
 
 fun getReceiptUploadURL(
     viewModel: AccessViewModel,
@@ -359,5 +361,61 @@ fun deleteReceiptRemote(
             onSuccess()
         },
         onFailure = { error -> onFailure("Delete receipt failed: $error") }
+    )
+}
+
+fun downloadExpenseImage(
+    viewModel: AccessViewModel,
+    receiptId: String,
+    onSuccess: (File) -> Unit,
+    onFailure: (Exception) -> Unit
+) {
+    val context = viewModel.getApplication<Application>()
+
+    getReceiptDownloadURL(
+        viewModel,
+        receiptId,
+        onSuccess = { responseBody ->
+            // 1) Parse the URL
+            val url = try {
+                JSONObject(responseBody).getString("url")
+            } catch (e: Exception) {
+                onFailure(Exception("Invalid response format: ${e.message}"))
+                return@getReceiptDownloadURL
+            }
+            // 2) Build & enqueue the image download
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+            client.newCall(request).enqueue(object : okhttp3.Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    onFailure(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!it.isSuccessful) {
+                            onFailure(IOException("Failed to download image: HTTP ${it.code}"))
+                            return
+                        }
+
+                        // 3) Save to internal storage
+                        val storageDir = File(context.filesDir, "images").apply {
+                            if (!exists()) mkdirs()
+                        }
+                        val imageFile = File(storageDir, receiptId)
+
+                        it.body.byteStream()?.use { input ->
+                            FileOutputStream(imageFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        onSuccess(imageFile)
+                    }
+                }
+            })
+        },
+        onFailure = { error ->
+            onFailure(Exception("Request failed: $error"))
+        }
     )
 }

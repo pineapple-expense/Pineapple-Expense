@@ -119,7 +119,7 @@ fun returnReport(
 fun getReportExpenses(
     viewModel: AccessViewModel,
     reportNumber: String,
-    onSuccess: (List<Receipt>) -> Unit,
+    onSuccess: (List<Expense>) -> Unit,
     onFailure: (String) -> Unit
 ) {
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/RetrieveReportExpenseInformation"
@@ -138,7 +138,7 @@ fun getReportExpenses(
                 // Create the TypeToken for List<Receipt>
                 val listType = object : TypeToken<List<Expense>>() {}.type
                 // Deserialize directly to List<Receipt>
-                val receipts: List<Receipt> = Gson().fromJson(receiptsJson, listType)
+                val receipts: List<Expense> = Gson().fromJson(receiptsJson, listType)
                 onSuccess(receipts)
             } catch (e: Exception) {
                 onFailure("Failed to parse receipts: ${e.message}")

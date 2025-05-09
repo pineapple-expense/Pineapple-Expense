@@ -41,7 +41,7 @@ import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, expenseID: Int) {
+fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, expenseID: String) {
 
     val expense = viewModel.expenseList.value.find { it.id == expenseID }
 
@@ -130,5 +130,5 @@ fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, ex
 @Preview
 @Composable
 fun EditExpensePreview() {
-    EditExpense(rememberNavController(), viewModel(), 0)
+    EditExpense(rememberNavController(), viewModel(), "0")
 }

@@ -12,7 +12,7 @@ import java.util.Date
 //main access point for the room database to store expenses
 @Database(
     entities = [Expense::class, Report::class, CategoryMapping::class],
-    version = 6,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -61,4 +61,12 @@ class Converters {
         val type = object : TypeToken<List<Int>>() {}.type
         return gson.fromJson(json, type)
     }
+
+    @TypeConverter
+    fun fromStringList(list: List<String>): String =
+        Gson().toJson(list)
+
+    @TypeConverter
+    fun toStringList(json: String): List<String> =
+        Gson().fromJson(json, Array<String>::class.java).toList()
 }

@@ -11,13 +11,13 @@ interface ReportDao {
     suspend fun getAllReports(): List<Report>
 
     @Query("SELECT * FROM report_table WHERE id = :id")
-    suspend fun getReportById(id: Int): Report?
+    suspend fun getReportById(id: String): Report?
 
     @Query("SELECT * FROM report_table WHERE name = :reportName")
     suspend fun getReportByName(reportName: String): Report?
 
     @Query("UPDATE report_table SET expenseIds = :newExpenseIds WHERE name = :reportName")
-    suspend fun updateExpensesForReport(reportName: String, newExpenseIds: List<Int>)
+    suspend fun updateExpensesForReport(reportName: String, newExpenseIds: List<String>)
 
     @Query("UPDATE report_table SET status = :newStatus WHERE name = :reportName")
     suspend fun updateReportStatus(reportName: String, newStatus: String)

@@ -365,8 +365,6 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     fun fetchPendingReports() = viewModelScope.launch {
         _isRefreshing.value = true
         try {
-            // ←- Your network / DB reload here
-
             retrieveSubmittedReports(
                 this@AccessViewModel, onSuccess = { it.forEach { adminReport ->
                     //create a new report
@@ -395,7 +393,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                             val newExpense = Expense(
                                 title = expense.title ?: "untitled expense",
                                 total = expense.actAmount.toFloatOrNull() ?: throw IllegalArgumentException("Invalid total: ${expense.actAmount}"),
-                                date = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).parse(expense.actDate) ?: throw IllegalArgumentException("Invalid date: ${expense.actDate}"),
+                                date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(expense.actDate) ?: throw IllegalArgumentException("Invalid date: ${expense.actDate}"),
                                 comment = expense.comment ?: "",
                                 category = expense.actCategory,
                                 imageUri = null,

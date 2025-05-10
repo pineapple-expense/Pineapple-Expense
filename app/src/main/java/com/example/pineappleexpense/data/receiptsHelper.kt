@@ -375,14 +375,7 @@ fun downloadExpenseImage(
     getReceiptDownloadURL(
         viewModel,
         receiptId,
-        onSuccess = { responseBody ->
-            // 1) Parse the URL
-            val url = try {
-                JSONObject(responseBody).getString("url")
-            } catch (e: Exception) {
-                onFailure(Exception("Invalid response format: ${e.message}"))
-                return@getReceiptDownloadURL
-            }
+        onSuccess = { url ->
             // 2) Build & enqueue the image download
             val client = OkHttpClient()
             val request = Request.Builder().url(url).build()
@@ -404,7 +397,7 @@ fun downloadExpenseImage(
                         }
                         val imageFile = File(storageDir, receiptId)
 
-                        it.body.byteStream()?.use { input ->
+                        it.body.byteStream().use { input ->
                             FileOutputStream(imageFile).use { output ->
                                 input.copyTo(output)
                             }

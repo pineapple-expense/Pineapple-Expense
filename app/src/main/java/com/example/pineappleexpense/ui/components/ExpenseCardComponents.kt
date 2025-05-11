@@ -283,25 +283,27 @@ fun ExpandedExpenseCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (inReport) {
-                Button(
-                    onClick = onRemoveFromReportClicked,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if(viewModel.currentReportExpenses.value.contains(expense)) {
-                        Text(
-                            text = "Remove from Current Report",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                    else {
-                        Text(
-                            text = "Remove from Report",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                if (viewModel.currentReportExpenses.value.contains(expense)
+                    || viewModel.pendingExpense.contains(expense)) {
+                    Button(
+                        onClick = onRemoveFromReportClicked,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (viewModel.currentReportExpenses.value.contains(expense)) {
+                            Text(
+                                text = "Remove from Current Report",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else if (viewModel.pendingExpense.contains(expense)) {
+                            Text(
+                                text = "Remove from Report",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
             } else {
@@ -319,7 +321,7 @@ fun ExpandedExpenseCard(
                 }
             }
         }
-        // ----------------------------------------------------------------------------
+
         if (viewModel.getCurrentRole() != "Admin" &&
             viewModel.displayExpenses.contains(expense))
             Row(

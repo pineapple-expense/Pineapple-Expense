@@ -230,7 +230,7 @@ fun ViewReportScreen(
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) { Text("Submit Report for Review") }
-                } else {
+                } else if (!viewModel.acceptedReports.contains(report)){
                     Column {
                         UnsendAndDeleteButton(viewModel, reportName, navController)
                     }

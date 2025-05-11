@@ -92,6 +92,14 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             }
         }
 
+    val pendingExpense: List<Expense>
+        get() {
+            val pendingIds = pendingReports.flatMap { it.expenseIds }.toSet()
+            return expenseList.value.filter { expense ->
+                expense.id in pendingIds
+            }
+        }
+
     //local category mappings
     private val _accountMappings = mutableStateMapOf<String, String>()
     val accountMappings: Map<String, String> get() = _accountMappings

@@ -15,6 +15,7 @@ import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.data.addReceiptToReportRemote
 import com.example.pineappleexpense.data.createReportRemote
+import com.example.pineappleexpense.data.downloadExpenseImage
 import com.example.pineappleexpense.data.getReportExpenses
 import com.example.pineappleexpense.data.retrieveSubmittedReports
 import com.example.pineappleexpense.data.updateReceiptRemote
@@ -24,7 +25,6 @@ import com.example.pineappleexpense.model.DatabaseInstance
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +33,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import kotlin.math.exp
+import java.util.concurrent.atomic.AtomicInteger
 import com.example.pineappleexpense.data.submitReport as submitReportRemote
 
 
@@ -157,7 +157,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    //add the following expense to the current report
+    //add the following expense to the specified report
     fun addToReport(reportName: String, expenseId: String) {
         Log.d("pineapple", "adding id $expenseId to report $reportName")
         viewModelScope.launch() {
@@ -165,7 +165,12 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
             if (report != null) {
                 // Report exists; Append new expenseId
-                reportDao.updateExpensesForReport("current", report.expenseIds + expenseId)
+                if(!report.expenseIds.contains(expenseId)) {
+                    reportDao.updateExpensesForReport(reportName, report.expenseIds + expenseId)
+                }
+                else {
+                    Log.d("pineapple", "expense \"$expenseId\" already exists in report: $reportName")
+                }
             } else {
                 throw Exception("report $reportName does not exist")
             }
@@ -364,57 +369,132 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     fun fetchPendingReports() = viewModelScope.launch {
         _isRefreshing.value = true
+        val totalReports         = AtomicInteger(0)
+        val processedReports     = AtomicInteger(0)
+        val totalDownloads       = AtomicInteger(0)
+        val completedDownloads   = AtomicInteger(0)
+
+        //checks if all reports and expenses are processed and downloaded to stop the refresh spinner indicator
+        fun tryClearRefreshing() {
+            if (
+                processedReports.get()   == totalReports.get()   &&
+                completedDownloads.get() == totalDownloads.get()
+            ) {
+                _isRefreshing.value = false
+            }
+        }
         try {
             retrieveSubmittedReports(
-                this@AccessViewModel, onSuccess = { it.forEach { adminReport ->
-                    //create a new report
-                    val newReport = Report(
-                        id = adminReport.reportNumber,
-                        name = SimpleDateFormat(
-                            "yyyyMMdd_HHmmss",
-                            Locale.getDefault()
-                        ).format(Date()),
-                        expenseIds = emptyList(),
-                        status = "pending",
-                        userName = adminReport.name,
-                        comment = adminReport.comment
-                    )
-                    viewModelScope.launch(Dispatchers.IO) {
-                        reportDao.insertReport(newReport)
-                        loadReports()
+                this@AccessViewModel, onSuccess = { adminReports ->
+                    totalReports.set(adminReports.size)
+                    if (adminReports.isEmpty()) {
+                        _isRefreshing.value = false
+                        return@retrieveSubmittedReports
                     }
-                    //download expenses
-                    getReportExpenses(
-                        this@AccessViewModel, newReport.id,
-                        onSuccess = { it.forEach { expense ->
-
-                            //todo: download receipt image and URI
-
-                            val newExpense = Expense(
-                                title = expense.title ?: "untitled expense",
-                                total = expense.actAmount.toFloatOrNull() ?: throw IllegalArgumentException("Invalid total: ${expense.actAmount}"),
-                                date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(expense.actDate) ?: throw IllegalArgumentException("Invalid date: ${expense.actDate}"),
-                                comment = expense.comment ?: "",
-                                category = expense.actCategory,
-                                imageUri = null,
-                                id = expense.receiptId
+                    //process each report individually
+                    adminReports.forEach { adminReport ->
+                        var report: Report? = null
+                        if(reportList.value.any{it.id == adminReport.reportNumber}) {
+                            //report exists -> set @report to existing report
+                            report = reportList.value.first { it.id == adminReport.reportNumber }
+                        }
+                        else {
+                            //report doesn't exist -> create new report
+                            report = Report(
+                                id = adminReport.reportNumber,
+                                name = adminReport.reportNumber,
+                                expenseIds = emptyList(),
+                                status = "Under Review",
+                                userName = adminReport.name,
+                                comment = adminReport.comment
                             )
-                            //add expense to local db
-                            addExpense(newExpense)
-                            //add expense to local report
-                            addToReport(newReport.name, newExpense.id)
+                            viewModelScope.launch(Dispatchers.IO) {
+                                reportDao.insertReport(report)
+                                loadReports()
+                            }
+                        }
 
-                        } },
-                        onFailure = {throw Exception("network error: $it")}
-                    )
-                } },
-                onFailure = {throw Exception("network error: $it")}
+                        //download expenses
+                        getReportExpenses(
+                            this@AccessViewModel, report.id,
+                            onSuccess = { expenses ->
+                                //one download per expense
+                                totalDownloads.addAndGet(expenses.size)
+                                expenses.forEach { expense ->
+                                    if(expenseList.value.any { it.id == expense.receiptId}) {
+                                        //expense already exists -> update expense
+                                        val existingExpense = expenseList.value.first { it.id == expense.receiptId }
+
+                                        existingExpense.apply {
+                                            title = expense.title ?: title
+                                            total = expense.actAmount.toFloatOrNull() ?: total
+                                            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(expense.actDate) ?: date
+                                            comment = expense.comment ?: comment
+                                            category = expense.actCategory
+                                        }
+                                        //add expense to local db
+                                        updateExpense(existingExpense)
+                                        //add expense to local report
+                                        addToReport(report.name, existingExpense.id)
+                                        completedDownloads.incrementAndGet()
+                                        tryClearRefreshing()
+                                    } else {
+                                        //expense doesn't exist -> add new expense
+
+                                        val newExpense = Expense(
+                                            title = expense.title ?: "untitled expense",
+                                            total = expense.actAmount.toFloatOrNull() ?: throw IllegalArgumentException("Invalid total: ${expense.actAmount}"),
+                                            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(expense.actDate) ?: throw IllegalArgumentException("Invalid date: ${expense.actDate}"),
+                                            comment = expense.comment ?: "",
+                                            category = expense.actCategory,
+                                            imageUri = null,
+                                            id = expense.receiptId
+                                        )
+                                        downloadExpenseImage(
+                                            viewModel = this@AccessViewModel,
+                                            receiptId = expense.receiptId,
+                                            onSuccess = {
+                                                newExpense.imageUri = Uri.fromFile(it)
+                                                updateExpense(newExpense)
+                                                completedDownloads.incrementAndGet()
+                                                tryClearRefreshing()
+                                            },
+                                            onFailure = {
+                                                completedDownloads.incrementAndGet()
+                                                tryClearRefreshing()
+                                                Log.d("pineapple", "error retrieving reports (download image): ${it.message}")
+                                            }
+                                        )
+
+                                        //add expense to local db
+                                        addExpense(newExpense)
+
+                                        //add expense to local report
+                                        addToReport(report.name, newExpense.id)
+                                    }
+                                }
+                                //one reports expenses all launched
+                                processedReports.incrementAndGet()
+                                tryClearRefreshing()
+                            },
+                            onFailure = {
+                                Log.d("pineapple", "error retrieving reports (getReportExpenses): $it")
+                                //treat a failed-expense-fetch as processed
+                                processedReports.incrementAndGet()
+                                tryClearRefreshing()
+                            }
+                        )
+                    }
+                },
+                onFailure = {
+                    Log.d("pineapple", "error retrieving reports (retrieveSubmittedReports): $it")
+                    _isRefreshing.value = false
+                }
             )
         } catch (e: Exception) {
             val context = getApplication<Application>()
             Log.d("pineapple", "error retrieving reports: ${e.message}")
             Toast.makeText(context, "error retrieving reports", Toast.LENGTH_LONG).show()
-        } finally {
             _isRefreshing.value = false
         }
     }

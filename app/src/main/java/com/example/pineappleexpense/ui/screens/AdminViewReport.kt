@@ -63,7 +63,7 @@ fun AdminViewReportScreen(
         ) {
             if (reportExpenses.isEmpty()) {
                 // If the report is empty, show a placeholder.
-                ReportEmptyContent()
+                ReportEmptyContent(viewModel, reportName, navController, false)
             } else {
                 // Find date range and total
                 val dateRange = expensesDateRange(reportExpenses)

@@ -69,7 +69,7 @@ fun ViewReportScreen(
         ) {
             if (reportExpenses.isEmpty()) {
                 // If the report is empty, show a placeholder.
-                ReportEmptyContent()
+                ReportEmptyContent(viewModel, reportName, navController, true)
             } else {
                 // Find date range and total
                 val dateRange = expensesDateRange(reportExpenses)
@@ -232,23 +232,7 @@ fun ViewReportScreen(
                     ) { Text("Submit Report for Review") }
                 } else {
                     Column {
-                        Button(
-                            onClick = {
-                                viewModel.unsendAndDeleteReport(reportName)
-                                navController.navigate("Home") {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text("Unsend and Delete Report")
-                        }
+                        UnsendAndDeleteButton(viewModel, reportName, navController)
                     }
                 }
             }
@@ -268,14 +252,40 @@ fun ViewReportScreen(
 }
 
 @Composable
-fun ReportEmptyContent() {
-    Box(
+fun ReportEmptyContent(viewModel: AccessViewModel, reportName: String, navController: NavHostController, showUnsendButton: Boolean) {
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
     ) {
+        Spacer(Modifier.size(20.dp))
         Text(
             text = "No expenses in this report",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        Spacer(Modifier.weight(1f))
+        if(showUnsendButton) {
+            UnsendAndDeleteButton(viewModel, reportName, navController)
+        }
+    }
+}
+
+@Composable
+fun UnsendAndDeleteButton(viewModel: AccessViewModel, reportName: String, navController: NavHostController) {
+    Button(
+        onClick = {
+            viewModel.unsendAndDeleteReport(reportName)
+            navController.navigate("Home") {
+                launchSingleTop = true
+                restoreState = true
+            }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Red
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text("Unsend and Delete Report")
     }
 }

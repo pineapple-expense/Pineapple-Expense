@@ -33,7 +33,7 @@ class UINavigationTests {
         rule.onNode(hasText("Camera") and hasClickAction()).performClick()
 
         //the camera screen is showing if the camera tag is found (set in CameraScreen.kt)
-        rule.onNodeWithTag("Camera").assertExists()
+        rule.onNodeWithTag("CameraScreen").assertExists()
     }
 
     @Test
@@ -45,7 +45,7 @@ class UINavigationTests {
 
         rule.onNode(hasText("Archive") and hasClickAction()).performClick()
 
-        rule.onNodeWithTag("Archive").assertExists()
+        rule.onNodeWithTag("ArchiveUser").assertExists()
     }
 
     @Test

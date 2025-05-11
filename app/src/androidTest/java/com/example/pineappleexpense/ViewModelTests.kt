@@ -44,17 +44,17 @@ class ViewModelTests {
     @Test
     fun testToggleAccessChangesUserState() = runBlocking {
         // Initially, user role should be User.
-        assertEquals(UserRole.User, viewModel.getCurrentRole())
+        assertEquals("User", viewModel.getCurrentRole())
 
         // Toggle to Admin.
         viewModel.toggleAccess("Admin")
         delay(500)
-        assertEquals(UserRole.Admin, viewModel.getCurrentRole())
+        assertEquals("Admin", viewModel.getCurrentRole())
 
         // Toggle back to User.
         viewModel.toggleAccess("User")
         delay(500)
-        assertEquals(UserRole.User, viewModel.getCurrentRole())
+        assertEquals("User", viewModel.getCurrentRole())
     }
 
     @Test

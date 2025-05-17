@@ -274,7 +274,7 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
             }
             composable(
                 route = "editExpense/{expenseId}",
-                arguments = listOf(navArgument("expenseId") { type = NavType.IntType })
+                arguments = listOf(navArgument("expenseId") { type = NavType.StringType })
             ) { backStackEntry ->
                 // Retrieve the expenseId from arguments
                 val expenseId = backStackEntry.arguments?.getString("expenseId") ?: return@composable

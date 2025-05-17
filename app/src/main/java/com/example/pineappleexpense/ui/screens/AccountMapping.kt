@@ -29,7 +29,7 @@ fun AccountMapping(navController: NavHostController, viewModel: AccessViewModel,
     var selectedCategory by remember { mutableStateOf("") }
     var selectedAccount by remember { mutableStateOf("") }
     
-    val categories = listOf("Meals", "Travel", "Supplies", "Safety", "Other")
+    val categories = listOf("Meals", "Travel", "Supplies", "Safety", "Lodging", "Other")
     val mappings = viewModel.accountMappings
 
     Scaffold(

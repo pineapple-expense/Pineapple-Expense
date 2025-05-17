@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -20,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +48,8 @@ import java.util.Locale
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel) {
+    val scrollState = rememberScrollState()
+
     val imageUri = viewModel.latestImageUri
     val prediction = viewModel.currentPrediction
     var category: String
@@ -61,7 +69,7 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
         }
     ) {
         Column (
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(bottom = 125.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -90,7 +98,7 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
                 onClick = {
                     //put the receipt information into an Expense object
                     //currently just gives default values if there is a parsing error, this will be changed to prompt the user in the future
-                    val receipt = Expense(title, total?:0f, date?:SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("0000-00-00"), comment, category, imageUri)
+                    val receipt = Expense(title, total?:0f, date?:SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("0000-00-00"), comment, category, imageUri, id = imageUri?.lastPathSegment.toString())
                     //add the receipt to the viewmodel
                     viewModel.addExpense(receipt)
                     //navigate back to home
@@ -99,16 +107,23 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
                         restoreState = true
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, Color(0xFF6200EA)),
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                modifier = Modifier.height(30.dp)
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFBB86FC),
+                    contentColor   = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(40.dp)
+                    .padding(horizontal = 4.dp)
             ) {
                 Text(
-                    text = "done",
-                    color = Color(0xFF6200EA),
-                    fontSize = 12.sp
+                    text = "DONE",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }

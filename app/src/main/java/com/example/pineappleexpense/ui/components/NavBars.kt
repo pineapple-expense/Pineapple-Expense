@@ -43,7 +43,7 @@ import com.example.pineappleexpense.ui.viewmodel.UserRole
 fun TopBar(navController: NavHostController, viewModel: AccessViewModel) {
     val currentRoute = navController.currentDestination?.route
     val pagesWithBackButton = setOf("Receipt Preview", "Settings", "Profile", "Admin Profile", "Account Mapping")
-    val currentRouteHasBackButton = (currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true)
+    val currentRouteHasBackButton = (currentRoute in pagesWithBackButton || currentRoute?.startsWith("editExpense") == true || currentRoute?.startsWith("viewReport") == true || currentRoute?.startsWith("adminViewReport") == true)
     val userState = viewModel.getCurrentRole()
 
     Box(

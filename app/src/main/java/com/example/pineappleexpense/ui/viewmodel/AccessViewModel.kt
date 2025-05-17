@@ -276,14 +276,9 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                                     onSuccess = {
                                         Log.d(TAG, "✔ submitReportRemote success")
 
-                                        // ── 4) Mirror to local DB (IO) & finish ──
-                                        val timestamp = SimpleDateFormat(
-                                            "yyyyMMdd_HHmmss",
-                                            Locale.getDefault()
-                                        ).format(Date())
-
                                         val newReport = Report(
-                                            name       = timestamp,
+                                            id = remoteId,
+                                            name       = remoteId,
                                             expenseIds = current.expenseIds,
                                             status     = "Under Review",
                                             userName   = manager.getName().orEmpty()
@@ -292,7 +287,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                                         viewModelScope.launch(Dispatchers.IO) {
                                             reportDao.insertReport(newReport)
                                             reportDao.updateExpensesForReport("current", emptyList())
-                                            Log.d(TAG, "✔ Local DB updated – new report '$timestamp'")
+                                            Log.d(TAG, "✔ Local DB updated – new report '$remoteId'")
                                             loadReports()
                                             complete(true)     // SUCCESS ✅
                                         }

@@ -109,7 +109,7 @@ fun ReportCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "report: ${report.name}",
+                        text = dateRangeText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -118,12 +118,6 @@ fun ReportCard(
                         text = "Total: $${"%.2f".format(totalAmount)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = dateRangeText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
@@ -177,7 +171,7 @@ fun ReportCard(
                 // Report details
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "report: ${report.name}",
+                        text = dateRangeText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -188,11 +182,6 @@ fun ReportCard(
                         color = Color.Gray
                     )
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = dateRangeText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
                 }
             }
         }

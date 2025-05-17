@@ -350,7 +350,7 @@ fun commentBox(initialText: String? = null): String {
                 }
             }
         },
-        modifier = Modifier.width(400.dp).height(130.dp)
+        modifier = Modifier.width(400.dp).height(120.dp)
     )
     return comment
 }

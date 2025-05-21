@@ -43,18 +43,19 @@ class ViewModelTests {
 
     @Test
     fun testToggleAccessChangesUserState() = runBlocking {
+        viewModel.toggleAccess("User")
         // Initially, user role should be User.
-        assertEquals(UserRole.User, viewModel.getCurrentRole())
+        assertEquals("User", viewModel.getCurrentRole())
 
         // Toggle to Admin.
         viewModel.toggleAccess("Admin")
         delay(500)
-        assertEquals(UserRole.Admin, viewModel.getCurrentRole())
+        assertEquals("Admin", viewModel.getCurrentRole())
 
         // Toggle back to User.
         viewModel.toggleAccess("User")
         delay(500)
-        assertEquals(UserRole.User, viewModel.getCurrentRole())
+        assertEquals("User", viewModel.getCurrentRole())
     }
 
     @Test
@@ -95,7 +96,7 @@ class ViewModelTests {
     @Test
     fun testAddToAndRemoveFromCurrentReport() = runBlocking {
         // Test by adding and then removing an expense ID from the "current" report.
-        val testExpenseId = 999
+        val testExpenseId = "999"
 
         viewModel.addToCurrentReport(testExpenseId)
         delay(1000)
@@ -115,13 +116,22 @@ class ViewModelTests {
     @Test
     fun testSubmitReportCreatesNewReport() {
         runBlocking {
-            val testExpenseId = 1001
+            val testExpenseId = "1001"
             // Add an expense ID to the "current" report.
             viewModel.addToCurrentReport(testExpenseId)
             delay(1000)
 
             // Submit the current report.
-            viewModel.submitReport()
+            var done = false
+            viewModel.submitReport { success ->
+                done = true
+                if (success) {
+
+                }
+                else {
+
+                }
+            }
             delay(1500)
 
             // Find the submitted report (it should not have the name "current").

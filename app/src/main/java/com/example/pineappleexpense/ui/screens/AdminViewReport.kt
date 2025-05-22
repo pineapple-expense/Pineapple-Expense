@@ -1,5 +1,6 @@
 package com.example.pineappleexpense.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +36,7 @@ fun AdminViewReportScreen(
     reportName: String,
     modifier: Modifier = Modifier
 ) {
+    var isLoading by remember { mutableStateOf(false) }
     var report: Report? = null
     val reportExpenses = if (reportName == "current") {
         viewModel.currentReportExpenses.value
@@ -203,11 +205,14 @@ fun AdminViewReportScreen(
                     // Approve button
                     Button(
                         onClick = {
-                            report?.let { viewModel.acceptReport(it) } // Approve report, send to archive
-                            navController.navigate("Admin Home") {
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            isLoading = true
+                            report?.let { viewModel.acceptReport(it) {
+                                isLoading = false
+                                navController.navigate("Admin Home") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            } } // Approve report, send to archive
                         },
                         modifier = Modifier
                             .padding(16.dp)
@@ -217,11 +222,14 @@ fun AdminViewReportScreen(
                     // Reject button
                     Button(
                         onClick = {
-                            report?.let { viewModel.rejectReport(it) } // Reject report, user will see it on home screen
-                            navController.navigate("Admin Home") {
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            isLoading = true
+                            report?.let { viewModel.rejectReport(it) {
+                                isLoading = false
+                                navController.navigate("Admin Home") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            } } // Reject report, user will see it on home screen
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Red
@@ -233,6 +241,17 @@ fun AdminViewReportScreen(
                     }
                 }
             }
+        }
+    }
+
+    if (isLoading) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }

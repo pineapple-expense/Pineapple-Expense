@@ -80,7 +80,7 @@ fun approveReport(
 
     makeApiRequest(
         url = url,
-        method = "POST",
+        method = "PATCH",
         headers = mapOf("Authorization" to "Bearer $accessToken"),
         body = mapOf(
             "user_id" to userId,
@@ -104,7 +104,7 @@ fun returnReport(
     val accessToken = viewModel.getAccessToken()
     makeApiRequest(
         url = url,
-        method = "POST",
+        method = "PATCH",
         headers = mapOf("Authorization" to "Bearer $accessToken"),
         body = mapOf(
             "user_id" to userId,

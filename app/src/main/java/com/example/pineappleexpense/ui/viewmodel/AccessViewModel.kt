@@ -14,10 +14,12 @@ import androidx.lifecycle.viewModelScope
 import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.data.addReceiptToReportRemote
+import com.example.pineappleexpense.data.approveReport
 import com.example.pineappleexpense.data.createReportRemote
 import com.example.pineappleexpense.data.downloadExpenseImage
 import com.example.pineappleexpense.data.getReportExpenses
 import com.example.pineappleexpense.data.retrieveSubmittedReports
+import com.example.pineappleexpense.data.returnReport
 import com.example.pineappleexpense.data.updateReceiptRemote
 import com.example.pineappleexpense.model.Auth0Manager
 import com.example.pineappleexpense.model.CategoryMapping
@@ -503,19 +505,53 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     }
 
     // Changes the status of a report to be accepted
-    fun acceptReport(report: Report) {
-        viewModelScope.launch {
-            reportDao.updateReportStatus(report.name, "Accepted")
-            loadReports()
-        }
+    fun acceptReport(report: Report, onFinished: () -> Unit) {
+        approveReport(
+            viewModel = this@AccessViewModel,
+            userId = "1",
+            reportNumber = report.id,
+            comment = report.comment,
+            onSuccess = {
+                Log.d("pineapple", "report accepted successfully")
+                viewModelScope.launch {
+                    reportDao.updateReportStatus(report.name, "Accepted")
+                    loadReports()
+                }
+                viewModelScope.launch(Dispatchers.Main) { onFinished() }
+            },
+            onFailure = {
+                Log.d("pineapple", it)
+                viewModelScope.launch {
+                    Toast.makeText(getApplication<Application>(), "error accepting report", Toast.LENGTH_LONG).show()
+                }
+                viewModelScope.launch(Dispatchers.Main) { onFinished() }
+            }
+        )
     }
 
     // Changes the status of a report to be rejected
-    fun rejectReport(report: Report) {
-        viewModelScope.launch {
-            reportDao.updateReportStatus(report.name, "Rejected")
-            loadReports()
-        }
+    fun rejectReport(report: Report, onFinished: () -> Unit) {
+        returnReport(
+            viewModel = this@AccessViewModel,
+            userId = "1",
+            reportNumber = report.id,
+            comment = report.comment,
+            onSuccess = {
+                Log.d("pineapple", "report rejected successfully")
+                viewModelScope.launch {
+                    reportDao.updateReportStatus(report.name, "Rejected")
+                    loadReports()
+                }
+                viewModelScope.launch(Dispatchers.Main) { onFinished() }
+            },
+            onFailure = {
+                Log.d("pineapple", it)
+                viewModelScope.launch {
+                    Toast.makeText(getApplication<Application>(), "error rejecting report", Toast.LENGTH_LONG).show()
+                }
+                viewModelScope.launch(Dispatchers.Main) { onFinished() }
+            }
+        )
     }
 
     //deletes a report (todo: make this unsend the report as well)
@@ -556,6 +592,35 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             _expenseList.value = expenseDao.getAllExpenses()
         }
     }
+
+    fun clearAllLocalData() {
+        viewModelScope.launch {
+            // Delete all expenses
+            val allExpenses = expenseDao.getAllExpenses()
+            allExpenses.forEach { expense ->
+                expenseDao.deleteExpense(expense)
+            }
+
+            // Delete all reports
+            val allReports = reportDao.getAllReports()
+            allReports.forEach { report ->
+                reportDao.deleteReport(report)
+            }
+
+            // Delete all category mappings
+            categoryMappingDao.getAllMappings().collect { mappings ->
+                mappings.forEach { mapping ->
+                    categoryMappingDao.deleteMapping(mapping)
+                }
+            }
+
+            // Reload in-memory lists/UI
+            loadExpenses()
+            loadReports()
+            loadMappings()
+        }
+    }
+
 
     fun addExpense(expense: Expense) {
         viewModelScope.launch {

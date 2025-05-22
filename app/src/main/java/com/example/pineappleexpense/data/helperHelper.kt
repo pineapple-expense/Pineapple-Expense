@@ -43,6 +43,9 @@ fun makeApiRequest(
     }
 
     val request = requestBuilder.build()
+    if (BuildConfig.DEBUG) {
+        Log.d("makeApiRequest", request.toString())
+    }
 
     client.newCall(request).enqueue(object : okhttp3.Callback {
         override fun onFailure(call: Call, e: IOException) {

@@ -17,7 +17,9 @@ import com.example.pineappleexpense.data.addReceiptToReportRemote
 import com.example.pineappleexpense.data.approveReport
 import com.example.pineappleexpense.data.createReportRemote
 import com.example.pineappleexpense.data.downloadExpenseImage
+import com.example.pineappleexpense.data.getApprovedReports
 import com.example.pineappleexpense.data.getReportExpenses
+import com.example.pineappleexpense.data.getReturnedReports
 import com.example.pineappleexpense.data.retrieveSubmittedReports
 import com.example.pineappleexpense.data.returnReport
 import com.example.pineappleexpense.data.updateReceiptRemote
@@ -32,7 +34,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
@@ -46,7 +47,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     var latestImageUri by mutableStateOf<Uri?>(null)
     var currentPrediction by mutableStateOf<Prediction?>(null)
 
-    //refresh pending reports state (for admin home)
+    //refresh pending reports state
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
@@ -502,6 +503,50 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             Toast.makeText(context, "error retrieving reports", Toast.LENGTH_LONG).show()
             _isRefreshing.value = false
         }
+    }
+
+    //fetches accepted and rejected reports on cloud to update local pending reports if they have been accepted or rejected
+    fun updatePendingReports() {
+        _isRefreshing.value = true
+
+        getReturnedReports(
+            viewModel = this@AccessViewModel,
+            onSuccess = {reportUpdates ->
+                for(reportUpdate in reportUpdates) {
+                    _reportList.value.filter { it.id == reportUpdate.first }.first().apply {
+                        comment = reportUpdate.second
+                        status = "Rejected"
+                    }
+                }
+
+                getApprovedReports(
+                    viewModel = this@AccessViewModel,
+                    onSuccess = {reportUpdates ->
+                        for(reportUpdate in reportUpdates) {
+                            _reportList.value.filter { it.id == reportUpdate.first }.first().apply {
+                                comment = reportUpdate.second
+                                status = "Accepted"
+                            }
+                        }
+                        _isRefreshing.value = false
+                    },
+                    onFailure = {
+                        Log.d("pineapple", "error updating report (fetch approved reports failed): $it")
+                        viewModelScope.launch {
+                            Toast.makeText(getApplication<Application>(), "error updating reports", Toast.LENGTH_LONG).show()
+                        }
+                        _isRefreshing.value = false
+                    }
+                )
+            },
+            onFailure = {
+                Log.d("pineapple", "error updating report (fetch rejected reports failed): $it")
+                viewModelScope.launch {
+                    Toast.makeText(getApplication<Application>(), "error updating reports", Toast.LENGTH_LONG).show()
+                }
+                _isRefreshing.value = false
+            }
+        )
     }
 
     // Changes the status of a report to be accepted

@@ -513,9 +513,14 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             viewModel = this@AccessViewModel,
             onSuccess = {reportUpdates ->
                 for(reportUpdate in reportUpdates) {
-                    _reportList.value.firstOrNull { it.id == reportUpdate.first }?.apply {
-                        comment = reportUpdate.second
-                        status = "Rejected"
+                    val report = _reportList.value.firstOrNull { it.id == reportUpdate.first }
+                    Log.d("updatePendingReports", "updating ${reportUpdate.first} with comment ${reportUpdate.second}. found report ${report?.name}")
+                    if(report != null) {
+                        viewModelScope.launch {
+                            reportDao.updateReportStatus(report.name, "Rejected")
+                            reportDao.updateComment(report.name, reportUpdate.second)
+                            loadReports()
+                        }
                     }
                 }
 
@@ -523,9 +528,13 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                     viewModel = this@AccessViewModel,
                     onSuccess = {reportUpdates ->
                         for(reportUpdate in reportUpdates) {
-                            _reportList.value.firstOrNull { it.id == reportUpdate.first }?.apply {
-                                comment = reportUpdate.second
-                                status = "Accepted"
+                            val report = _reportList.value.firstOrNull { it.id == reportUpdate.first }
+                            if(report != null) {
+                                viewModelScope.launch {
+                                    reportDao.updateReportStatus(report.name, "Accepted")
+                                    reportDao.updateComment(report.name, reportUpdate.second)
+                                    loadReports()
+                                }
                             }
                         }
                         _isRefreshing.value = false

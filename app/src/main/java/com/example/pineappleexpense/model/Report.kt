@@ -10,7 +10,7 @@ data class Report(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
     val expenseIds: List<String>, // Store the IDs of related Expense objects
-    var status: String = "Unsubmitted",
+    val status: String = "Unsubmitted",
     val userName: String = "",
-    var comment: String = ""
+    val comment: String = ""
 )

@@ -144,7 +144,7 @@ fun getReturnedReports(
                 for (i in 0 until jsonArray.length()) {
                     val jsonObject = jsonArray.getJSONObject(i)
                     val reportNumber = jsonObject.getString("report_number")
-                    val comment = jsonObject.getString("comment")
+                    val comment = jsonObject.getString("comment") ?: ""
                     reports.add(Pair(reportNumber, comment))
                 }
                 onSuccess(reports)

@@ -513,7 +513,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             viewModel = this@AccessViewModel,
             onSuccess = {reportUpdates ->
                 for(reportUpdate in reportUpdates) {
-                    _reportList.value.filter { it.id == reportUpdate.first }.first().apply {
+                    _reportList.value.firstOrNull { it.id == reportUpdate.first }?.apply {
                         comment = reportUpdate.second
                         status = "Rejected"
                     }
@@ -523,7 +523,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                     viewModel = this@AccessViewModel,
                     onSuccess = {reportUpdates ->
                         for(reportUpdate in reportUpdates) {
-                            _reportList.value.filter { it.id == reportUpdate.first }.first().apply {
+                            _reportList.value.firstOrNull { it.id == reportUpdate.first }?.apply {
                                 comment = reportUpdate.second
                                 status = "Accepted"
                             }

@@ -29,7 +29,7 @@ fun testFullReportLifecycle(viewModel: AccessViewModel) {
                             Log.d("TestLifecycle", "Step 5: Report $reportID submitted successfully")
 
                             // Step 6: Get all submitted/returned reports
-                            getSubmittedAndReturnedReports(viewModel, onSuccess = { reports ->
+                            getReturnedReports(viewModel, onSuccess = { reports ->
                                 Log.d("TestLifecycle", "Step 6: Retrieved ${reports.size} submitted/returned reports")
 
                                 // Step 7: Recall the report
@@ -37,7 +37,7 @@ fun testFullReportLifecycle(viewModel: AccessViewModel) {
                                     Log.d("TestLifecycle", "Step 7: Report $reportID recalled successfully")
 
                                     // Step 8: Try to get submitted/returned reports again (expect shorter list)
-                                    getSubmittedAndReturnedReports(viewModel, onSuccess = { reportsAfterRecall ->
+                                    getReturnedReports(viewModel, onSuccess = { reportsAfterRecall ->
                                         if (reportsAfterRecall.size < reports.size) {
                                             Log.d("TestLifecycle", "Step 8: Retrieved ${reportsAfterRecall.size} submitted/returned reports after recall (expected)")
 

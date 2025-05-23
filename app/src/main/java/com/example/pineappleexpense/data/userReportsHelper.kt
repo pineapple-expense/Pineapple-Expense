@@ -123,10 +123,10 @@ fun recallReport(
     )
 }
 
-// Get reports that have either been submitted or returned but not approved
-fun getSubmittedAndReturnedReports(
+// Get reports that have been returned
+fun getReturnedReports(
     viewModel: AccessViewModel,
-    onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)
+    onSuccess: (List<Pair<String, String>>) -> Unit, // Returns a list of (reportNumber, comment)
     onFailure: (String) -> Unit
 ) {
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/RetrieveSubmittedAndReturnedReports"
@@ -139,13 +139,13 @@ fun getSubmittedAndReturnedReports(
         onSuccess = { responseBody ->
             try {
                 val jsonArray = JSONArray(responseBody)
-                val reports = mutableListOf<Pair<String, Double>>()
+                val reports = mutableListOf<Pair<String, String>>()
 
                 for (i in 0 until jsonArray.length()) {
                     val jsonObject = jsonArray.getJSONObject(i)
                     val reportNumber = jsonObject.getString("report_number")
-                    val totalAmount = jsonObject.getDouble("total")
-                    reports.add(Pair(reportNumber, totalAmount))
+                    val comment = jsonObject.getString("comment") ?: ""
+                    reports.add(Pair(reportNumber, comment))
                 }
                 onSuccess(reports)
             } catch (e: Exception) {
@@ -159,7 +159,7 @@ fun getSubmittedAndReturnedReports(
 // Get a list of approved reports
 fun getApprovedReports(
     viewModel: AccessViewModel,
-    onSuccess: (List<Pair<String, Double>>) -> Unit, // Returns a list of (reportNumber, totalAmount)
+    onSuccess: (List<Pair<String, String>>) -> Unit, // Returns a list of (reportNumber, comment)
     onFailure: (String) -> Unit
 ) {
     val url = "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/user/RetrieveApprovedReports"
@@ -172,13 +172,13 @@ fun getApprovedReports(
         onSuccess = { responseBody ->
             try {
                 val jsonArray = JSONArray(responseBody)
-                val reports = mutableListOf<Pair<String, Double>>()
+                val reports = mutableListOf<Pair<String, String>>()
 
                 for (i in 0 until jsonArray.length()) {
                     val jsonObject = jsonArray.getJSONObject(i)
                     val reportNumber = jsonObject.getString("report_number")
-                    val totalAmount = jsonObject.getDouble("total")
-                    reports.add(Pair(reportNumber, totalAmount))
+                    val comment = jsonObject.getString("comment")
+                    reports.add(Pair(reportNumber, comment))
                 }
                 onSuccess(reports)
             } catch (e: Exception) {

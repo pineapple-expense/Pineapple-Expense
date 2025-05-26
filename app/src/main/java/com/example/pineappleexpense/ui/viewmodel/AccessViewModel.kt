@@ -16,6 +16,7 @@ import com.example.pineappleexpense.data.Prediction
 import com.example.pineappleexpense.data.addReceiptToReportRemote
 import com.example.pineappleexpense.data.approveReport
 import com.example.pineappleexpense.data.createReportRemote
+import com.example.pineappleexpense.data.deleteReportRemote
 import com.example.pineappleexpense.data.downloadExpenseImage
 import com.example.pineappleexpense.data.getApprovedReports
 import com.example.pineappleexpense.data.getReportExpenses
@@ -157,7 +158,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
                 if (report != null) {
                     // Report exists; Append new expenseId
-                    reportDao.updateExpensesForReport("current", report.expenseIds + expenseId)
+                    reportDao.updateExpensesForReport(report.id, report.expenseIds + expenseId)
                 } else {
                     // Report doesn't exist; Create a new report
                     val newReport = Report(name = "current", expenseIds = listOf(expenseId), userName = manager.getName() ?: "")
@@ -169,21 +170,21 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     }
 
     //add the following expense to the specified report
-    fun addToReport(reportName: String, expenseId: String) {
-        Log.d("pineapple", "adding id $expenseId to report $reportName")
+    fun addToReport(reportId: String, expenseId: String) {
+        Log.d("pineapple", "adding id $expenseId to report $reportId")
         viewModelScope.launch() {
-            val report = reportDao.getReportByName(reportName)
+            val report = reportDao.getReportById(reportId)
 
             if (report != null) {
                 // Report exists; Append new expenseId
                 if(!report.expenseIds.contains(expenseId)) {
-                    reportDao.updateExpensesForReport(reportName, report.expenseIds + expenseId)
+                    reportDao.updateExpensesForReport(reportId, report.expenseIds + expenseId)
                 }
                 else {
-                    Log.d("pineapple", "expense \"$expenseId\" already exists in report: $reportName")
+                    Log.d("pineapple", "expense \"$expenseId\" already exists in report: $reportId")
                 }
             } else {
-                throw Exception("report $reportName does not exist")
+                throw Exception("report $reportId does not exist")
             }
             loadReports()
         }
@@ -192,8 +193,8 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
     //remove the following expense from the current report
     fun removeFromCurrentReport(expenseId: String) {
         viewModelScope.launch {
-            reportDao.getReportByName("current")?.expenseIds?.let {
-                reportDao.updateExpensesForReport("current", it.filter { it != expenseId })
+            reportDao.getReportByName("current")?.let {
+                reportDao.updateExpensesForReport(it.id, it.expenseIds.filter { it != expenseId })
             }
             loadReports()
         }
@@ -297,7 +298,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
                                         viewModelScope.launch(Dispatchers.IO) {
                                             reportDao.insertReport(newReport)
-                                            reportDao.updateExpensesForReport("current", emptyList())
+                                            reportDao.updateExpensesForReport(reportDao.getReportByName("current")?.id.toString(), emptyList())
                                             Log.d(TAG, "✔ Local DB updated – new report '$remoteId'")
                                             loadReports()
                                             complete(true)     // SUCCESS ✅
@@ -441,7 +442,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                                         //add expense to local db
                                         updateExpense(existingExpense)
                                         //add expense to local report
-                                        addToReport(report.name, existingExpense.id)
+                                        addToReport(report.id, existingExpense.id)
                                         completedDownloads.incrementAndGet()
                                         tryClearRefreshing()
                                     } else {
@@ -476,7 +477,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                                         addExpense(newExpense)
 
                                         //add expense to local report
-                                        addToReport(report.name, newExpense.id)
+                                        addToReport(report.id, newExpense.id)
                                     }
                                 }
                                 //one reports expenses all launched
@@ -517,8 +518,8 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                     Log.d("updatePendingReports", "updating ${reportUpdate.first} with comment ${reportUpdate.second}. found report ${report?.name}")
                     if(report != null) {
                         viewModelScope.launch {
-                            reportDao.updateReportStatus(report.name, "Rejected")
-                            reportDao.updateComment(report.name, reportUpdate.second)
+                            reportDao.updateReportStatus(report.id, "Rejected")
+                            reportDao.updateComment(report.id, reportUpdate.second)
                             loadReports()
                         }
                     }
@@ -531,8 +532,8 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                             val report = _reportList.value.firstOrNull { it.id == reportUpdate.first }
                             if(report != null) {
                                 viewModelScope.launch {
-                                    reportDao.updateReportStatus(report.name, "Accepted")
-                                    reportDao.updateComment(report.name, reportUpdate.second)
+                                    reportDao.updateReportStatus(report.id, "Accepted")
+                                    reportDao.updateComment(report.id, reportUpdate.second)
                                     loadReports()
                                 }
                             }
@@ -568,7 +569,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             onSuccess = {
                 Log.d("pineapple", "report accepted successfully")
                 viewModelScope.launch {
-                    reportDao.updateReportStatus(report.name, "Accepted")
+                    reportDao.updateReportStatus(report.id, "Accepted")
                     loadReports()
                 }
                 viewModelScope.launch(Dispatchers.Main) { onFinished() }
@@ -593,7 +594,7 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             onSuccess = {
                 Log.d("pineapple", "report rejected successfully")
                 viewModelScope.launch {
-                    reportDao.updateReportStatus(report.name, "Rejected")
+                    reportDao.updateReportStatus(report.id, "Rejected")
                     loadReports()
                 }
                 viewModelScope.launch(Dispatchers.Main) { onFinished() }
@@ -601,41 +602,52 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
             onFailure = {
                 Log.d("pineapple", it)
                 viewModelScope.launch {
-                    Toast.makeText(getApplication<Application>(), "error rejecting report", Toast.LENGTH_LONG).show()
+                    Toast.makeText(getApplication<Application>(), "error rejecting report", Toast.LENGTH_SHORT).show()
                 }
                 viewModelScope.launch(Dispatchers.Main) { onFinished() }
             }
         )
     }
 
-    //deletes a report (todo: make this unsend the report as well)
-    fun unsendAndDeleteReport(reportName: String) {
+    fun unsendAndDeleteReport(reportId: String, onFinished: (Boolean) -> Unit) {
         viewModelScope.launch {
-            // Retrieve the report by name
-            val report = reportDao.getReportByName(reportName)
+            val report = reportDao.getReportById(reportId)
             if (report != null) {
-                // Delete the report only (expenses remain intact)
-                reportDao.deleteReport(report)
-                // Reload reports to update UI state
-                loadReports()
-                loadExpenses()
+                deleteReportRemote(
+                    viewModel = this@AccessViewModel,
+                    reportID = report.id,
+                    onSuccess = {
+                        viewModelScope.launch {
+                            // Delete the report only (expenses remain intact)
+                            reportDao.deleteReport(report)
+                            loadReports()
+                            loadExpenses()
+                            viewModelScope.launch(Dispatchers.Main) { onFinished(true) }
+                        }
+                    },
+                    onFailure = {
+                        Log.d("unsendAndDeleteReport", "Report '$reportId' failed to delete: $it")
+                        viewModelScope.launch(Dispatchers.Main) { onFinished(false) }
+                    }
+                )
             } else {
-                Log.d("pineapple", "Report '$reportName' not found for deletion")
+                Log.d("pineapple", "Report '$reportId' not found for deletion")
+                viewModelScope.launch(Dispatchers.Main) { onFinished(false) }
             }
         }
     }
 
     // Change the comment of a report
-    fun setReportComment(reportName: String, newComment: String) {
+    fun setReportComment(reportId: String, newComment: String) {
         viewModelScope.launch {
             // Make sure report exists
-            if (reportDao.getReportByName(reportName) != null) {
-                reportDao.updateComment(reportName, newComment)
+            if (reportDao.getReportById(reportId) != null) {
+                reportDao.updateComment(reportId, newComment)
                 // Reload reports to update UI state
                 loadReports()
                 loadExpenses()
             } else {
-                Log.d("pineapple", "Report '$reportName' not found")
+                Log.d("pineapple", "Report '$reportId' not found")
             }
         }
     }

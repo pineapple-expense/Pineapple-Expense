@@ -212,7 +212,7 @@ fun ViewReportScreen(
                             viewModel.submitReport { success ->
                                 isLoading = false                    // stop spinner
                                 if (success) {
-                                    navController.navigate("Home") { // now always on Main
+                                    navController.navigate("Home") {
                                         launchSingleTop = true
                                         restoreState   = true
                                     }
@@ -232,7 +232,31 @@ fun ViewReportScreen(
                     ) { Text("Submit Report for Review") }
                 } else if (!viewModel.acceptedReports.contains(report)){
                     Column {
-                        UnsendAndDeleteButton(viewModel, reportName, navController)
+                        Button(
+                            onClick = {
+                                isLoading = true
+                                viewModel.unsendAndDeleteReport(reportName) { success ->
+                                    isLoading = false
+                                    if (success) {
+                                        Toast.makeText(context, "Report Removed Successfully", Toast.LENGTH_SHORT).show()
+                                        navController.navigate("Home") {
+                                            launchSingleTop = true
+                                            restoreState   = true
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Failed to delete report", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text("Unsend and Delete Report")
+                        }
                     }
                 }
             }
@@ -264,28 +288,26 @@ fun ReportEmptyContent(viewModel: AccessViewModel, reportName: String, navContro
         )
         Spacer(Modifier.weight(1f))
         if(showUnsendButton) {
-            UnsendAndDeleteButton(viewModel, reportName, navController)
-        }
-    }
-}
-
-@Composable
-fun UnsendAndDeleteButton(viewModel: AccessViewModel, reportName: String, navController: NavHostController) {
-    Button(
-        onClick = {
-            viewModel.unsendAndDeleteReport(reportName)
-            navController.navigate("Home") {
-                launchSingleTop = true
-                restoreState = true
+            Button(
+                onClick = {
+                    viewModel.unsendAndDeleteReport(reportName) { success ->
+                        if (success) {
+                            navController.navigate("Home") {
+                                launchSingleTop = true
+                                restoreState   = true
+                            }
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Unsend and Delete Report")
             }
-        },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Red
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text("Unsend and Delete Report")
+        }
     }
 }

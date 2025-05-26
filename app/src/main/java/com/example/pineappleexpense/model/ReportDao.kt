@@ -16,14 +16,14 @@ interface ReportDao {
     @Query("SELECT * FROM report_table WHERE name = :reportName")
     suspend fun getReportByName(reportName: String): Report?
 
-    @Query("UPDATE report_table SET expenseIds = :newExpenseIds WHERE name = :reportName")
-    suspend fun updateExpensesForReport(reportName: String, newExpenseIds: List<String>)
+    @Query("UPDATE report_table SET expenseIds = :newExpenseIds WHERE id = :reportId")
+    suspend fun updateExpensesForReport(reportId: String, newExpenseIds: List<String>)
 
-    @Query("UPDATE report_table SET status = :newStatus WHERE name = :reportName")
-    suspend fun updateReportStatus(reportName: String, newStatus: String)
+    @Query("UPDATE report_table SET status = :newStatus WHERE id = :reportId")
+    suspend fun updateReportStatus(reportId: String, newStatus: String)
 
-    @Query("UPDATE report_table SET comment = :newComment WHERE name = :reportName")
-    suspend fun updateComment(reportName: String, newComment: String)
+    @Query("UPDATE report_table SET comment = :newComment WHERE id = :reportId")
+    suspend fun updateComment(reportId: String, newComment: String)
 
     @Delete
     suspend fun deleteReport(report: Report)

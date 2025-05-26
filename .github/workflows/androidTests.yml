@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'Android/**'
 
 permissions:
   checks: write
@@ -40,16 +42,18 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+        working-directory: Android
 
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
+        working-directory: Android
 
       - name: Publish Unit Test Results
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Unit Test Results
-          path: app/build/test-results/testDebugUnitTest/*.xml
+          path: Android/app/build/test-results/testDebugUnitTest/*.xml
           reporter: java-junit
 
   instrumentation-tests:
@@ -88,6 +92,7 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+        working-directory: Android
 
       - name: Run instrumentation tests
         uses: ReactiveCircus/android-emulator-runner@v2
@@ -96,12 +101,12 @@ jobs:
           target: google_apis
           arch: x86
           profile: Nexus 5
-          script: ./gradlew connectedDebugAndroidTest
+          script: cd Android && ./gradlew connectedDebugAndroidTest
 
       - name: Publish Instrumented Test Results
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Instrumented Test Results
-          path: app/build/outputs/androidTest-results/connected/debug/*.xml
+          path: Android/app/build/outputs/androidTest-results/connected/debug/*.xml
           reporter: java-junit

@@ -283,27 +283,18 @@ fun ExpandedExpenseCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (inReport) {
-                if (viewModel.currentReportExpenses.value.contains(expense)
-                    || viewModel.pendingExpenses.contains(expense)) {
+                if (viewModel.currentReportExpenses.value.contains(expense)) {
                     Button(
                         onClick = onRemoveFromReportClicked,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (viewModel.currentReportExpenses.value.contains(expense)) {
-                            Text(
-                                text = "Remove from Current Report",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text(
-                                text = "Remove from Report",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                        Text(
+                            text = "Remove from Current Report",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             } else {

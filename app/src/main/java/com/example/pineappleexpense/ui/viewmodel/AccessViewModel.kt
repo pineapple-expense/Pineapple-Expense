@@ -376,6 +376,21 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
 
     fun fetchPendingReports() = viewModelScope.launch {
         _isRefreshing.value = true
+
+        updatePendingReports()
+
+        //delete all current local pending reports to make sure deletions on cloud are reflected locally
+        viewModelScope.launch {
+            pendingReports.forEach() {
+                expenseDao.getExpensesByIds(it.expenseIds).forEach() {
+                    expenseDao.deleteExpense(it)
+                }
+                reportDao.deleteReport(it)
+            }
+            loadReports()
+            loadExpenses()
+        }
+
         val totalReports         = AtomicInteger(0)
         val processedReports     = AtomicInteger(0)
         val totalDownloads       = AtomicInteger(0)
@@ -522,6 +537,15 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
                             reportDao.updateComment(report.id, reportUpdate.second)
                             loadReports()
                         }
+                    }
+                }
+                //remove any deleted rejected reports (local rejected reports that are not in the reportUpdates)
+                rejectedReports.filter { it.id !in reportUpdates.map { it.first } }.forEach() {
+                    viewModelScope.launch() {
+                        expenseDao.getExpensesByIds(it.expenseIds).forEach() {
+                            expenseDao.deleteExpense(it)
+                        }
+                        reportDao.deleteReport(it)
                     }
                 }
 

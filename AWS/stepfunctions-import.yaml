@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+
+  DeleteReceiptStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: Retain
+    Properties:
+      StateMachineName: DeleteReceipt
+      RoleArn: arn:aws:iam::418295723137:role/service-role/StepFunctions-DeleteReceipt-role-pg6y6ryi3
+      DefinitionS3Location:
+        Bucket: template-bucket-backend
+        Key: DeleteReceipt-definition.asl.json
+
+  MyStateMachineStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: Retain
+    Properties:
+      StateMachineName: MyStateMachine-sj5krp1uk
+      RoleArn: arn:aws:iam::418295723137:role/service-role/StepFunctions-MyStateMachine-sj5krp1uk-role-d7lxmhgy1
+      DefinitionS3Location:
+        Bucket: template-bucket-backend
+        Key: MyStateMachine-sj5krp1uk-definition.asl.json

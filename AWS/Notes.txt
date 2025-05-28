@@ -1,0 +1,34 @@
+Completed:
+
+ApproveReport-Approver
+AttachPrompt
+CreateReport-user
+DeleteReceipt
+DeleteReceiptFromReceiptData
+DeleteReceiptFromReceiptPred
+DeleteReport-user
+GetAmountAndDate
+GetObjectNameTriggerStepFunction
+GetPresignedURLToRetrieveObject
+HandleEmptyTextractOutput
+InsertMissingReceipt-User
+PutToRDS
+PutToRDS-receipt_data
+RecallReport-user
+RetreiveCurrentReport
+RetreiveReportExpenseInformation
+RetrieveAllUnsubmittedReport <<<<<<<<<<<<< This is commented out. Might need to add, cant tell if its attached to anything.
+RetrieveApprovedReports-User
+RetrieveObjectFromS3
+RetrieveReceiptsWithNoReport
+RetrieveReportTotalsAndNames-User
+RetrieveReturnedReports-User
+RetrieveSubmittedReports-Approver
+ReturnPreSignedURL
+ReturnReport-Approver
+SubmitReport-user
+UpdateRDS-receipt_data  Delete?
+UpdateReportNumber
+AttachPrompt
+ParseTextractOutput
+ParseBedrockOutput

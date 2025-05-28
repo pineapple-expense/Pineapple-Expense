@@ -1,0 +1,9 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "pineapple-2lambdas"
+resolve_s3 = true
+s3_prefix = "pineapple-2lambdas"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

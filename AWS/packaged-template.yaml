@@ -1,0 +1,766 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Backend API for Pineapple Expense - CI/CD Deployment Template
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.11
+Resources:
+  RetrieveObjectFromS3Function:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveObjectFromS3
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/bdff0b9776c8391cb896b981064e9e36
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+    Metadata:
+      SamResourceId: RetrieveObjectFromS3Function
+  ApproveReportApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ApproveReport-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/9bf1e36a2357bc804b9b1c8099c03d62
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: ApproveReportApproverFunction
+  ApproveReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ApproveReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/ApproveReport
+    Metadata:
+      SamResourceId: ApproveReportLambdaInvokePermission
+  CreateReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: CreateReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/22be5ee59206e5c9c1df2fcb335dec31
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: CreateReportUserFunction
+  CreateReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: CreateReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PUT/user/CreateReport
+    Metadata:
+      SamResourceId: CreateReportUserLambdaInvokePermission
+  DeleteReceiptFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceipt
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/4087e78ff217649ee578609f11053435
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/DeleteReceipt-role-4oq0lq7v
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Environment:
+        Variables:
+          STEP_FUNCTION_ARN: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+          BUCKET: receipts-for-step
+    Metadata:
+      SamResourceId: DeleteReceiptFunction
+  DeleteReceiptLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: DeleteReceiptFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/POST/user/DeleteReceipt
+    Metadata:
+      SamResourceId: DeleteReceiptLambdaInvokePermission
+  DeleteReceiptFromReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceiptFromReceiptData
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/44f884c380ccfcfb0b8c85d8bcd96e01
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: DeleteReceiptFromReceiptDataFunction
+  DeleteReceiptFromReceiptDataLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: DeleteReceiptFromReceiptDataFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+    Metadata:
+      SamResourceId: DeleteReceiptFromReceiptDataLambdaInvokePermission
+  DeleteReceiptFromReceiptPredFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceiptFromReceiptPred
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/a10d23597804672f4ddf1edbcbd16a1b
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: DeleteReceiptFromReceiptPredFunction
+  DeleteReceiptFromReceiptPredLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: DeleteReceiptFromReceiptPredFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+    Metadata:
+      SamResourceId: DeleteReceiptFromReceiptPredLambdaInvokePermission
+  DeleteReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/0231d9806cfae82f29b1ca86b8f2c378
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: DeleteReportUserFunction
+  DeleteReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: DeleteReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/POST/user/DeleteReport
+    Metadata:
+      SamResourceId: DeleteReportUserLambdaInvokePermission
+  GetObjectNameTriggerStepFunctionFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetObjectNameTriggerStepFunction
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/4cab21708fe62d6484491736c446c6b7
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 30
+      Role: arn:aws:iam::418295723137:role/service-role/GetObjectInvokeSF
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Environment:
+        Variables:
+          STEP_FUNCTION_ARN: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+          BUCKET: receipts-for-step
+    Metadata:
+      SamResourceId: GetObjectNameTriggerStepFunctionFunction
+  GetObjectNameTriggerStepFunctionLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: GetObjectNameTriggerStepFunctionFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/POST/predictions
+    Metadata:
+      SamResourceId: GetObjectNameTriggerStepFunctionLambdaInvokePermission
+  GetPresignedURLToRetrieveObjectFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetPresignedURLToRetrieveObject
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/8191f7b8dec79444a4c1fda36670af3f
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 30
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+    Metadata:
+      SamResourceId: GetPresignedURLToRetrieveObjectFunction
+  GetPresignedURLToRetrieveObjectLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: GetPresignedURLToRetrieveObjectFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/RetrievePresignURLToGetObject
+    Metadata:
+      SamResourceId: GetPresignedURLToRetrieveObjectLambdaInvokePermission
+  InsertMissingReceiptUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: InsertMissingReceipt-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/045daf2d5c64e350753c467234be6311
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: InsertMissingReceiptUserFunction
+  InsertMissingReceiptUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: InsertMissingReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/POST/user/InsertMissingReceipt
+    Metadata:
+      SamResourceId: InsertMissingReceiptUserLambdaInvokePermission
+  PutToRDSFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: PutToRDS
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/5b7d7e8ca160ef6f7cc4be489930705f
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: PutToRDSFunction
+  PutToRDSLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: PutToRDSFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: PutToRDSLambdaInvokePermission
+  PutToRDSReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: PutToRDS-receipt_data
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/be74e77082fbb3c7cbd27f8af741cb32
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: PutToRDSReceiptDataFunction
+  PutToRDSReceiptDataLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: PutToRDSReceiptDataFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: PutToRDSReceiptDataLambdaInvokePermission
+  RecallReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RecallReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/2fb9b39c3e2e461d2dab24ae8e525a37
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RecallReportUserFunction
+  RecallReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RecallReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/user/RecallReport
+    Metadata:
+      SamResourceId: RecallReportUserLambdaInvokePermission
+  RetreiveCurrentReportFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetreiveCurrentReport
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/cea52583353a75ebadb7d8eb197cdf02
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetreiveCurrentReportFunction
+  RetreiveCurrentReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetreiveCurrentReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/user/RetreiveCurrentReport
+    Metadata:
+      SamResourceId: RetreiveCurrentReportLambdaInvokePermission
+  RetreiveReportExpenseInformationFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetreiveReportExpenseInformation
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/e9ae2d5eb8a520953d5e5ef43c6bd8d0
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetreiveReportExpenseInformationFunction
+  RetreiveReportExpenseInformationLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetreiveReportExpenseInformationFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/RetrieveReportExpenseInformation
+    Metadata:
+      SamResourceId: RetreiveReportExpenseInformationLambdaInvokePermission
+  RetrieveApprovedReportsUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveApprovedReports-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/872e2b8b458872a86bd1808c60076bce
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetrieveApprovedReportsUserFunction
+  RetrieveApprovedReportsUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetrieveApprovedReportsUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/user/RetrieveApprovedReports
+    Metadata:
+      SamResourceId: RetrieveApprovedReportsUserLambdaInvokePermission
+  RetrieveReceiptsWithNoReportFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReceiptsWithNoReport
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/8aa1b05c2107a902ed468c88cd0ca3f4
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetrieveReceiptsWithNoReportFunction
+  RetrieveReceiptsWithNoReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetrieveReceiptsWithNoReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/user/RetrieveReceiptsWithNoReport
+    Metadata:
+      SamResourceId: RetrieveReceiptsWithNoReportLambdaInvokePermission
+  RetrieveReportTotalsAndNamesUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReportTotalsAndNames-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/a0e0647be9eeee9f3732e7e1fb435e96
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetrieveReportTotalsAndNamesUserFunction
+  RetrieveReportTotalsAndNamesUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetrieveReportTotalsAndNamesUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/user/RetrieveSubmittedAndReturnedReports
+    Metadata:
+      SamResourceId: RetrieveReportTotalsAndNamesUserLambdaInvokePermission
+  RetrieveReturnedReportsUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReturnedReports-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/0f7a637b5cb7babbd9a1784a08bfec64
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetrieveReturnedReportsUserFunction
+  RetrieveSubmittedReportsApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveSubmittedReports-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/dff86f60b2fb06cd2c0797cd9eb80240
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: RetrieveSubmittedReportsApproverFunction
+  RetrieveSubmittedReportsApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RetrieveSubmittedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/admin/RetrieveSubmittedReports
+    Metadata:
+      SamResourceId: RetrieveSubmittedReportsApproverLambdaInvokePermission
+  ReturnPreSignedURLFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ReturnPreSignedURL
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/c74110d6d7826288a6d4cc45a0a32d32
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ReturnPreSignedURL-role-jlcvfekt
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+    Metadata:
+      SamResourceId: ReturnPreSignedURLFunction
+  ReturnPreSignedURLLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ReturnPreSignedURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/s3-presigned-url
+    Metadata:
+      SamResourceId: ReturnPreSignedURLLambdaInvokePermission
+  ReturnReportApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ReturnReport-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/67612245e3f642a2cf8bb9906a436f57
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: ReturnReportApproverFunction
+  ReturnReportApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ReturnReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/admin/ReturnReport
+    Metadata:
+      SamResourceId: ReturnReportApproverLambdaInvokePermission
+  SubmitReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: SubmitReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/379dd7ed044f8ea430cdffb88bdda951
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: SubmitReportUserFunction
+  SubmitReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: SubmitReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/user/SubmitReport
+    Metadata:
+      SamResourceId: SubmitReportUserLambdaInvokePermission
+  UpdateRDSReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateRDS-receipt_data
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/0cfcd2cc49c54fb091836f1288e61f50
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: UpdateRDSReceiptDataFunction
+  UpdateReceiptUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateReceipt-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/64d8d130732b8e42cf56ac790c310002
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: UpdateReceiptUserFunction
+  UpdateReceiptUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: UpdateReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/user/UpdateReceipt
+    Metadata:
+      SamResourceId: UpdateReceiptUserLambdaInvokePermission
+  UpdateReportNumberFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateReportNumber
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/98f42ba6a2e504af24ea76c021077d0c
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+      - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+    Metadata:
+      SamResourceId: UpdateReportNumberFunction
+  UpdateReportNumberLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: UpdateReportNumberFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/user/AttachReceiptToCurrentReport
+    Metadata:
+      SamResourceId: UpdateReportNumberLambdaInvokePermission
+  GetAmountAndDateFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetAmountAndDate
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/13574e4bc970d384e37db10451982ac2
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/GetAmountAndDate-role-sjjttxtf
+    Metadata:
+      SamResourceId: GetAmountAndDateFunction
+  GetAmountAndDateLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: GetAmountAndDateFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: GetAmountAndDateLambdaInvokePermission
+  HandleEmptyTextractOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: HandleEmptyTextractOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/9727af13d865bf0f9d1bf8e268ebc6cd
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/HandleEmptyTextractOutput-role-mqphbfiz
+    Metadata:
+      SamResourceId: HandleEmptyTextractOutputFunction
+  HandleEmptyTextractOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: HandleEmptyTextractOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: HandleEmptyTextractOutputLambdaInvokePermission
+  AttachPromptFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: AttachPrompt
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/86cdb0f915fbfed49c4fb5d043e9cae6
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/AttachPrompt-role-tk797x2o
+    Metadata:
+      SamResourceId: AttachPromptFunction
+  AttachPromptLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: AttachPromptFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: AttachPromptLambdaInvokePermission
+  ParseBedrockOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ParseBedrockOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/5932a16e7a7a36b2346c9c3564dd7be9
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ParseBedrockOutput-role-dlnk1q7r
+    Metadata:
+      SamResourceId: ParseBedrockOutputFunction
+  ParseBedrockOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ParseBedrockOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: ParseBedrockOutputLambdaInvokePermission
+  ParseTextractOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ParseTextractOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: s3://template-bucket-backend/31ef9300617d5be59cbbbed152f98a53
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ParseTextractOutput-role-q5mwmnvx
+    Metadata:
+      SamResourceId: ParseTextractOutputFunction
+  ParseTextractOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ParseTextractOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+    Metadata:
+      SamResourceId: ParseTextractOutputLambdaInvokePermission
+DeleteReceiptStateMachine:
+  Type: AWS::Serverless::StateMachine
+  Properties:
+    Name: DeleteReceipt
+    Role: arn:aws:iam::418295723137:role/service-role/StepFunctions-DeleteReceipt-role-pg6y6ryi3
+    DefinitionUri: DeleteReceipt-definition.asl.json
+MyStateMachineStateMachine:
+  Type: AWS::Serverless::StateMachine
+  Properties:
+    Name: MyStateMachine-sj5krp1uk
+    Role: arn:aws:iam::418295723137:role/service-role/StepFunctions-MyStateMachine-sj5krp1uk-role-d7lxmhgy1
+    DefinitionUri: MyStateMachine-sj5krp1uk-definition.asl.json

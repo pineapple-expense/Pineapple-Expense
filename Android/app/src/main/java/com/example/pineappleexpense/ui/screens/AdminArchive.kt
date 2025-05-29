@@ -1,16 +1,20 @@
 package com.example.pineappleexpense.ui.screens
 
+import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -45,18 +50,26 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.pineappleexpense.data.downloadAllCsv
+import com.example.pineappleexpense.data.uploadCsv
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
+import com.example.pineappleexpense.ui.components.expensesDateRange
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.UUID
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewModel) {
+    var isLoading by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf<List<Report>>(emptyList()) } // Reports selected using the checklist
     var showMenu by remember { mutableStateOf(false) } // For the dropdown menu after clicking generate CSV button
     val context = LocalContext.current
@@ -166,20 +179,54 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                         }
                     }
                 }
-
-                // Generate CSV button
-                Button(
-                    onClick = { showMenu = true },
-                    enabled = selected.isNotEmpty(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4E0AA6),
-                        disabledContainerColor = Color.Gray
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("Generate CSV")
+                    // Generate CSV button
+                    Button(
+                        onClick = { showMenu = true },
+                        enabled = selected.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4E0AA6),
+                            disabledContainerColor = Color.Gray
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                    ) {
+                        Text("Generate CSV")
+                    }
+                    Button(
+                        enabled = !isLoading,
+                        onClick = {
+                            isLoading = true
+                            //fetch previous CSVs first
+                            downloadAllCsv(
+                                viewModel = viewModel,
+                                onComplete = {csvFiles ->
+                                    isLoading = false
+                                    viewModel.addCsvs(csvFiles)
+                                    navController.navigate("Previous CSV files") {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                onFailure = {
+                                    isLoading = false
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        Toast.makeText(context, "error fetching previous CSVs", Toast.LENGTH_SHORT).show()
+                                    }
+                                    Log.d("pineapple", "error: $it")
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4E0AA6),
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("View Previous CSVs")
+                    }
                 }
 
                 DropdownMenu(
@@ -193,6 +240,19 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
                             val csvContent = buildCsvContent(expenses, viewModel)
                             saveCsvToDownloads(context, csvContent)
+                            val fileName = UUID.randomUUID().toString()
+                            uploadCsv(
+                                viewModel, fileName, csvContent,
+                                onSuccess = {
+                                    viewModel.addCsv(fileName, csvContent)
+                                },
+                                onFailure = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                                    }
+                                    Log.d("pineapple", "error: $it")
+                                }
+                            )
                         }
                     )
                     DropdownMenuItem(
@@ -202,10 +262,34 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
                             val csvContent = buildCsvContent(expenses, viewModel)
                             shareCsvFile(context, csvContent)
+                            val fileName = UUID.randomUUID().toString()
+                            uploadCsv(
+                                viewModel, fileName, csvContent,
+                                onSuccess = {
+                                    viewModel.addCsv(fileName, csvContent)
+                                },
+                                onFailure = {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                                    }
+                                    Log.d("pineapple", "error: $it")
+                                }
+                            )
                         }
                     )
                 }
             }
+        }
+    }
+
+    if (isLoading) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }
@@ -227,7 +311,7 @@ fun AdminArchiveCard(report: Report, viewModel: AccessViewModel, navController: 
                 }
             }
             .background(if (isSelected) Color(0xFFF3E5F5) else Color(0xFFF3E5F5)),
-        headlineContent = {Text(report.name, style = MaterialTheme.typography.titleMedium)},
+        headlineContent = {Text(expensesDateRange(viewModel.expenseList.value.filter { report.expenseIds.contains(it.id) }), style = MaterialTheme.typography.titleMedium)},
         supportingContent = {Text("Total: $total")},
         leadingContent = {
             Box(

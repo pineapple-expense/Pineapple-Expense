@@ -1,14 +1,13 @@
 package com.example.pineappleexpense
 
 
-import android.content.Context
-import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -17,48 +16,46 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.rememberNavController
-import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.pineappleexpense.ui.screens.AccountMapping
-import com.example.pineappleexpense.ui.screens.AdminProfile
-import com.example.pineappleexpense.ui.screens.AdminReview
-import com.example.pineappleexpense.ui.screens.CameraScreen
-import com.example.pineappleexpense.ui.screens.UserArchiveScreen
-import com.example.pineappleexpense.ui.screens.HomeScreen
-import com.example.pineappleexpense.ui.screens.ReceiptPreview
-import com.example.pineappleexpense.ui.screens.Registration
-import com.example.pineappleexpense.ui.screens.Settings
-import com.example.pineappleexpense.ui.screens.UserProfile
-import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.auth0.android.Auth0
 import com.auth0.android.authentication.AuthenticationAPIClient
 import com.auth0.android.authentication.AuthenticationException
 import com.auth0.android.authentication.storage.CredentialsManagerException
 import com.auth0.android.authentication.storage.SecureCredentialsManager
-import com.auth0.android.authentication.storage.SharedPreferencesStorage
-import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.callback.Callback
+import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
-import com.example.pineappleexpense.ui.screens.SignInTest
-import com.example.pineappleexpense.data.getReceiptUploadURL
 import com.example.pineappleexpense.model.Auth0Manager
-import com.example.pineappleexpense.model.Expense
+import com.example.pineappleexpense.ui.screens.AccountMapping
 import com.example.pineappleexpense.ui.screens.AdminArchiveScreen
 import com.example.pineappleexpense.ui.screens.AdminHome
+import com.example.pineappleexpense.ui.screens.AdminProfile
+import com.example.pineappleexpense.ui.screens.AdminReview
 import com.example.pineappleexpense.ui.screens.AdminViewReportScreen
+import com.example.pineappleexpense.ui.screens.CameraScreen
 import com.example.pineappleexpense.ui.screens.EditExpense
+import com.example.pineappleexpense.ui.screens.HomeScreen
+import com.example.pineappleexpense.ui.screens.ReceiptPreview
+import com.example.pineappleexpense.ui.screens.Registration
+import com.example.pineappleexpense.ui.screens.Settings
+import com.example.pineappleexpense.ui.screens.SignInTest
+import com.example.pineappleexpense.ui.screens.UserArchiveScreen
+import com.example.pineappleexpense.ui.screens.UserProfile
+import com.example.pineappleexpense.ui.screens.ViewPreviousCSVsScreen
 import com.example.pineappleexpense.ui.screens.ViewReportScreen
-import java.util.Date
+import com.example.pineappleexpense.ui.theme.PineappleExpenseTheme
+import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth0: Auth0
     private lateinit var securedManager: Auth0Manager
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -182,6 +179,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout: (() -> Unit) = {}, credentialsManager: SecureCredentialsManager?, onGraphSet:() -> Unit = {}) {
     val viewModel: AccessViewModel = viewModel()
@@ -279,6 +277,9 @@ fun MainScreen(navController: NavHostController, login: (()-> Unit) = {}, logout
                 // Retrieve the expenseId from arguments
                 val expenseId = backStackEntry.arguments?.getString("expenseId") ?: return@composable
                 EditExpense(navController, viewModel, expenseId)
+            }
+            composable("Previous CSV files") {
+                ViewPreviousCSVsScreen(navController, viewModel)
             }
         }
         //notify callers that the navigation graph has been created

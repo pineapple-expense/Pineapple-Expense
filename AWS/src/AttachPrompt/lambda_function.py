@@ -1,5 +1,7 @@
 import json
 
+# make test work.
+
 def lambda_handler(event, context):
     receipt_extract = event["condensed_extract"]
 

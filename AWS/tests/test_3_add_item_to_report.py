@@ -15,7 +15,7 @@ def test_add_receipts_to_current_report(auth_token):
             "receipt_id": receipt_id
         }
 
-        response = requests.put(API_URL, headers=headers, json=payload)
+        response = requests.patch(API_URL, headers=headers, json=payload)
         print(f"Add Receipt {receipt_id} Status:", response.status_code)
         print(f"Add Receipt {receipt_id} Body:", response.text)
 

@@ -1,0 +1,1423 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Backend API for Pineapple Expense - CI/CD Deployment Template
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.11
+
+Resources:
+
+## S3 Buckets ##
+  ReceiptBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: receipts-for-step
+
+  CSVBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: csv-bucket-pineapple-expense
+
+## Lambdas ##
+
+# RetrieveObjectFromS3
+  RetrieveObjectFromS3Function:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveObjectFromS3
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveObjectFromS3/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+
+# ApproveReport-Approver
+  ApproveReportApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ApproveReport-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/ApproveReport-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        ApproveReportRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/ApproveReport
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  ApproveReportApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApproveReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/ApproveReport
+
+  ApproveReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApproveReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/ApproveReport
+
+  # CreateReport-user
+  CreateReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: CreateReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/CreateReport-user/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        CreateReportUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/CreateReport
+            Method: PUT
+            ApiId: !Ref MyHttpApi
+
+  CreateReportUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/CreateReport
+
+  CreateReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/CreateReport
+
+  # DeleteReceipt
+  DeleteReceiptFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceipt
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/DeleteReceipt/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/DeleteReceipt-role-4oq0lq7v
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Environment:
+        Variables:
+          STEP_FUNCTION_ARN: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+          BUCKET: receipts-for-step
+      Events:
+        DeleteReceiptRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/DeleteReceipt
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  DeleteReceiptFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReceiptFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/DeleteReceipt
+
+  DeleteReceiptLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReceiptFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/DeleteReceipt
+
+# DeleteReceiptFromReceiptData
+  DeleteReceiptFromReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceiptFromReceiptData
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/DeleteReceiptFromReceiptData/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+ 
+  DeleteReceiptFromReceiptDataLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReceiptFromReceiptDataFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+
+# DeleteReceiptFromReceiptPred
+  DeleteReceiptFromReceiptPredFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReceiptFromReceiptPred
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/DeleteReceiptFromReceiptPred/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+  DeleteReceiptFromReceiptPredLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReceiptFromReceiptPredFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:DeleteReceipt
+
+  # DeleteReport-user
+  DeleteReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: DeleteReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/DeleteReport-user/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        DeleteReportUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/DeleteReport
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  DeleteReportUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/DeleteReport
+
+  DeleteReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/DeleteReport
+
+  # GetObjectNameTriggerStepFunction
+  GetObjectNameTriggerStepFunctionFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetObjectNameTriggerStepFunction
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/GetObjectNameTriggerStepFunction/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 30
+      Role: arn:aws:iam::418295723137:role/service-role/GetObjectInvokeSF
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Environment:
+        Variables:
+          STEP_FUNCTION_ARN: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+          BUCKET: receipts-for-step
+      Events:
+        GetObjectNameTriggerStepFunctionRoute:
+          Type: HttpApi
+          Properties:
+            Path: /predictions
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  GetObjectNameTriggerStepFunctionFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetObjectNameTriggerStepFunctionFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/predictions
+
+  GetObjectNameTriggerStepFunctionLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetObjectNameTriggerStepFunctionFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/predictions
+
+# GetPresignedURLToRetrieveObject
+  GetPresignedURLToRetrieveObjectFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetPresignedURLToRetrieveObject
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/GetPresignedURLToRetrieveObject/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 30
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+
+      # Test API
+      Events:
+        RetrievePresignURL:
+          Type: HttpApi
+          Properties:
+            Path: /RetrievePresignURLToGetObject
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  GetPresignedURLToRetrieveObjectAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetPresignedURLToRetrieveObjectFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/RetrievePresignURLToGetObject
+    
+  GetPresignedURLToRetrieveObjectLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetPresignedURLToRetrieveObjectFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/RetrievePresignURLToGetObject
+
+# InsertMissingReceipt-User
+  InsertMissingReceiptUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: InsertMissingReceipt-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/InsertMissingReceipt-User/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+      # Test API
+      Events:
+        InsertMissingReceiptRoute:
+          Type: HttpApi
+          Properties:
+            Path:  /user/InsertMissingReceipt
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  InsertMissingReceiptUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref InsertMissingReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/InsertMissingReceipt
+
+  InsertMissingReceiptUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref InsertMissingReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/InsertMissingReceipt
+
+# PutToRDS
+  PutToRDSFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: PutToRDS
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/PutToRDS/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+  PutToRDSLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutToRDSFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# PutToRDS-receipt_data
+  PutToRDSReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: PutToRDS-receipt_data
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/PutToRDS-receipt_data/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+  PutToRDSReceiptDataLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutToRDSReceiptDataFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# RecallReport-user
+  RecallReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RecallReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RecallReport-user/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      # Test API
+      Events:
+        RecallReportUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/RecallReport
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  RecallReportUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RecallReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/RecallReport
+
+  RecallReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RecallReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/RecallReport
+
+# RetreiveCurrentReport
+  RetreiveCurrentReportFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetreiveCurrentReport
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetreiveCurrentReport/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+      # Test API
+      Events:
+        RetreiveCurrentReportRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/RetreiveCurrentReport
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetreiveCurrentReportFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetreiveCurrentReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/RetreiveCurrentReport
+
+  RetreiveCurrentReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetreiveCurrentReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/RetreiveCurrentReport
+
+  # RetreiveReportExpenseInformation
+  RetreiveReportExpenseInformationFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetreiveReportExpenseInformation
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetreiveReportExpenseInformation/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+      # Test API
+      Events:
+        RetreiveReportExpenseInformationRoute:
+          Type: HttpApi
+          Properties:
+            Path: /RetrieveReportExpenseInformation
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  RetreiveReportExpenseInformationFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetreiveReportExpenseInformationFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/RetrieveReportExpenseInformation
+
+  RetreiveReportExpenseInformationLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetreiveReportExpenseInformationFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/RetrieveReportExpenseInformation
+
+
+  # RetrieveApprovedReports-User
+  RetrieveApprovedReportsUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveApprovedReports-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveApprovedReports-User/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      # Test API
+      Events:
+        RetrieveApprovedReportsUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/RetrieveApprovedReports
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetrieveApprovedReportsUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveApprovedReportsUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/RetrieveApprovedReports
+
+  RetrieveApprovedReportsUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveApprovedReportsUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/RetrieveApprovedReports
+
+# RetrieveReceiptsWithNoReport
+  RetrieveReceiptsWithNoReportFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReceiptsWithNoReport
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveReceiptsWithNoReport/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveReceiptsWithNoReportRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/RetrieveReceiptsWithNoReport
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  RetrieveReceiptsWithNoReportFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReceiptsWithNoReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/RetrieveReceiptsWithNoReport
+
+  RetrieveReceiptsWithNoReportLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReceiptsWithNoReportFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/RetrieveReceiptsWithNoReport
+
+# RetrieveReportTotalsAndNames-User
+  RetrieveReportTotalsAndNamesUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReportTotalsAndNames-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveReportTotalsAndNames-User/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveReportTotalsAndNamesUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/RetrieveSubmittedAndReturnedReports
+            Method: GET
+            ApiId: !Ref MyHttpApi
+            
+  RetrieveReportTotalsAndNamesUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReportTotalsAndNamesUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/RetrieveSubmittedAndReturnedReports
+      
+  RetrieveReportTotalsAndNamesUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReportTotalsAndNamesUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/RetrieveSubmittedAndReturnedReports
+
+# RetrieveReturnedReports-User
+# I think we can delete this too. It isn't connected to an API.
+  RetrieveReturnedReportsUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReturnedReports-User
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveReturnedReports-User/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+  # RetrieveSubmittedReports-Approver
+  RetrieveSubmittedReportsApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveSubmittedReports-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveSubmittedReports-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveSubmittedReportsApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/RetrieveSubmittedReports
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetrieveSubmittedReportsApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveSubmittedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/RetrieveSubmittedReports
+
+  RetrieveSubmittedReportsApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveSubmittedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/RetrieveSubmittedReports
+
+# ReturnPreSignedURL
+  ReturnPreSignedURLFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ReturnPreSignedURL
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/ReturnPreSignedURL/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ReturnPreSignedURL-role-jlcvfekt
+      Environment:
+        Variables:
+          BUCKET: receipts-for-step
+      Events:
+        ReturnPreSignedURLRoute:
+          Type: HttpApi
+          Properties:
+            Path: /s3-presigned-url
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  ReturnPreSignedURLFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReturnPreSignedURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/s3-presigned-url
+
+  ReturnPreSignedURLLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReturnPreSignedURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/s3-presigned-url
+
+# ReturnReport-Approver
+  ReturnReportApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ReturnReport-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/ReturnReport-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        ReturnReportApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/ReturnReport
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  ReturnReportApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReturnReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/PATCH/admin/ReturnReport
+
+  ReturnReportApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReturnReportApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/PATCH/admin/ReturnReport
+
+# SubmitReport-user
+  SubmitReportUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: SubmitReport-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/SubmitReport-user/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        SubmitReportUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/SubmitReport
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  SubmitReportUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SubmitReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/SubmitReport
+
+  SubmitReportUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SubmitReportUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/SubmitReport
+
+# UpdateRDS-receipt_data
+# Don't think we need this one either
+  UpdateRDSReceiptDataFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateRDS-receipt_data
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/UpdateRDS-receipt_data/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4      
+
+# UpdateReceipt-user
+  UpdateReceiptUserFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateReceipt-user
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/UpdateReceipt-user/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        UpdateReceiptUserRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/UpdateReceipt
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  UpdateReceiptUserFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/UpdateReceipt
+
+  UpdateReceiptUserLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateReceiptUserFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/UpdateReceipt
+
+
+# UpdateReportNumber
+  UpdateReportNumberFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateReportNumber
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/UpdateReportNumber/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        UpdateReportNumberRoute:
+          Type: HttpApi
+          Properties:
+            Path: /user/AttachReceiptToCurrentReport
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  UpdateReportNumberFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateReportNumberFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/user/AttachReceiptToCurrentReport
+
+  UpdateReportNumberLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateReportNumberFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/user/AttachReceiptToCurrentReport
+
+# GetAmountAndDate
+  GetAmountAndDateFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetAmountAndDate
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/GetAmountAndDate/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/GetAmountAndDate-role-sjjttxtf
+
+
+  GetAmountAndDateLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetAmountAndDateFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# HandleEmptyTextractOutput
+  HandleEmptyTextractOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: HandleEmptyTextractOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/HandleEmptyTextractOutput/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/HandleEmptyTextractOutput-role-mqphbfiz
+
+  HandleEmptyTextractOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HandleEmptyTextractOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# AttachPrompt
+  AttachPromptFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: AttachPrompt
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/AttachPrompt/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/AttachPrompt-role-tk797x2o
+
+  AttachPromptLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AttachPromptFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# ParseBedrockOutput
+  ParseBedrockOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ParseBedrockOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/ParseBedrockOutput/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ParseBedrockOutput-role-dlnk1q7r
+
+  ParseBedrockOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ParseBedrockOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# ParseTextractOutput
+  ParseTextractOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: ParseTextractOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/ParseTextractOutput/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ParseTextractOutput-role-q5mwmnvx
+
+  ParseTextractOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ParseTextractOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
+
+# CsvPresignedURL
+  CsvPresignedURLFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: CsvPresignedURL
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/CsvPresignedURL/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/ReturnPreSignedURL-role-jlcvfekt
+      Environment:
+        Variables:
+          BUCKET: csv-bucket-pineapple-expense
+      Events:
+        CsvPresignedURLRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/CsvPresignedURL
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  CsvPresignedURLFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CsvPresignedURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/CsvPresignedURL
+
+  CsvPresignedURLLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CsvPresignedURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/CsvPresignedURL
+
+# RetrieveCSVURL
+  RetrieveCSVURLFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveCSVURL
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveCSVURL/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: csv-bucket-pineapple-expense
+      Events:
+        RetrieveCSVURLRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/RetrieveCSVURL
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  RetrieveCSVURLFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveCSVURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/RetrieveCSVURL
+
+  RetrieveCSVURLLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveCSVURLFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/RetrieveCSVURL
+
+# RetrieveApprovedReports-Approver
+  RetrieveApprovedReportsApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveApprovedReports-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveApprovedReports-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveApprovedReportsApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/RetrieveApprovedReports-Approver
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetrieveApprovedReportsApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveApprovedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/RetrieveApprovedReports-Approver
+
+  RetrieveApprovedReportsApproverInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveApprovedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/RetrieveApprovedReports-Approver
+
+# AttachApprovedReportsToCSV-Approver
+  AttachApprovedReportsToCSVApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: AttachApprovedReportsToCSV-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/AttachApprovedReportsToCSV-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        AttachApprovedReportsToCSVApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/AttachApprovedReportsToCSV-Approver
+            Method: PATCH
+            ApiId: !Ref MyHttpApi
+
+  AttachApprovedReportsToCSVApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AttachApprovedReportsToCSVApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/AttachApprovedReportsToCSV-Approver
+
+  AttachApprovedReportsToCSVApproverInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AttachApprovedReportsToCSVApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/AttachApprovedReportsToCSV-Approver
+
+# RetrieveReturnedReports-Approver
+  RetrieveReturnedReportsApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveReturnedReports-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveReturnedReports-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveReturnedReportsApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/RetrieveReturnedReports-Approver
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetrieveReturnedReportsApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReturnedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/RetrieveReturnedReports-Approver
+
+  RetrieveReturnedReportsApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveReturnedReportsApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/RetrieveReturnedReports-Approver
+
+# RetrieveAccountMapping-Approver
+  RetrieveAccountMappingApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RetrieveAccountMapping-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RetrieveAccountMapping-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        RetrieveAccountMappingApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/RetrieveAccountMapping-Approver
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  RetrieveAccountMappingApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveAccountMappingApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/RetrieveAccountMapping-Approver
+
+  RetrieveAccountMappingApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RetrieveAccountMappingApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/RetrieveAccountMapping-Approver
+
+# UpdateAccountMapping-Approver
+  UpdateAccountMappingApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: UpdateAccountMapping-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/UpdateAccountMapping-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+      Layers:
+        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+      Events:
+        UpdateAccountMappingApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/UpdateAccountMapping-Approver
+            Method: POST
+            ApiId: !Ref MyHttpApi
+
+  UpdateAccountMappingApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateAccountMappingApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/UpdateAccountMapping-Approver
+
+  UpdateAccountMappingApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UpdateAccountMappingApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/UpdateAccountMapping-Approver
+
+# GetCSVFileNames-Approver
+  GetCSVFileNamesApproverFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: GetCSVFileNames-Approver
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/GetCSVFileNames-Approver/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/RetrieveObjectFromS3FunctionRole
+      Environment:
+        Variables:
+          BUCKET: csv-bucket-pineapple-expense
+      Events:
+        GetCSVFileNamesApproverRoute:
+          Type: HttpApi
+          Properties:
+            Path: /admin/GetCSVFileNames-Approver
+            Method: GET
+            ApiId: !Ref MyHttpApi
+
+  GetCSVFileNamesApproverFunctionAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetCSVFileNamesApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:418295723137:${MyHttpApi}/*/*/admin/GetCSVFileNames-Approver
+
+  GetCSVFileNamesApproverLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetCSVFileNamesApproverFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/GetCSVFileNames-Approver
+
+
+##### STATE MACHINES ########
+  DeleteReceiptStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: Retain
+    Properties:
+      StateMachineName: DeleteReceipt
+      RoleArn: arn:aws:iam::418295723137:role/service-role/StepFunctions-DeleteReceipt-role-pg6y6ryi3
+      DefinitionS3Location:
+        Bucket: template-bucket-backend
+        Key: DeleteReceipt-definition.asl.json
+
+  MyStateMachineStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: Retain
+    Properties:
+      StateMachineName: MyStateMachine-sj5krp1uk
+      RoleArn: arn:aws:iam::418295723137:role/service-role/StepFunctions-MyStateMachine-sj5krp1uk-role-d7lxmhgy1
+      DefinitionS3Location:
+        Bucket: template-bucket-backend
+        Key: MyStateMachine-sj5krp1uk-definition.asl.json
+
+
+### API GATEWAY ####
+  MyHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: MyHttpApi
+      StageName: dev
+      CorsConfiguration:
+        AllowMethods:
+          - '*'
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - '*'
+      Auth:
+        Authorizers:
+          Auth0JWT:
+            JwtConfiguration:
+              Issuer: https://dev-6m3q36ew88ti5wvx.us.auth0.com/
+              Audience:
+                - https://pineapple-expense-auth0-api.com
+            IdentitySource: "$request.header.Authorization"
+        DefaultAuthorizer: Auth0JWT
+
+### RDS ####
+  PineappleDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Retain
+    Properties:
+      DBInstanceIdentifier: pineapple-db
+      DBInstanceClass: db.t4g.micro
+      Engine: postgres
+      PubliclyAccessible: true
+      VPCSecurityGroups:
+        - sg-09d454845349a0f7f
+      DBSubnetGroupName: !Ref PineappleDBSubnetGroup
+      StorageType: gp2
+      KmsKeyId: arn:aws:kms:us-east-1:418295723137:key/98dfb0de-dca8-450f-a32a-450bc9615ad9
+
+### Subnet Group ###
+  PineappleDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Created from CloudFormation for Pineapple DB
+      SubnetIds:
+        - subnet-04e677b5e22365002
+        - subnet-0ee124c6c910192ce
+        - subnet-07674fa05dd4689bb
+        - subnet-0f1a8d157f6363ed2
+        - subnet-03a2f6a2e66e7a60e
+        - subnet-0adef2e4783f19816
+
+
+# pineapple-2lambdas
+## Maybe delete this??? <<
+#  RetrieveAllUnsubmittedReportFunction:
+#    Type: AWS::Serverless::Function
+#    DeletionPolicy: Retain
+#    Properties:
+#      FunctionName: RetrieveAllUnsubmittedReport
+#      Handler: lambda_function.lambda_handler
+#      CodeUri: src/RetrieveAllUnsubmittedReport/
+#      Runtime: python3.11
+#      MemorySize: 128
+#      Timeout: 10
+#      Role: arn:aws:iam::418295723137:role/service-role/PutToRDS-role-opjp1jiy
+#      Layers:
+#        - arn:aws:lambda:us-east-1:418295723137:layer:psycopg2-layer:4
+
+
+
+#  RetrieveAllUnsubmittedReportLambdaInvokePermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !Ref RetrieveAllUnsubmittedReportFunction
+#      Action: lambda:InvokeFunction
+#      Principal: apigateway.amazonaws.com
+#      SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/GET/user/RetrieveReportExpenseInformation

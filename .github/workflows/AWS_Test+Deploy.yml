@@ -36,7 +36,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Show pytest plugins
-        run: pytest --version --plugins
+        run: python -m pytest --trace-config
         
       - name: Run API tests
         env:

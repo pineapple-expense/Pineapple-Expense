@@ -48,7 +48,7 @@ jobs:
           AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
           AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
           BUCKET: ${{ secrets.BUCKET }}
-        run: pytest AWS/tests/ -p pytest_dependency --dependency-scope=session
+        run: pytest AWS/tests/
 
   deploy:
     name: Deploy Stack to AWS

@@ -1,7 +1,9 @@
 import requests
+import pytest
 
 UPDATE_RECEIPT_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/user/UpdateReceipt"
 
+@pytest.mark.dependency(name="update_receipt", depends=["add_items"])
 def test_update_receipt_fields(auth_token):
     headers = {
         "Authorization": f"Bearer {auth_token}",

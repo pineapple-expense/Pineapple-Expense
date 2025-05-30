@@ -1,7 +1,9 @@
 import requests
+import pytest
 
 RETRIEVE_TOTAL_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/user/RetreiveCurrentReport"
 
+@pytest.mark.dependency(name="check_report", depends=["update_receipt"])
 def test_report_total_after_update(auth_token):
     headers = {
         "Authorization": f"Bearer {auth_token}",

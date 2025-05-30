@@ -1,7 +1,9 @@
 import requests
+import pytest
 
 API_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/user/AttachReceiptToCurrentReport"
 
+@pytest.mark.dependency(name="add_items", depends=["create_report"])
 def test_add_receipts_to_current_report(auth_token):
     headers = {
         "Authorization": f"Bearer {auth_token}",

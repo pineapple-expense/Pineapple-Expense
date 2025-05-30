@@ -9,7 +9,7 @@ def test_prediction_on_image_1(auth_token, receipt_image_1):
     }
     payload = {
         "receipt_id": receipt_image_1,
-        "name": "Test Prediction 1"
+        "name": "GithubTestUser"
     }
 
     response = requests.post(API_BASE_URL, headers=headers, json=payload)
@@ -34,7 +34,7 @@ def test_prediction_on_image_2(auth_token, receipt_image_2):
     }
     payload = {
         "receipt_id": receipt_image_2,
-        "name": "Test Prediction 2"
+        "name": "GithubTestUser"
     }
 
     response = requests.post(API_BASE_URL, headers=headers, json=payload)

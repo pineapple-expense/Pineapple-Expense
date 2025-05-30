@@ -2,7 +2,7 @@ import requests
 import pytest
 
 API_BASE_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/predictions"
-
+#TEST
 @pytest.mark.dependency(name="predict_image_1")
 def test_prediction_on_image_1(auth_token, receipt_image_1):
     headers = {

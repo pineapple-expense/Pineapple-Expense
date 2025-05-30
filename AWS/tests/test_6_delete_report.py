@@ -14,7 +14,7 @@ def test_delete_report(auth_token):
         "report_number": "TestReport123"
     }
 
-    response = requests.delete(DELETE_REPORT_URL, headers=headers, json=payload)
+    response = requests.post(DELETE_REPORT_URL, headers=headers, json=payload)
     print("Delete Report Status:", response.status_code)
     print("Delete Report Body:", response.text)
 

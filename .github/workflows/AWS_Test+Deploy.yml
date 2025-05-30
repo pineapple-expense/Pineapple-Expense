@@ -3,11 +3,11 @@ name: Test and Deploy Pineapple Backend
 on:
   push:
     branches: [ main ]
-#    paths:
-#      - 'AWS/src/**'
-#      - 'AWS/template.yaml'
-#      - 'AWS/tests/**'
-#      - '.github/workflows/AWS_Test+Deploy.yml'
+    paths:
+      - 'AWS/src/**'
+      - 'AWS/template.yaml'
+      - 'AWS/tests/**'
+      - '.github/workflows/AWS_Test+Deploy.yml'
 
 jobs:
   test:

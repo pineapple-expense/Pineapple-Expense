@@ -3,7 +3,7 @@ import pytest
 
 DELETE_REPORT_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/user/DeleteReport"
 
-@pytest.mark.dependency(name="delete_report", depends=["check_report"])
+@pytest.mark.dependency(name="delete_report", depends=["check_report"], scope="session")
 def test_delete_report(auth_token):
     headers = {
         "Authorization": f"Bearer {auth_token}",

@@ -20,7 +20,7 @@ def s3_object_exists(key):
             return False
         raise e
 
-@pytest.mark.dependency(name="delete_image_1", depends=["delete_report"])
+@pytest.mark.dependency(name="delete_image_1", depends=["delete_report"], scope="session")
 def test_delete_receipt_image_1(auth_token, receipt_image_1):
     headers = {
         "Authorization": f"Bearer {auth_token}",

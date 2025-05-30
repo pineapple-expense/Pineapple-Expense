@@ -6,7 +6,8 @@ on:
     paths:
       - 'AWS/src/**'
       - 'AWS/template.yaml'
-      - '.github/workflows/test-and-deploy.yml'
+      - 'AWS/tests'
+      - '.github/workflows/AWS_Test+Deploy.yml'
 
 jobs:
   test:

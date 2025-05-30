@@ -1,9 +1,9 @@
 package com.example.pineappleexpense.ui.screens
 
-import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
@@ -50,7 +50,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.pineappleexpense.data.downloadAllCsv
+import com.example.pineappleexpense.data.downloadAllCsvFiles
 import com.example.pineappleexpense.data.uploadCsv
 import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.model.Report
@@ -201,22 +201,31 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                         onClick = {
                             isLoading = true
                             //fetch previous CSVs first
-                            downloadAllCsv(
+                            downloadAllCsvFiles(
                                 viewModel = viewModel,
-                                onComplete = {csvFiles ->
+                                onSuccess = { uris ->
                                     isLoading = false
-                                    viewModel.addCsvs(csvFiles)
+
+                                    val uriPairs = uris.mapNotNull { uri ->
+                                        uri.path?.let { path ->
+                                            val file = File(path)
+                                            file.name to uri
+                                        }
+                                    }
+
+                                    viewModel.addCsvs(uriPairs)
+
                                     navController.navigate("Previous CSV files") {
                                         launchSingleTop = true
-                                        restoreState = true
+                                        restoreState   = true
                                     }
                                 },
-                                onFailure = {
+                                onFailure = { error ->
                                     isLoading = false
                                     CoroutineScope(Dispatchers.Main).launch {
-                                        Toast.makeText(context, "error fetching previous CSVs", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Error fetching CSVs: ${error.message}", Toast.LENGTH_SHORT).show()
                                     }
-                                    Log.d("pineapple", "error: $it")
+                                    Log.d("pineapple", "error: ${error.message}")
                                 }
                             )
                         },
@@ -239,20 +248,24 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                             showMenu = false
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
                             val csvContent = buildCsvContent(expenses, viewModel)
-                            saveCsvToDownloads(context, csvContent)
-                            val fileName = UUID.randomUUID().toString()
-                            uploadCsv(
-                                viewModel, fileName, csvContent,
-                                onSuccess = {
-                                    viewModel.addCsv(fileName, csvContent)
-                                },
-                                onFailure = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                            val csvFile = saveCsvToDownloads(context, csvContent)
+                            val fileName = csvFile.second
+                            val fileURI = csvFile.first
+                            if(fileURI != null) {
+                                uploadCsv(
+                                    context,
+                                    viewModel, fileName, fileURI,
+                                    onSuccess = {
+                                        viewModel.addCsv(fileName, fileURI)
+                                    },
+                                    onFailure = {
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                                        }
+                                        Log.d("pineapple", "error: $it")
                                     }
-                                    Log.d("pineapple", "error: $it")
-                                }
-                            )
+                                )
+                            }
                         }
                     )
                     DropdownMenuItem(
@@ -261,20 +274,24 @@ fun AdminArchiveScreen(navController: NavHostController, viewModel: AccessViewMo
                             showMenu = false
                             val expenses = viewModel.expenseList.value.filter { expense -> selected.any { it.expenseIds.contains(expense.id) } }
                             val csvContent = buildCsvContent(expenses, viewModel)
-                            shareCsvFile(context, csvContent)
-                            val fileName = UUID.randomUUID().toString()
-                            uploadCsv(
-                                viewModel, fileName, csvContent,
-                                onSuccess = {
-                                    viewModel.addCsv(fileName, csvContent)
-                                },
-                                onFailure = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                            val csvFile = shareCsvFile(context, csvContent)
+                            val fileName = csvFile.second
+                            val fileURI = csvFile.first
+                            if(fileURI != null) {
+                                uploadCsv(
+                                    context,
+                                    viewModel, fileName, fileURI,
+                                    onSuccess = {
+                                        viewModel.addCsv(fileName, fileURI)
+                                    },
+                                    onFailure = {
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            Toast.makeText(context, "error uploading CSV", Toast.LENGTH_SHORT).show()
+                                        }
+                                        Log.d("pineapple", "error: $it")
                                     }
-                                    Log.d("pineapple", "error: $it")
-                                }
-                            )
+                                )
+                            }
                         }
                     )
                 }
@@ -378,11 +395,12 @@ private fun escapeCsvField(field: String): String {
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-fun saveCsvToDownloads(context: Context, csvContent: String) {
+fun saveCsvToDownloads(context: Context, csvContent: String): Pair<Uri?, String> {
     val resolver = context.contentResolver
+    val fileName = UUID.randomUUID().toString() + ".csv"
 
     val contentValues = ContentValues().apply {
-        put(MediaStore.Downloads.DISPLAY_NAME, "expenses.csv")
+        put(MediaStore.Downloads.DISPLAY_NAME, fileName)
         put(MediaStore.Downloads.MIME_TYPE, "text/csv")
         put(MediaStore.Downloads.IS_PENDING, 1)
     }
@@ -400,24 +418,28 @@ fun saveCsvToDownloads(context: Context, csvContent: String) {
         contentValues.clear()
         contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
         resolver.update(fileUri, contentValues, null, null)
-
-        Toast.makeText(
-            context,
-            "CSV downloaded to your Downloads folder!",
-            Toast.LENGTH_SHORT
-        ).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            Toast.makeText(
+                context,
+                "CSV downloaded to your Downloads folder!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     } else {
-        Toast.makeText(
-            context,
-            "Failed to create CSV in Downloads folder",
-            Toast.LENGTH_SHORT
-        ).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            Toast.makeText(
+                context,
+                "Failed to create CSV in Downloads folder",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
+    return fileUri to fileName
 }
 
-fun shareCsvFile(context: Context, csvContent: String) {
+fun shareCsvFile(context: Context, csvContent: String): Pair<Uri?, String> {
     // Define the file name and save location (using external files directory)
-    val fileName = "expenses.csv"
+    val fileName = UUID.randomUUID().toString() + ".csv"
     val file = File(context.getExternalFilesDir(null), fileName)
     file.writeText(csvContent)
 
@@ -435,6 +457,7 @@ fun shareCsvFile(context: Context, csvContent: String) {
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     context.startActivity(Intent.createChooser(shareIntent, "Download CSV"))
+    return fileUri to fileName
 }
 
 @Preview

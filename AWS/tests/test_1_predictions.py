@@ -3,7 +3,7 @@ import pytest
 
 API_BASE_URL = "https://t6oydoeb76.execute-api.us-east-1.amazonaws.com/dev/predictions"
 #TEST
-@pytest.mark.dependency(name="predict_image_1")
+@pytest.mark.dependency(name="predict_image_1",scope="session")
 def test_prediction_on_image_1(auth_token, receipt_image_1):
     headers = {
         "Authorization": f"Bearer {auth_token}",
@@ -28,7 +28,7 @@ def test_prediction_on_image_1(auth_token, receipt_image_1):
     assert body["predicted_date"]['full_date'] == "10/30/2024"
     assert body["predicted_amount"] == '11.49'
 
-@pytest.mark.dependency(name="predict_image_2")
+@pytest.mark.dependency(name="predict_image_2",scope="session")
 def test_prediction_on_image_2(auth_token, receipt_image_2):
     headers = {
         "Authorization": f"Bearer {auth_token}",

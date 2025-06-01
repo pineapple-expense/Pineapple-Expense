@@ -3,6 +3,7 @@ package com.example.pineappleexpense.ui.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,8 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +48,7 @@ import java.util.Date
 fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, expenseID: String) {
     val scrollState = rememberScrollState()
     val expense = viewModel.expenseList.value.find { it.id == expenseID }
+    val focusManager = LocalFocusManager.current
 
     //navigate home if there is no expense with the passed in ID
     if (expense == null) {
@@ -64,7 +69,13 @@ fun EditExpense(navController: NavHostController, viewModel: AccessViewModel, ex
     var title = expense.title
 
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            },
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

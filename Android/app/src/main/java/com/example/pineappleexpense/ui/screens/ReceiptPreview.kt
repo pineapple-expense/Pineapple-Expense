@@ -3,6 +3,7 @@ package com.example.pineappleexpense.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,6 +52,7 @@ import java.util.Locale
 @Composable
 fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel) {
     val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
     val imageUri = viewModel.latestImageUri
     val prediction = viewModel.currentPrediction
@@ -59,7 +63,13 @@ fun ReceiptPreview(navController: NavHostController, viewModel: AccessViewModel)
     var title: String
 
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            },
         containerColor = Color(0xFFF9EEFF),
         bottomBar = {
             BottomBar(navController, viewModel)

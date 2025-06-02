@@ -105,21 +105,20 @@ class AccessViewModel(application: Application): AndroidViewModel(application) {
         }
 
     //CSV file storage:
-    data class CsvFile(val fileName: String, val contents: String)
-    var csvFiles by mutableStateOf<List<CsvFile>>(emptyList())
-    fun addCsv(fileName: String, contents: String) {
-        csvFiles = csvFiles + CsvFile(fileName, contents)
-    }
+    data class CsvFile(val fileName: String, val fileUri: Uri)
 
-    //merge in any new CSVs by filename, ignoring ones we already have
-    fun addCsvs(newFiles: List<Pair<String, String>>) {
+    var csvFiles by mutableStateOf<List<CsvFile>>(emptyList())
+    fun addCsv(fileName: String, uri: Uri) {
+        csvFiles = csvFiles + CsvFile(fileName, uri)
+    }
+    fun addCsvs(newFiles: List<Pair<String, Uri>>) {
         // what we already know about
         val existingNames = csvFiles.map { it.fileName }.toSet()
 
         // only keep the ones not yet in our state
         val toAdd = newFiles
             .filter { (name, _) -> name !in existingNames }
-            .map    { (name, content) -> CsvFile(name, content) }
+            .map    { (name, uri)  -> CsvFile(name, uri) }
 
         // if there are any new entries, tack them onto our list
         if (toAdd.isNotEmpty()) {

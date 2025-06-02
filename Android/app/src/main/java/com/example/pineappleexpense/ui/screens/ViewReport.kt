@@ -17,13 +17,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.pineappleexpense.R
 import com.example.pineappleexpense.model.Report
 import com.example.pineappleexpense.ui.components.BottomBar
 import com.example.pineappleexpense.ui.components.TopBar
@@ -161,7 +164,7 @@ fun ViewReportScreen(
                                 })
                             {
                                 Icon(
-                                    imageVector = Icons.Default.MailOutline,
+                                    imageVector = ImageVector.vectorResource(R.drawable.baseline_chat_bubble_outline_24),
                                     contentDescription = "View report comment"
                                 )
                             }

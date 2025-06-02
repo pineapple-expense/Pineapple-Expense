@@ -1,7 +1,8 @@
 package com.example.pineappleexpense.data
 
-import android.os.Handler
-import android.os.Looper
+import android.app.Application
+import android.content.Context
+import android.net.Uri
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -12,10 +13,16 @@ import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody
 import okhttp3.Response
+import okio.source
 import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import android.os.Handler
+import android.os.Looper
 
 data class AdminReport(
     val reportNumber: String,
@@ -196,45 +203,61 @@ fun getCSVUploadURL(
 }
 
 
-/**
- * 1) fetches the presigned URL via getCSVUploadURL(...)
- * 2) PUTs the csvContent up to S3
- * 3) notifies you via onSuccess/onFailure
- */
 fun uploadCsv(
+    context: Context,
     viewModel: AccessViewModel,
     fileName: String,
-    csvContent: String,
+    fileUri: Uri,
     onSuccess: () -> Unit = {},
     onFailure: (String) -> Unit = {}
 ) {
+    // 1) get presigned PUT URL
     getCSVUploadURL(
         viewModel,
         fileName,
-        onSuccess = { rawUrl ->
-            val uploadUrl = rawUrl.trim().trim('"')   // strip stray quotes
+        onSuccess = { raw ->
+            // trim stray quotes
+            val uploadUrl = raw.trim().trim('"')
 
-            val mediaType = "text/csv".toMediaType()
-            val body      = csvContent.toRequestBody(mediaType)
+            // 2) build a RequestBody that streams from the Uri
+            val body = object : RequestBody() {
+                override fun contentType() = "text/csv".toMediaType()
+                override fun contentLength(): Long =
+                    context.contentResolver.openAssetFileDescriptor(fileUri, "r")
+                        ?.length ?: -1L
 
+                override fun writeTo(sink: okio.BufferedSink) {
+                    context.contentResolver.openInputStream(fileUri)?.source().use { src ->
+                        if (src == null) throw IOException("Unable to open $fileUri")
+                        sink.writeAll(src)
+                    }
+                }
+            }
+
+            // 3) PUT it up to S3
             val request = Request.Builder()
                 .url(uploadUrl)
                 .put(body)
-                .addHeader("Content-Type", "text/csv") // MUST match what was signed
+                .addHeader("Content-Type", "text/csv")
                 .build()
 
             OkHttpClient().newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) =
+                override fun onFailure(call: Call, e: IOException) {
                     onFailure("Upload failed: ${e.message}")
-
+                }
                 override fun onResponse(call: Call, resp: Response) {
-                    if (resp.isSuccessful) onSuccess()
-                    else onFailure("Upload returned HTTP ${resp.code}")
+                    if (resp.isSuccessful) {
+                        onSuccess()
+                    } else {
+                        onFailure("Upload returned HTTP ${resp.code}")
+                    }
                     resp.close()
                 }
             })
         },
-        onFailure = onFailure
+        onFailure = { err ->
+            onFailure("Could not get upload URL: $err")
+        }
     )
 }
 
@@ -253,82 +276,110 @@ fun getCSVDownloadURL(
         method = "POST",
         headers = mapOf("Authorization" to "Bearer $accesToken"),
         body = mapOf("fileName" to fileName),
-        onSuccess = { responseBody -> onSuccess(responseBody) },
-        onFailure = { error -> onFailure("Request failed: $error") }
+        onSuccess = { body ->
+            try {
+                // If we get a JSON object, pull out "presignedUrl" or "url"
+                val cleaned = if (body.trim().startsWith("{")) {
+                    val obj = JsonParser.parseString(body).asJsonObject
+                    obj["presignedUrl"]?.asString
+                        ?: obj["url"]?.asString
+                        ?: throw IllegalStateException("No URL field in JSON")
+                } else {
+                    // otherwise assume plain string and strip stray quotes
+                    body.trim().trim('"')
+                }
+                onSuccess(cleaned)
+            } catch (e: Exception) {
+                onFailure("Failed to parse presigned URL: ${e.message}")
+            }
+        },
+        onFailure = { err -> onFailure("Request failed: $err") }
     )
 }
 
 private const val LIST_CSVS_URL =
     "https://mrmtdao1qh.execute-api.us-east-1.amazonaws.com/admin/GetCSVFileNames-Approver"
 
-fun downloadAllCsv(
+/**
+ * Lists all CSV metadata objects, pulls out the "key" field, downloads each file,
+ * saves them under filesDir/csvs/, and returns List<File> via onSuccess.
+ */
+/**
+ * Fetches the CSV list, downloads each one, saves it locally, and returns a List<Uri>.
+ */
+fun downloadAllCsvFiles(
     viewModel: AccessViewModel,
-    onComplete: (List<Pair<String, String>>) -> Unit,
-    onFailure: (String) -> Unit
+    onSuccess: (List<Uri>) -> Unit,
+    onFailure: (Exception) -> Unit
 ) {
+    val context     = viewModel.getApplication<Application>()
     val mainHandler = Handler(Looper.getMainLooper())
     val token       = viewModel.getAccessToken()
 
-    // 1) fetch the list of filenames
     makeApiRequest(
         url     = LIST_CSVS_URL,
         method  = "GET",
         headers = mapOf("Authorization" to "Bearer $token"),
         onSuccess = { body ->
-            // parse JSON { "files": [ "a.csv", "b.csv", … ] }
-            val names = try {
-                JsonParser
-                    .parseString(body)
-                    .asJsonObject
-                    .getAsJsonArray("files")
-                    .map { it.asString }
+            // 1) parse the JSON { files: [ { key: "...", last_modified: "..."}, ... ] }
+            val keys = try {
+                JSONObject(body)
+                    .getJSONArray("files")
+                    .let { arr ->
+                        List(arr.length()) { i ->
+                            arr.getJSONObject(i).getString("key")
+                        }
+                    }
             } catch (e: Exception) {
-                mainHandler.post { onFailure("Invalid list response: ${e.message}") }
+                mainHandler.post { onFailure(Exception("Invalid list response: ${e.message}", e)) }
                 return@makeApiRequest
             }
 
-            // nothing to do?
-            if (names.isEmpty()) {
-                mainHandler.post { onComplete(emptyList()) }
+            if (keys.isEmpty()) {
+                mainHandler.post { onSuccess(emptyList()) }
                 return@makeApiRequest
             }
 
-            // 2) download each file in parallel
-            val results   = mutableListOf<Pair<String, String>>()
-            var remaining = names.size
+            // 2) prepare for downloads
+            val csvDir    = File(context.filesDir, "csvs").apply { if (!exists()) mkdirs() }
             val client    = OkHttpClient()
+            val uriList   = mutableListOf<Uri>()
+            var remaining = keys.size
 
-            names.forEach { fileName ->
+            // 3) download each CSV in parallel
+            keys.forEach { key ->
                 getCSVDownloadURL(
-                    viewModel,
-                    fileName,
-                    onSuccess = { downloadUrl ->
-                        // raw GET to S3
-                        val req = Request.Builder()
-                            .url(downloadUrl.trim().trim('"'))
-                            .get()
-                            .build()
+                    viewModel, key,
+                    onSuccess = { rawUrl ->
+                        val downloadUrl = rawUrl.trim().trim('"')
+                        val req = Request.Builder().url(downloadUrl).get().build()
 
                         client.newCall(req).enqueue(object : Callback {
-                            override fun onFailure(call: Call, e: IOException) {
+                            override fun onFailure(call: okhttp3.Call, e: IOException) {
                                 mainHandler.post {
-                                    onFailure("Failed to download $fileName: ${e.message}")
+                                    onFailure(IOException("Failed to download $key: ${e.message}", e))
                                 }
                             }
 
-                            override fun onResponse(call: Call, resp: Response) {
-                                if (!resp.isSuccessful) {
+                            override fun onResponse(call: okhttp3.Call, resp: Response) = resp.use {
+                                if (!it.isSuccessful) {
                                     mainHandler.post {
-                                        onFailure("Download $fileName HTTP ${resp.code}")
+                                        onFailure(IOException("Download $key HTTP ${it.code}"))
                                     }
                                     return
                                 }
-                                val text = resp.body?.string().orEmpty()
-                                synchronized(results) {
-                                    results.add(fileName to text)
+                                // write to disk
+                                val fileName = key.substringAfterLast('/')
+                                val outFile  = File(csvDir, fileName).also { f ->
+                                    it.body!!.byteStream().use { input ->
+                                        FileOutputStream(f).use { out -> input.copyTo(out) }
+                                    }
+                                }
+                                synchronized(uriList) {
+                                    uriList.add(Uri.fromFile(outFile))
                                     remaining--
                                     if (remaining == 0) {
-                                        mainHandler.post { onComplete(results) }
+                                        mainHandler.post { onSuccess(uriList) }
                                     }
                                 }
                             }
@@ -336,14 +387,16 @@ fun downloadAllCsv(
                     },
                     onFailure = { err ->
                         mainHandler.post {
-                            onFailure("Could not get URL for $fileName: $err")
+                            onFailure(Exception("Could not get download URL for $key: $err"))
                         }
                     }
                 )
             }
         },
         onFailure = { err ->
-            mainHandler.post { onFailure("Could not list CSVs: $err") }
+            mainHandler.post {
+                onFailure(Exception("Could not list CSVs: $err"))
+            }
         }
     )
 }

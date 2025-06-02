@@ -23,6 +23,8 @@ import com.example.pineappleexpense.model.Expense
 import com.example.pineappleexpense.ui.viewmodel.AccessViewModel
 import java.io.File
 import java.text.SimpleDateFormat
+import java.text.DecimalFormat
+import java.math.RoundingMode
 import java.util.*
 
 //returns a card for each expense passed in
@@ -176,7 +178,7 @@ fun CollapsedExpenseCard(expense: Expense, onImageClick: (String) -> Unit = {}) 
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Total: $${expense.total}",
+                    text = "Total: $${decimalFormat(expense.total)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -243,7 +245,7 @@ fun ExpandedExpenseCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Total: $${expense.total}",
+                        text = "Total: $${decimalFormat(expense.total)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )
@@ -341,7 +343,12 @@ fun ExpandedExpenseCard(
             }
     }
 }
-
+fun decimalFormat(value: Float): String {
+    val df = DecimalFormat("#,###.##")
+    df.roundingMode = RoundingMode.FLOOR
+    val formatted = df.format(value)
+    return formatted
+}
 //Deletes an image file from internal storage.
 fun deleteImageFromInternalStorage(filePath: String): Boolean {
     val file = File(filePath)

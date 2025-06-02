@@ -158,7 +158,7 @@ fun AdminViewReportScreen(
                         confirmButton = {
                             TextButton(
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Blue
+                                    containerColor = Color(0xFF4773f7)
                                 ),
                                 onClick = {
                                     viewModel.setReportComment(report?.name.toString(), comment)

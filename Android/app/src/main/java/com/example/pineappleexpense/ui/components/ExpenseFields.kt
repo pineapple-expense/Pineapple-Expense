@@ -6,14 +6,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,8 +42,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.JdkConstants.VerticalScrollBarPolicy
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -58,22 +75,66 @@ fun titleBox(initialText: String? = null): String {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun categoryBox(initialText: String? = null): String {
     var category by remember { mutableStateOf(initialText ?: "") }
-    TextField(
-        value = category,
-        onValueChange = {category = it},
-        label = {Text("Category")},
-        trailingIcon = {
-            if (category.isNotEmpty()) {
-                IconButton(onClick = { category = "" }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear Text")
+    var expanded by remember { mutableStateOf(false) }
+    var options = listOf("Meals", "Travel", "Supplies", "Safety", "Lodging", "Other")
+    var scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+
+    Box (
+        modifier = Modifier
+            .width(400.dp)
+            .height(56.dp)
+            .background(Color(117, 118, 127), RectangleShape)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .width(400.dp)
+                .height(55.dp)
+                .background(Color(225, 226, 236), RectangleShape)
+                .clickable { expanded = true }
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+
+            Text(
+                text = if (category.isEmpty()) "Choose Category" else category,
+                color = if (category.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon (
+                Icons.Default.ArrowDropDown,
+                contentDescription = "Category options",
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
+
+        if (expanded) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.width(400.dp).height(185.dp),
+                scrollState = scrollState
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(text = option) },
+                        onClick = {
+                            coroutineScope.launch {
+                                scrollState.scrollTo(0)
+                            }
+                            category = option
+                            expanded = false
+                            }
+                        )
+                    }
                 }
             }
-        },
-        modifier = Modifier.width(400.dp)
-    )
+        }
     return category
 }
 
@@ -102,6 +163,11 @@ fun dateBox(initialDate: Date? = null): Date? {
                 text = if (date.isEmpty()) "Date" else date,
                 color = if (date.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge
+            )
+            Icon(
+                Icons.Default.DateRange,
+                contentDescription = "Calendar",
+                modifier = Modifier.align(Alignment.CenterEnd)
             )
         }
     }

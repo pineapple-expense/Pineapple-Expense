@@ -1,4 +1,3 @@
-// change to trigger github action
 package com.example.pineappleexpense.data
 
 import android.util.Log

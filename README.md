@@ -1,15 +1,11 @@
 # Pineapple Expense
-A sweeter way to manage your business expenses
-
-Documents:
-https://bellevuec-my.sharepoint.com/shared?login_hint=xiao%2Exu%40bellevuecollege%2Eedu&id=%2Fpersonal%2Fchristopher%5Fnevares%5Fbellevuecollege%5Fedu%2FDocuments%2FCapstone&listurl=%2Fpersonal%2Fchristopher%5Fnevares%5Fbellevuecollege%5Fedu%2FDocuments
+#### A sweeter way to manage your business expenses
 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
 - [Design Details](#design-details)
 - [Installation](#installation)
-- [Configuration](#configuration)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -33,37 +29,75 @@ The android app is built in kotlin using jetpack compose.
 ![Architecture diagram](https://github.com/ximixu/Pineapple-Expense/blob/main/SDD.jpeg)
 
 ### Example Code:
-
-```python
-# Code snippet or example to showcase design principles
+For our app we're using [Jetpack Compose](https://developer.android.com/compose), Google's native android UI framework:
+```kotlin
+@Composable
+fun commentBox(initialText: String? = null): String {
+    var comment by remember { mutableStateOf(initialText ?: "") }
+    TextField(
+        value = comment,
+        onValueChange = {comment = it},
+        label = {Text("Comment")},
+        trailingIcon = {
+            if (comment.isNotEmpty()) {
+                IconButton(onClick = { comment = "" }) {
+                    Icon(Icons.Default.Clear, contentDescription = "Clear Text")
+                }
+            }
+        },
+        modifier = Modifier.width(400.dp).height(120.dp)
+    )
+    return comment
+}
 ```
 
-Installation
-Provide instructions on how to install your project. Include any dependencies or prerequisites.
+Our backend is mostly compromised of lambda functions on AWS;
+```python
+S3_BUCKET_NAME = os.getenv("BUCKET")
+
+s3_client = boto3.client("s3")
+
+def lambda_handler(event, context):
+    role = event['requestContext']['authorizer']['jwt']['claims']['roleType']
+    if role != 'Admin':
+        return {
+            "statusCode": 403,
+            "body": json.dumps({"error": "Access denied. Requires admin only."})
+        }
+    
+    try:
+        
+        print("Received event:", json.dumps(event, indent=2))
+
+        body = event.get("body")
+        if not body:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Missing request body"})
+            }
+
+        try:
+            body_json = json.loads(body)
+        except json.JSONDecodeError:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Invalid JSON format"})
+            }
+```
 
 # Installation steps
-$ git clone https://github.com/your-username/your-repo.git
-$ cd your-repo
-$ npm install  # or any other relevant command
+To install the app, the .apk file can be downloaded under [releases](https://github.com/pineapple-expense/Pineapple-Expense/releases)
 
-Configuration
-Explain how users can configure your project. If applicable, include details about configuration files.
+To set up a development environment for the app, clone this repository using git
+```bash
+git clone git@github.com:pineapple-expense/Pineapple-Expense.git
+```
+Then install [Android Studio](https://developer.android.com/studio) and open the "Android" folder in the repository as a project.
 
-Example Configuration:
-# Configuration file example
-key: value
+An AWS CloudFormation template along with our step functions and lambdas are in the "AWS" folder, but setup is beyond the scope of this document.
 
-Usage
-Provide examples and instructions on how users can use your project. Include code snippets or command-line examples.
+## Contributing
+Due to backend costs there's a decent chance that the app won't actually be up by the time you're reading this, but feel free to fork this project :)
 
-Example Usage:
-# Example command or usage
-
-Contributing
-Explain how others can contribute to your project. Include guidelines for pull requests and any code of conduct.
-
-License
-Specify the license under which your project is distributed. For example, MIT License, Apache License, etc.
-
-
-Make sure to replace placeholders such as "Project Name," "your-username," and "your-repo" with the appropriate information for your repository.
+## License
+ Pineapple Expense  © 2024 by Pineapple Expense is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/

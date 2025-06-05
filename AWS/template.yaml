@@ -1321,6 +1321,26 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: arn:aws:execute-api:us-east-1:418295723137:mrmtdao1qh/*/*/admin/GetCSVFileNames-Approver
 
+# RunTextractCondenseOutput
+  RunTextractCondenseOutputFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: RunTextractCondenseOutput
+      Handler: lambda_function.lambda_handler
+      CodeUri: src/RunTextractCondenseOutput/
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 10
+      Role: arn:aws:iam::418295723137:role/service-role/RunTextractCondenseOutput-role-7zvrkq1x
+
+  RunTextractCondenseOutputLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RunTextractCondenseOutputFunction
+      Action: lambda:InvokeFunction
+      Principal: states.amazonaws.com
+      SourceArn: arn:aws:states:us-east-1:418295723137:stateMachine:MyStateMachine-sj5krp1uk
 
 ##### STATE MACHINES ########
   DeleteReceiptStateMachine:

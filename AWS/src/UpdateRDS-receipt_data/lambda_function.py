@@ -48,7 +48,6 @@ def lambda_handler(event, context):
     
     connection = None
     try:
-        # Connect to PostgreSQL database
         connection = psycopg2.connect(
             host=db_host,
             port=db_port,

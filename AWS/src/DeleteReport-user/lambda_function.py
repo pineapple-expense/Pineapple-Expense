@@ -29,10 +29,8 @@ def lambda_handler(event, context):
     db_password = credentials["DB_PASSWORD"]
     db_name = credentials["DB_NAME"]
 
-    # Extract user_id from JWT claims
     user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
 
-    # Parse request body
     body = event.get("body")
     if not body:
         return {
@@ -74,7 +72,6 @@ def lambda_handler(event, context):
 
     connection = None
     try:
-        # Connect to PostgreSQL
         connection = psycopg2.connect(
             host=db_host,
             port=db_port,
@@ -84,13 +81,12 @@ def lambda_handler(event, context):
         )
         cursor = connection.cursor()
 
-        # Step 1: Detach receipts
         cursor.execute(detach_query, (report_number, user_id))
-        receipts_detached = cursor.rowcount  # Number of receipts detached
+        receipts_detached = cursor.rowcount 
 
-        # Step 2: Delete report
+
         cursor.execute(delete_query, (report_number, user_id))
-        reports_deleted = cursor.rowcount  # Should be 1 if report was deleted
+        reports_deleted = cursor.rowcount
 
         connection.commit()
 

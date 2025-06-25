@@ -8,7 +8,6 @@ BUCKET_NAME = os.environ.get('BUCKET')
 
 def lambda_handler(event, context):
     try:
-        # Parse JSON body from POST request
         body = event.get('body')
         if body:
             try:

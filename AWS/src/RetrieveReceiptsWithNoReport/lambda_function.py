@@ -40,7 +40,6 @@ def lambda_handler(event, context):
 
     connection = None
     try:
-        # Connect to the PostgreSQL database
         connection = psycopg2.connect(
             host=db_host,
             user=db_user,
@@ -50,11 +49,11 @@ def lambda_handler(event, context):
         )
         with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute(query,(user_id,))
-            receipts = cursor.fetchall()  # Fetch all matching rows
+            receipts = cursor.fetchall()
 
         return {
             "statusCode": 200,
-            "body": json.dumps({"receipts": receipts}, default=str)  # default=str for date serialization
+            "body": json.dumps({"receipts": receipts}, default=str)
         }
 
     except Exception as e:

@@ -31,7 +31,6 @@ def lambda_handler(event, context):
     db_name = credentials["DB_NAME"]
 
 
-    #user_id = event['user_id']
     user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
 
     body = event.get("body")
@@ -41,7 +40,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Missing request body"})
         }
 
-    # Parse JSON safely
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
@@ -50,7 +48,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    # Extract contents
     receipt_id = body_json.get("receipt_id")
     act_date_str = body_json.get("date")
     act_amount = body_json.get('amount')
@@ -104,7 +101,6 @@ def lambda_handler(event, context):
             cursor.execute(update_query, (act_amount, act_date, act_category, title, comment, receipt_id, user_id))
 
             connection.commit()
-            # Fetch and print the updated row
             cursor.execute(
                 """
                 SELECT * FROM receipt_data

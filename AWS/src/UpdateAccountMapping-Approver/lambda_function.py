@@ -44,7 +44,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Missing request body"})
         }
 
-    # Parse JSON safely
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
@@ -53,7 +52,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    # Extract contents
     expense_type = body_json.get("expense_type")
     account_code = body_json.get("account_code")
 

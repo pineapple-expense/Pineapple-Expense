@@ -38,7 +38,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Missing request body"})
         }
 
-    # Parse JSON safely
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
@@ -47,7 +46,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    # Extract contents
     report_number = body_json.get('report_number')
 
     if report_number:
@@ -83,7 +81,7 @@ def lambda_handler(event, context):
         )
         with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute(update_query, query_params)
-            connection.commit()  # Ensure changes are committed
+            connection.commit()
             return {
                 "statusCode": 200,
                 "body": json.dumps({"message": "Update successful"})

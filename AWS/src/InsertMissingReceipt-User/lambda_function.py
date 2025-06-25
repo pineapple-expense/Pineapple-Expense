@@ -27,11 +27,10 @@ def lambda_handler(event, context):
     db_port = credentials["DB_PORT"]
     db_user = credentials["DB_USER"]
     db_password = credentials["DB_PASSWORD"]   
-    db_name = credentials["DB_NAME"]
-    
-    #user_id = event['user_id']
+    db_name = credentials["DB_NAME"]    
+
     user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
-    # Ensure event["body"] exists
+
     body = event.get("body")
     if not body:
         return {
@@ -39,7 +38,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Missing request body"})
         }
 
-    # Parse JSON safely
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
@@ -48,7 +46,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    # Extract contents
     receipt_id = body_json.get("receipt_id")
     act_amount = body_json.get("amount")
     act_date_str =  body_json.get("date")
@@ -66,7 +63,6 @@ def lambda_handler(event, context):
     
     connection = None
     try:
-        # Connect to PostgreSQL database
         connection = psycopg2.connect(
             host=db_host,
             port=db_port,
@@ -77,7 +73,6 @@ def lambda_handler(event, context):
         
         cursor = connection.cursor()
 
-        # Execute the INSERT query
         cursor.execute(insert_query, (receipt_id, user_id, act_amount, act_date, act_category, comment, name))
 
         connection.commit()

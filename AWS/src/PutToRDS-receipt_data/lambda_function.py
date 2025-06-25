@@ -46,7 +46,6 @@ def lambda_handler(event, context):
     
     connection = None
     try:
-        # Connect to PostgreSQL database
         connection = psycopg2.connect(
             host=db_host,
             port=db_port,
@@ -57,7 +56,6 @@ def lambda_handler(event, context):
         
         cursor = connection.cursor()
 
-        # Execute the INSERT query
         cursor.execute(insert_query, (receipt_id, user_id, name, act_amount, act_date, act_category))
 
         connection.commit()

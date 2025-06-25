@@ -30,7 +30,6 @@ def lambda_handler(event, context):
     db_name = credentials["DB_NAME"]
 
 
-    #user_id = event['user_id']
     user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
 
 

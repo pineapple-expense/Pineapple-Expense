@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     print(bucket)
     print(key)
 
-    # Call Textract AnalyzeExpense
+
     response = textract.analyze_expense(
         Document={
             "S3Object": {
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
     )
 
     condensed_extract = {}
-    receipt_id = key  # You use `key` as the ID elsewhere
+    receipt_id = key
 
     try:
         summary_fields = response['ExpenseDocuments'][0]['SummaryFields']

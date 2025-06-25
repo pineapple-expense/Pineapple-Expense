@@ -42,7 +42,6 @@ def lambda_handler(event, context):
 
     connection = None
     try:
-        # Connect to PostgreSQL
         connection = psycopg2.connect(
             host=db_host,
             user=db_user,
@@ -52,7 +51,7 @@ def lambda_handler(event, context):
         )
         with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute(query, (user_id))
-            report_numbers = cursor.fetchall()  # Fetch all matching report numbers
+            report_numbers = cursor.fetchall()
 
         return {
             "statusCode": 200,

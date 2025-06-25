@@ -36,7 +36,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Missing request body"})
         }
 
-    # Parse JSON safely
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
@@ -45,7 +44,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    # Extract receipt_id from request body
     receipt_id = body_json.get("receipt_id")
 
     if not receipt_id:
@@ -66,7 +64,6 @@ def lambda_handler(event, context):
 
     connection = None
     try:
-        # Connect to PostgreSQL database
         connection = psycopg2.connect(
             host=db_host,
             port=db_port,
@@ -76,7 +73,6 @@ def lambda_handler(event, context):
         )
         
         with connection.cursor() as cursor:
-            # Execute the update query
             cursor.execute(update_query, (receipt_id,))
             connection.commit()
 
